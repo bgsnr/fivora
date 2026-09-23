@@ -1,0 +1,166 @@
+.page {
+  min-height: 100vh;
+  padding: 48px 24px;
+  background: #f4f0ff;
+}
+
+.container {
+  width: min(1000px, 100%);
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 30px;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: #7448ef;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.header h1 {
+  margin: 0;
+  color: #21164f;
+  font-size: 36px;
+}
+
+.description {
+  margin: 8px 0 0;
+  color: #756c92;
+  line-height: 1.6;
+}
+
+.createButton {
+  flex-shrink: 0;
+  padding: 13px 22px;
+  border-radius: 12px;
+  background: #603ddb;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.createButton:hover {
+  background: #5432c8;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.reportCard {
+  padding: 24px;
+  border: 1px solid #e5def6;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 10px 30px rgba(78, 53, 145, 0.08);
+}
+
+.reportTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.category {
+  margin: 0 0 5px;
+  color: #7448ef;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.reportTop h2 {
+  margin: 0;
+  color: #21164f;
+  font-size: 20px;
+}
+
+.status {
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.statusBaru {
+  background: #eee9ff;
+  color: #603ddb;
+}
+
+.statusDiproses {
+  background: #fff5d6;
+  color: #8a6500;
+}
+
+.statusSelesai {
+  background: #e4f8ed;
+  color: #167d52;
+}
+
+.statusDitolak {
+  background: #fff1f3;
+  color: #c53c50;
+}
+
+.reportDescription {
+  margin: 16px 0;
+  color: #514968;
+  line-height: 1.6;
+}
+
+.reportBottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #eee9f7;
+}
+
+.reportBottom span {
+  color: #817996;
+  font-size: 13px;
+}
+
+.reportBottom a {
+  color: #603ddb;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.reportBottom a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 650px) {
+  .page {
+    padding: 28px 16px;
+  }
+
+  .header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .createButton {
+    text-align: center;
+  }
+
+  .reportBottom {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
