@@ -71,9 +71,30 @@ export default function RegisterPage() {
     }
 
     // Validasi NIM/NIP
-    if (!/^\d{14,18}$/.test(cleanNimNip)) {
+    if (!/^\d+$/.test(cleanNimNip)) {
       setErrorMessage(
-        'NIM/NIP harus berupa angka dengan panjang 14–18 digit.'
+        'NIM/NIP hanya boleh berisi angka.'
+      )
+      return
+    }
+
+    if (
+      jenisPengguna === 'students' &&
+      !/^\d{14}$/.test(cleanNimNip)
+    ) {
+      setErrorMessage(
+        'NIM mahasiswa harus terdiri dari 14 digit.'
+      )
+      return
+    }
+
+    if (
+      (jenisPengguna === 'lecturer' ||
+        jenisPengguna === 'staff') &&
+      !/^\d{18}$/.test(cleanNimNip)
+    ) {
+      setErrorMessage(
+        'NIP dosen/staf harus terdiri dari 18 digit.'
       )
       return
     }
