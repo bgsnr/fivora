@@ -1,22 +1,54 @@
 .page {
+  position: relative;
   min-height: 100vh;
+  overflow: hidden;
+  isolation: isolate;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   padding: 32px;
-  background: #f6f2ff;
+}
+
+/* Background foto */
+.page::before {
+  content: "";
+  position: absolute;
+  inset: -20px;
+
+  background-image: url("/perpus-undip.jpg");
+  background-size: cover;
+  background-position: center;
+
+  filter: blur(6px);
+  opacity: 0.6;
+
+  transform: scale(1.04);
+  z-index: -2;
+}
+
+/* Lapisan transparan */
+.page::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  background: rgba(245, 240, 255, 0.15);
+  z-index: -1;
 }
 
 .shell {
-  width: 100%;
-  max-width: 1220px;
-  min-height: 760px;
+  position: relative;
+  z-index: 1;
+
+  width: min(1050px, 100%);
+  min-height: auto;
 
   display: grid;
   grid-template-columns: 1fr 1fr;
 
   overflow: hidden;
-
   background: white;
   border-radius: 24px;
 
@@ -24,17 +56,13 @@
     0 20px 60px rgba(71, 44, 130, 0.12);
 }
 
-/* =========================
-   PANEL KIRI
-========================= */
-
+/* Panel kiri */
 .side {
   position: relative;
-
   display: flex;
   flex-direction: column;
 
-  padding: 48px 56px;
+  padding: 36px 48px;
 
   color: white;
 
@@ -60,52 +88,50 @@
   height: 13px;
 
   border-radius: 50%;
-
   background: white;
 }
 
 .sideContent {
-  max-width: 520px;
+  max-width: 500px;
   margin-top: auto;
-  margin-bottom: 110px;
+  margin-bottom: 70px;
 }
 
 .sideContent h1 {
-  margin: 0 0 24px;
+  margin: 0 0 20px;
 
-  font-size: 48px;
+  font-size: 40px;
   line-height: 1.15;
-
   font-weight: 700;
-  letter-spacing: -1.5px;
+
+  letter-spacing: -1px;
 }
 
 .sideContent p {
   margin: 0;
 
-  font-size: 18px;
-  line-height: 1.65;
+  font-size: 17px;
+  line-height: 1.6;
 
   opacity: 0.95;
 }
 
-/* =========================
-   PANEL KANAN
-========================= */
-
+/* Panel kanan */
 .panel {
   position: relative;
 
   display: flex;
   flex-direction: column;
 
-  padding: 48px 72px;
+  padding: 28px 50px;
+
+  background: #ffffff;
 }
 
 .panelTop {
   display: flex;
-  justify-content: flex-end;
   align-items: center;
+  justify-content: flex-end;
   gap: 6px;
 
   font-size: 15px;
@@ -124,13 +150,14 @@
 
 .formWrap {
   width: 100%;
-  max-width: 470px;
+  max-width: 440px;
 
   margin: auto;
 }
 
+/* Heading */
 .heading {
-  margin-bottom: 34px;
+  margin-bottom: 20px;
 }
 
 .eyebrow {
@@ -149,35 +176,31 @@
 
   color: #20183f;
 
-  font-size: 42px;
+  font-size: 34px;
   line-height: 1.1;
-
   font-weight: 700;
 }
 
 .heading p:last-child {
-  margin: 12px 0 0;
+  margin: 8px 0 0;
 
   color: #837b98;
 
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.5;
 }
 
-/* =========================
-   FORM
-========================= */
-
+/* Form */
 .form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 12px;
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: 9px;
+  gap: 8px;
 }
 
 .field > span {
@@ -189,11 +212,10 @@
 
 .field input {
   width: 100%;
-  height: 50px;
+  height: 44px;
 
   box-sizing: border-box;
-
-  padding: 0 16px;
+  padding: 0 15px;
 
   border: 1px solid #d9cff6;
   border-radius: 12px;
@@ -201,11 +223,10 @@
   outline: none;
 
   color: #2a2147;
-
   background: white;
 
   font-family: inherit;
-  font-size: 15px;
+  font-size: 14px;
 
   transition:
     border-color 0.2s,
@@ -223,6 +244,7 @@
     0 0 0 3px rgba(115, 64, 229, 0.1);
 }
 
+/* Password */
 .passwordBox {
   position: relative;
 }
@@ -249,7 +271,6 @@
   transform: translateY(-50%);
 
   border: 0;
-
   background: transparent;
 
   color: #7040e1;
@@ -261,55 +282,51 @@
   color: #4c24af;
 }
 
-/* =========================
-   MESSAGE
-========================= */
+.togglePassword:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
 
+/* Pesan error */
 .error {
-  padding: 13px 15px;
+  padding: 11px 14px;
 
   border: 1px solid #ffb5b5;
   border-radius: 10px;
 
   background: #fff2f2;
-
   color: #c43838;
 
   font-size: 14px;
   line-height: 1.45;
 }
 
+/* Pesan sukses */
 .success {
-  margin-bottom: 18px;
-
-  padding: 13px 15px;
+  margin-bottom: 14px;
+  padding: 11px 14px;
 
   border: 1px solid #b5e1c3;
   border-radius: 10px;
 
   background: #f0fff4;
-
   color: #287a43;
 
   font-size: 14px;
   line-height: 1.5;
 }
 
-/* =========================
-   BUTTON
-========================= */
-
+/* Tombol */
 .primaryButton {
   width: 100%;
-  height: 50px;
+  height: 44px;
 
-  margin-top: 6px;
+  margin-top: 3px;
 
   border: 0;
   border-radius: 11px;
 
   background: #6138df;
-
   color: white;
 
   font-family: inherit;
@@ -336,11 +353,12 @@
   cursor: not-allowed;
 }
 
-/* =========================
-   RESPONSIVE
-========================= */
-
+/* Responsive */
 @media (max-width: 900px) {
+  .page {
+    padding: 18px;
+  }
+
   .shell {
     grid-template-columns: 1fr;
   }
@@ -350,8 +368,8 @@
   }
 
   .panel {
-    min-height: 700px;
-    padding: 36px 28px;
+    min-height: auto;
+    padding: 32px 28px;
   }
 }
 
@@ -366,10 +384,10 @@
   }
 
   .panel {
-    padding: 28px 20px 40px;
+    padding: 28px 20px 32px;
   }
 
   .heading h2 {
-    font-size: 34px;
+    font-size: 32px;
   }
 }
