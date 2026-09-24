@@ -3,8 +3,6 @@
 import Link from 'next/link'
 import { FormEvent, useState } from 'react'
 
-import { supabase } from '@/lib/supabase'
-
 import styles from './register.module.css'
 
 function getJenisPengguna(email: string) {
@@ -50,13 +48,17 @@ export default function RegisterPage() {
 
     // Validasi nama
     if (cleanName.length < 3) {
-      setErrorMessage('Nama lengkap minimal 3 karakter.')
+      setErrorMessage(
+        'Nama lengkap minimal 3 karakter.'
+      )
       return
     }
 
     // Validasi format email
     if (!/^\S+@\S+\.\S+$/.test(cleanEmail)) {
-      setErrorMessage('Masukkan email yang valid.')
+      setErrorMessage(
+        'Masukkan email yang valid.'
+      )
       return
     }
 
@@ -78,6 +80,7 @@ export default function RegisterPage() {
       return
     }
 
+    // Validasi NIM mahasiswa
     if (
       jenisPengguna === 'students' &&
       !/^\d{14}$/.test(cleanNimNip)
@@ -88,6 +91,7 @@ export default function RegisterPage() {
       return
     }
 
+    // Validasi NIP dosen/staf
     if (
       (jenisPengguna === 'lecturer' ||
         jenisPengguna === 'staff') &&
@@ -101,43 +105,65 @@ export default function RegisterPage() {
 
     // Validasi password
     if (password.length < 8) {
-      setErrorMessage('Password minimal 8 karakter.')
+      setErrorMessage(
+        'Password minimal 8 karakter.'
+      )
       return
     }
 
     setLoading(true)
 
-    // Register ke Supabase Auth
-    // Role dan status tidak dikirim dari client.
-    // Database akan menentukan role = pengguna dan status = menunggu.
-    const { error } = await supabase.auth.signUp({
-      email: cleanEmail,
-      password,
-      options: {
-        data: {
-          source: 'public_register',
-          name: cleanName,
-          nim_nip: cleanNimNip,
-        },
-      },
-    })
+    try {
+      // Kirim data ke server
+      const response = await fetch(
+        '/api/auth/register',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: cleanName,
+            email: cleanEmail,
+            nim_nip: cleanNimNip,
+            password,
+          }),
+        }
+      )
 
-    setLoading(false)
+      const result = await response.json()
 
-    if (error) {
-      setErrorMessage(error.message)
-      return
+      // Menampilkan error dari server
+      if (!response.ok) {
+        setErrorMessage(
+          result.error ||
+            'Registrasi gagal.'
+        )
+        return
+      }
+
+      // Reset form setelah berhasil
+      setName('')
+      setEmail('')
+      setNimNip('')
+      setPassword('')
+      setShowPassword(false)
+
+      setSuccessMessage(
+        `Pendaftaran berhasil sebagai ${jenisPengguna}. Silakan tunggu verifikasi admin sebelum login.`
+      )
+    } catch (error) {
+      console.error(
+        'REGISTER ERROR:',
+        error
+      )
+
+      setErrorMessage(
+        'Terjadi kesalahan. Silakan coba lagi.'
+      )
+    } finally {
+      setLoading(false)
     }
-
-    setName('')
-    setEmail('')
-    setNimNip('')
-    setPassword('')
-    setShowPassword(false)
-
-    setSuccessMessage(
-      `Pendaftaran berhasil sebagai ${jenisPengguna}. Silakan tunggu verifikasi admin sebelum login.`
-    )
   }
 
   return (
@@ -204,6 +230,7 @@ export default function RegisterPage() {
                   autoComplete="name"
                   disabled={loading}
                   required
+                  minLength={3}
                 />
               </label>
 
@@ -232,9 +259,7 @@ export default function RegisterPage() {
                   type="text"
                   value={nimNip}
                   onChange={(event) =>
-                    setNimNip(
-                      event.target.value.replace(/\D/g, '')
-                    )
+                    setNimNip(event.target.value)
                   }
                   placeholder="Masukkan NIM atau NIP"
                   inputMode="numeric"
@@ -251,7 +276,9 @@ export default function RegisterPage() {
                 <div className={styles.passwordBox}>
                   <input
                     type={
-                      showPassword ? 'text' : 'password'
+                      showPassword
+                        ? 'text'
+                        : 'password'
                     }
                     value={password}
                     onChange={(event) =>
@@ -259,6 +286,7 @@ export default function RegisterPage() {
                     }
                     placeholder="Minimal 8 karakter"
                     autoComplete="new-password"
+                    minLength={8}
                     disabled={loading}
                     required
                   />
