@@ -44,7 +44,7 @@ export default function AdminDashboard({
   const [operatorPassword, setOperatorPassword] =
     useState('')
 
-  const [showPassword, setShowPassword] =
+  const [showOperatorPassword, setShowOperatorPassword] =
     useState(false)
 
   const [operatorLoading, setOperatorLoading] =
@@ -56,12 +56,36 @@ export default function AdminDashboard({
   const [operatorMessage, setOperatorMessage] =
     useState('')
 
+  // State modal tambah pengguna
+  const [showUserForm, setShowUserForm] =
+    useState(false)
+
+  const [userName, setUserName] = useState('')
+  const [userEmail, setUserEmail] = useState('')
+  const [userNimNip, setUserNimNip] = useState('')
+  const [userPassword, setUserPassword] =
+    useState('')
+
+  const [showUserPassword, setShowUserPassword] =
+    useState(false)
+
+  const [userLoading, setUserLoading] =
+    useState(false)
+
+  const [userError, setUserError] =
+    useState('')
+
+  const [userMessage, setUserMessage] =
+    useState('')
+
+  // Membuka modal operator
   function openOperatorForm() {
     setOperatorError('')
     setOperatorMessage('')
     setShowOperatorForm(true)
   }
 
+  // Menutup modal operator
   function closeOperatorForm() {
     if (operatorLoading) {
       return
@@ -72,6 +96,25 @@ export default function AdminDashboard({
     setOperatorMessage('')
   }
 
+  // Membuka modal pengguna
+  function openUserForm() {
+    setUserError('')
+    setUserMessage('')
+    setShowUserForm(true)
+  }
+
+  // Menutup modal pengguna
+  function closeUserForm() {
+    if (userLoading) {
+      return
+    }
+
+    setShowUserForm(false)
+    setUserError('')
+    setUserMessage('')
+  }
+
+  // Membuat akun operator
   async function handleCreateOperator(
     event: FormEvent<HTMLFormElement>
   ) {
@@ -97,15 +140,18 @@ export default function AdminDashboard({
       return
     }
 
-    if (operatorPassword.length < 6) {
+    if (operatorPassword.length < 8) {
       setOperatorError(
-        'Password minimal 6 karakter.'
+        'Password minimal 8 karakter.'
       )
       return
     }
 
-    // Validasi format email operator dari sisi client
-    if (!cleanEmail.endsWith('@operator.undip.ac.id')) {
+    if (
+      !cleanEmail.endsWith(
+        '@operator.undip.ac.id'
+      )
+    ) {
       setOperatorError(
         'Email operator harus menggunakan @operator.undip.ac.id.'
       )
@@ -144,13 +190,11 @@ export default function AdminDashboard({
         'Akun operator berhasil dibuat dan langsung aktif.'
       )
 
-      // Kosongkan form
       setOperatorName('')
       setOperatorEmail('')
       setOperatorPassword('')
-      setShowPassword(false)
+      setShowOperatorPassword(false)
 
-      // Refresh data dashboard
       router.refresh()
     } catch (error) {
       console.error(
@@ -166,6 +210,155 @@ export default function AdminDashboard({
     }
   }
 
+  // Membuat akun pengguna
+  async function handleCreateUser(
+    event: FormEvent<HTMLFormElement>
+  ) {
+    event.preventDefault()
+
+    setUserError('')
+    setUserMessage('')
+
+    const cleanName = userName.trim()
+    const cleanEmail = userEmail
+      .trim()
+      .toLowerCase()
+
+    const cleanNimNip = userNimNip.trim()
+
+    // Validasi field wajib
+    if (
+      !cleanName ||
+      !cleanEmail ||
+      !cleanNimNip ||
+      !userPassword
+    ) {
+      setUserError(
+        'Nama, email, NIM/NIP, dan password wajib diisi.'
+      )
+      return
+    }
+
+    // Validasi password
+    if (userPassword.length < 8) {
+      setUserError(
+        'Password minimal 8 karakter.'
+      )
+      return
+    }
+
+    // NIM/NIP harus berupa angka
+    if (!/^\d+$/.test(cleanNimNip)) {
+      setUserError(
+        'NIM/NIP hanya boleh berisi angka.'
+      )
+      return
+    }
+
+    // Validasi domain email SSO
+    const isStudent = cleanEmail.endsWith(
+      '@students.undip.ac.id'
+    )
+
+    const isLecturer = cleanEmail.endsWith(
+      '@lecturer.undip.ac.id'
+    )
+
+    const isStaff = cleanEmail.endsWith(
+      '@staff.undip.ac.id'
+    )
+
+    if (
+      !isStudent &&
+      !isLecturer &&
+      !isStaff
+    ) {
+      setUserError(
+        'Email harus menggunakan email SSO UNDIP yang valid.'
+      )
+      return
+    }
+
+    // Validasi panjang NIM mahasiswa
+    if (
+      isStudent &&
+      !/^\d{14}$/.test(cleanNimNip)
+    ) {
+      setUserError(
+        'NIM mahasiswa harus terdiri dari 14 digit.'
+      )
+      return
+    }
+
+    // Validasi panjang NIP dosen/staf
+    if (
+      (isLecturer || isStaff) &&
+      !/^\d{18}$/.test(cleanNimNip)
+    ) {
+      setUserError(
+        'NIP dosen/staf harus terdiri dari 18 digit.'
+      )
+      return
+    }
+
+    setUserLoading(true)
+
+    try {
+      const response = await fetch(
+        '/api/admin/users',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type':
+              'application/json',
+          },
+          body: JSON.stringify({
+            name: cleanName,
+            email: cleanEmail,
+            nim_nip: cleanNimNip,
+            password: userPassword,
+          }),
+        }
+      )
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        setUserError(
+          result.error ||
+            'Gagal membuat akun pengguna.'
+        )
+        return
+      }
+
+      setUserMessage(
+        'Akun pengguna berhasil dibuat dan langsung aktif.'
+      )
+
+      // Reset form
+      setUserName('')
+      setUserEmail('')
+      setUserNimNip('')
+      setUserPassword('')
+      setShowUserPassword(false)
+
+      // Refresh dashboard
+      router.refresh()
+    } catch (error) {
+      console.error(
+        'CREATE USER ERROR:',
+        error
+      )
+
+      setUserError(
+        'Terjadi kesalahan. Silakan coba lagi.'
+      )
+    } finally {
+      setUserLoading(false)
+    }
+  }
+
+  // Logout
   async function handleLogout() {
     try {
       const response = await fetch(
@@ -176,17 +369,21 @@ export default function AdminDashboard({
       )
 
       if (!response.ok) {
-        setOperatorError('Logout gagal.')
+        console.error('Logout gagal.')
         return
       }
 
       router.push('/login')
       router.refresh()
     } catch (error) {
-      console.error('LOGOUT ERROR:', error)
+      console.error(
+        'LOGOUT ERROR:',
+        error
+      )
     }
   }
 
+  // Scroll ke bagian tertentu
   function scrollToSection(id: string) {
     document
       .getElementById(id)
@@ -205,6 +402,7 @@ export default function AdminDashboard({
         </div>
 
         <nav className={styles.nav}>
+          {/* Dashboard */}
           <a
             href="#dashboard"
             className={`${styles.navItem} ${styles.navItemActive}`}
@@ -213,6 +411,7 @@ export default function AdminDashboard({
             <span>Dashboard</span>
           </a>
 
+          {/* Verifikasi */}
           <a
             href="#verifikasi"
             className={styles.navItem}
@@ -227,6 +426,7 @@ export default function AdminDashboard({
             )}
           </a>
 
+          {/* Tambah Operator */}
           <button
             type="button"
             className={styles.navItem}
@@ -236,17 +436,17 @@ export default function AdminDashboard({
             <span>Tambah Operator</span>
           </button>
 
+          {/* Tambah Pengguna */}
           <button
             type="button"
             className={styles.navItem}
-            onClick={() =>
-              scrollToSection('pengguna')
-            }
+            onClick={openUserForm}
           >
-            <span>◉</span>
-            <span>Pengguna</span>
+            <span>+</span>
+            <span>Tambah Pengguna</span>
           </button>
 
+          {/* Fasilitas */}
           <button
             type="button"
             className={styles.navItem}
@@ -258,6 +458,7 @@ export default function AdminDashboard({
             <span>Fasilitas</span>
           </button>
 
+          {/* Reservasi */}
           <button
             type="button"
             className={styles.navItem}
@@ -269,6 +470,7 @@ export default function AdminDashboard({
             <span>Reservasi</span>
           </button>
 
+          {/* Laporan */}
           <button
             type="button"
             className={styles.navItem}
@@ -280,6 +482,7 @@ export default function AdminDashboard({
             <span>Laporan</span>
           </button>
 
+          {/* Rekap */}
           <button
             type="button"
             className={styles.navItem}
@@ -292,10 +495,13 @@ export default function AdminDashboard({
           </button>
         </nav>
 
+        {/* Profile dan logout */}
         <div className={styles.sidebarBottom}>
           <div className={styles.adminProfile}>
             <div className={styles.avatar}>
-              {adminName.charAt(0).toUpperCase()}
+              {adminName
+                .charAt(0)
+                .toUpperCase()}
             </div>
 
             <div className={styles.profileText}>
@@ -314,8 +520,9 @@ export default function AdminDashboard({
         </div>
       </aside>
 
-      {/* Main content */}
+      {/* Konten utama */}
       <section className={styles.content}>
+        {/* Header */}
         <header
           id="dashboard"
           className={styles.topbar}
@@ -350,7 +557,9 @@ export default function AdminDashboard({
 
             <div className={styles.topProfile}>
               <div className={styles.avatar}>
-                {adminName.charAt(0).toUpperCase()}
+                {adminName
+                  .charAt(0)
+                  .toUpperCase()}
               </div>
 
               <div className={styles.profileText}>
@@ -423,13 +632,14 @@ export default function AdminDashboard({
               <h2>Manajemen akun</h2>
 
               <p>
-                Fitur akun yang sudah tersedia di
-                dashboard admin.
+                Fitur akun yang tersedia di dashboard
+                admin.
               </p>
             </div>
           </div>
 
           <div className={styles.actionGrid}>
+            {/* Verifikasi */}
             <button
               type="button"
               className={styles.actionCard}
@@ -457,6 +667,7 @@ export default function AdminDashboard({
               )}
             </button>
 
+            {/* Tambah operator */}
             <button
               type="button"
               className={styles.actionCard}
@@ -475,32 +686,28 @@ export default function AdminDashboard({
               </div>
             </button>
 
-            <div
-              id="pengguna"
-              className={styles.actionCardDisabled}
+            {/* Tambah pengguna */}
+            <button
+              type="button"
+              className={styles.actionCard}
+              onClick={openUserForm}
             >
-              <div
-                className={styles.actionIconMuted}
-              >
-                ◉
+              <div className={styles.actionIcon}>
+                +
               </div>
 
               <div className={styles.actionContent}>
                 <h3>Tambah Pengguna</h3>
 
                 <p>
-                  Mahasiswa, dosen, dan staf.
+                  Tambah mahasiswa, dosen, atau staf.
                 </p>
               </div>
-
-              <span className={styles.comingSoon}>
-                Segera
-              </span>
-            </div>
+            </button>
           </div>
         </section>
 
-        {/* Verifikasi */}
+        {/* Verifikasi akun */}
         <section
           id="verifikasi"
           className={styles.section}
@@ -545,7 +752,7 @@ export default function AdminDashboard({
           </div>
         </section>
 
-        {/* Modul lain */}
+        {/* Fitur lainnya */}
         <section className={styles.section}>
           <div className={styles.sectionHeader}>
             <div>
@@ -556,13 +763,14 @@ export default function AdminDashboard({
               <h2>Fitur lainnya</h2>
 
               <p>
-                Tampilan sudah disiapkan untuk modul
-                berikutnya.
+                Tampilan sudah disiapkan untuk
+                pengembangan berikutnya.
               </p>
             </div>
           </div>
 
           <div className={styles.featureGrid}>
+            {/* Fasilitas */}
             <div
               id="fasilitas"
               className={styles.featureCard}
@@ -585,6 +793,7 @@ export default function AdminDashboard({
               </span>
             </div>
 
+            {/* Reservasi */}
             <div
               id="reservasi"
               className={styles.featureCard}
@@ -607,6 +816,7 @@ export default function AdminDashboard({
               </span>
             </div>
 
+            {/* Laporan */}
             <div
               id="laporan"
               className={styles.featureCard}
@@ -628,6 +838,7 @@ export default function AdminDashboard({
               </span>
             </div>
 
+            {/* Rekap */}
             <div
               id="rekap"
               className={styles.featureCard}
@@ -675,8 +886,7 @@ export default function AdminDashboard({
                 <h2>Tambah Operator</h2>
 
                 <p>
-                  Akun operator langsung berstatus
-                  aktif.
+                  Akun operator langsung aktif.
                 </p>
               </div>
 
@@ -741,7 +951,7 @@ export default function AdminDashboard({
                 <div className={styles.passwordBox}>
                   <input
                     type={
-                      showPassword
+                      showOperatorPassword
                         ? 'text'
                         : 'password'
                     }
@@ -751,22 +961,22 @@ export default function AdminDashboard({
                         event.target.value
                       )
                     }
-                    placeholder="Minimal 6 karakter"
+                    placeholder="Minimal 8 karakter"
                     disabled={operatorLoading}
                     required
-                    minLength={6}
+                    minLength={8}
                   />
 
                   <button
                     type="button"
                     onClick={() =>
-                      setShowPassword(
+                      setShowOperatorPassword(
                         (current) => !current
                       )
                     }
                     disabled={operatorLoading}
                   >
-                    {showPassword
+                    {showOperatorPassword
                       ? 'Sembunyikan'
                       : 'Lihat'}
                   </button>
@@ -795,6 +1005,179 @@ export default function AdminDashboard({
                 {operatorLoading
                   ? 'Membuat akun...'
                   : 'Buat Akun Operator'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal tambah pengguna */}
+      {showUserForm && (
+        <div
+          className={styles.modalBackdrop}
+          onMouseDown={(event) => {
+            if (
+              event.target ===
+              event.currentTarget
+            ) {
+              closeUserForm()
+            }
+          }}
+        >
+          <div className={styles.modal}>
+            <div className={styles.modalHeader}>
+              <div>
+                <p className={styles.sectionEyebrow}>
+                  ADMIN
+                </p>
+
+                <h2>Tambah Pengguna</h2>
+
+                <p>
+                  Akun pengguna langsung aktif.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className={styles.closeButton}
+                onClick={closeUserForm}
+                disabled={userLoading}
+              >
+                ×
+              </button>
+            </div>
+
+            <form
+              className={styles.operatorForm}
+              onSubmit={handleCreateUser}
+            >
+              {/* Nama */}
+              <label>
+                <span>Nama</span>
+
+                <input
+                  type="text"
+                  value={userName}
+                  onChange={(event) =>
+                    setUserName(
+                      event.target.value
+                    )
+                  }
+                  placeholder="Masukkan nama pengguna"
+                  disabled={userLoading}
+                  required
+                />
+              </label>
+
+              {/* Email */}
+              <label>
+                <span>Email</span>
+
+                <input
+                  type="email"
+                  value={userEmail}
+                  onChange={(event) =>
+                    setUserEmail(
+                      event.target.value
+                    )
+                  }
+                  placeholder="nama@students.undip.ac.id"
+                  disabled={userLoading}
+                  required
+                />
+
+                <small>
+                  Gunakan email SSO UNDIP.
+                </small>
+              </label>
+
+              {/* NIM/NIP */}
+              <label>
+                <span>NIM/NIP</span>
+
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={userNimNip}
+                  onChange={(event) =>
+                    setUserNimNip(
+                      event.target.value
+                    )
+                  }
+                  placeholder="Masukkan NIM/NIP"
+                  disabled={userLoading}
+                  required
+                  maxLength={18}
+                />
+
+                <small>
+                  NIM mahasiswa 14 digit, NIP dosen/staf
+                  18 digit.
+                </small>
+              </label>
+
+              {/* Password */}
+              <label>
+                <span>Password</span>
+
+                <div className={styles.passwordBox}>
+                  <input
+                    type={
+                      showUserPassword
+                        ? 'text'
+                        : 'password'
+                    }
+                    value={userPassword}
+                    onChange={(event) =>
+                      setUserPassword(
+                        event.target.value
+                      )
+                    }
+                    placeholder="Minimal 8 karakter"
+                    disabled={userLoading}
+                    required
+                    minLength={8}
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowUserPassword(
+                        (current) => !current
+                      )
+                    }
+                    disabled={userLoading}
+                  >
+                    {showUserPassword
+                      ? 'Sembunyikan'
+                      : 'Lihat'}
+                  </button>
+                </div>
+              </label>
+
+              {/* Error */}
+              {userError && (
+                <div className={styles.formError}>
+                  {userError}
+                </div>
+              )}
+
+              {/* Success */}
+              {userMessage && (
+                <div className={styles.formSuccess}>
+                  {userMessage}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                className={styles.submitButton}
+                disabled={userLoading}
+              >
+                {userLoading
+                  ? 'Membuat akun...'
+                  : 'Buat Akun Pengguna'}
               </button>
             </form>
           </div>
