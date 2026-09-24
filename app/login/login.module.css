@@ -3,112 +3,128 @@
   min-height: 100vh;
   overflow: hidden;
   isolation: isolate;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   padding: 32px;
 }
 
+/* Background foto */
 .page::before {
   content: "";
   position: absolute;
   inset: -20px;
+
   background-image: url("/perpus-undip.jpg");
   background-size: cover;
   background-position: center;
+
   filter: blur(6px);
   opacity: 0.6;
+
   transform: scale(1.04);
   z-index: -2;
 }
 
+/* Lapisan transparan */
 .page::after {
   content: "";
   position: absolute;
   inset: 0;
+
   background: rgba(245, 240, 255, 0.15);
   z-index: -1;
 }
 
-.container {
+.shell {
   position: relative;
   z-index: 1;
-  width: 100%;
-  background: transparent;
-  border-radius: 24px;
-  overflow: hidden;
-}
 
-.shell {
   width: min(1050px, 100%);
   min-height: auto;
+
   display: grid;
   grid-template-columns: 1fr 1fr;
+
   overflow: hidden;
+  background: white;
   border-radius: 24px;
-  background: #ffffff;
+
   box-shadow:
-    0 20px 60px rgba(78, 53, 145, 0.12);
+    0 20px 60px rgba(71, 44, 130, 0.12);
 }
 
-/* PANEL KIRI */
+/* Panel kiri */
 .side {
   position: relative;
+  display: flex;
+  flex-direction: column;
+
   padding: 36px 48px;
+
+  color: white;
+
   background: linear-gradient(
-    160deg,
-    #8b48e8 0%,
-    #8565b5 100%
+    135deg,
+    #8147e6 0%,
+    #7650d4 50%,
+    #8b63c7 100%
   );
-  color: #ffffff;
 }
 
 .brand {
   display: flex;
   align-items: center;
   gap: 10px;
+
   font-size: 28px;
   font-weight: 700;
 }
 
 .brandDot {
-  width: 12px;
-  height: 12px;
-  display: inline-block;
-  border-radius: 4px;
-  background: #ffffff;
-  transform: rotate(45deg);
+  width: 13px;
+  height: 13px;
+
+  border-radius: 50%;
+  background: white;
 }
 
 .sideContent {
   max-width: 500px;
-  margin-top: 16px;
+  margin-top: auto;
+  margin-bottom: 70px;
 }
 
 .sideContent h1 {
-  margin: 0;
-  font-size: 38px;
-  line-height: 1.2;
+  margin: 0 0 20px;
+
+  font-size: 40px;
+  line-height: 1.15;
   font-weight: 700;
+
+  letter-spacing: -1px;
 }
 
 .sideContent p {
-  margin-top: 22px;
-
-  max-width: 500px;
+  margin: 0;
 
   font-size: 17px;
   line-height: 1.6;
 
-  color: rgba(255, 255, 255, 0.92);
+  opacity: 0.95;
 }
 
-/* =========================
-   PANEL KANAN
-========================= */
-
+/* Panel kanan */
 .panel {
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+
   padding: 28px 50px;
+
   background: #ffffff;
 }
 
@@ -117,12 +133,13 @@
   align-items: center;
   justify-content: flex-end;
   gap: 6px;
-  color: #756c92;
+
   font-size: 15px;
+  color: #786f91;
 }
 
 .panelTop a {
-  color: #5935db;
+  color: #6439df;
   font-weight: 700;
   text-decoration: none;
 }
@@ -134,47 +151,50 @@
 .formWrap {
   width: 100%;
   max-width: 440px;
-  margin: 24px auto 0;
+
+  margin: auto;
 }
 
-/* =========================
-   HEADING
-========================= */
-
+/* Heading */
 .heading {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .eyebrow {
   margin: 0 0 8px;
-  color: #7448ef;
-  font-size: 18px;
+
+  color: #7141e8;
+
+  font-size: 14px;
   font-weight: 700;
-  letter-spacing: 0.12em;
+
+  letter-spacing: 2px;
 }
 
 .heading h2 {
   margin: 0;
-  color: #21164f;
-  font-size: 32px;
-  line-height: 1.15;
+
+  color: #20183f;
+
+  font-size: 34px;
+  line-height: 1.1;
   font-weight: 700;
 }
 
-.heading > p:last-child {
-  margin: 5px 0 0;
-  color: #756c92;
+.heading p:last-child {
+  margin: 8px 0 0;
+
+  color: #837b98;
+
   font-size: 15px;
+  line-height: 1.5;
 }
 
-/* =========================
-   FORM
-========================= */
-
+/* Form */
 .form {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .field {
@@ -184,41 +204,49 @@
 }
 
 .field > span {
-  color: #21164f;
+  color: #211943;
+
   font-size: 14px;
   font-weight: 700;
 }
 
 .field input {
   width: 100%;
-  height: 42px;
+  height: 44px;
+
   box-sizing: border-box;
   padding: 0 15px;
-  border: 2px solid #ddd6f1;
-  border-radius: 13px;
+
+  border: 1px solid #d9cff6;
+  border-radius: 12px;
+
   outline: none;
-  background: #ffffff;
-  color: #241752;
+
+  color: #2a2147;
+  background: white;
+
   font-family: inherit;
   font-size: 14px;
+
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .field input::placeholder {
-  color: #aaa1c5;
+  color: #aaa1ba;
 }
 
 .field input:focus {
-  border-color: #7650e7;
-  box-shadow: 0 0 0 3px rgba(118, 80, 231, 0.1);
+  border-color: #7340e5;
+
+  box-shadow:
+    0 0 0 3px rgba(115, 64, 229, 0.1);
 }
 
-/* =========================
-   PASSWORD
-========================= */
-
+/* Password */
 .passwordBox {
   position: relative;
-  width: 100%;
 }
 
 .passwordBox input {
@@ -227,21 +255,31 @@
 
 .togglePassword {
   position: absolute;
+
   top: 50%;
-  right: 12px;
+  right: 14px;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4px;
-  border: none;
-  background: transparent;
-  color: #6940df;
-  cursor: pointer;
+
+  width: 28px;
+  height: 28px;
+
+  padding: 0;
+
   transform: translateY(-50%);
+
+  border: 0;
+  background: transparent;
+
+  color: #7040e1;
+
+  cursor: pointer;
 }
 
 .togglePassword:hover {
-  opacity: 0.75;
+  color: #4c24af;
 }
 
 .togglePassword:disabled {
@@ -249,66 +287,74 @@
   opacity: 0.5;
 }
 
-/* =========================
-   MESSAGE
-========================= */
-
+/* Pesan error */
 .error {
-  padding: 13px 15px;
-  border: 1px solid #efb7bf;
-  border-radius: 11px;
-  background: #fff1f3;
-  color: #c53c50;
+  padding: 11px 14px;
+
+  border: 1px solid #ffb5b5;
+  border-radius: 10px;
+
+  background: #fff2f2;
+  color: #c43838;
+
   font-size: 14px;
+  line-height: 1.45;
 }
 
+/* Pesan sukses */
 .success {
-  padding: 13px 15px;
-  border: 2px solid #b5ddc9;
-  border-radius: 11px;
-  background: #effbf5;
-  color: #167d52;
+  margin-bottom: 14px;
+  padding: 11px 14px;
+
+  border: 1px solid #b5e1c3;
+  border-radius: 10px;
+
+  background: #f0fff4;
+  color: #287a43;
+
   font-size: 14px;
   line-height: 1.5;
 }
 
-/* =========================
-   BUTTON
-========================= */
-
+/* Tombol */
 .primaryButton {
   width: 100%;
-  height: 42px;
-  margin-top: 2px;
-  border: none;
-  border-radius: 12px;
-  background: #603ddb;
-  color: #ffffff;
+  height: 44px;
+
+  margin-top: 3px;
+
+  border: 0;
+  border-radius: 11px;
+
+  background: #6138df;
+  color: white;
+
   font-family: inherit;
   font-size: 15px;
   font-weight: 700;
+
   cursor: pointer;
+
+  transition:
+    background 0.2s,
+    transform 0.2s;
 }
 
-.primaryButton:hover {
-  background: #5432c8;
+.primaryButton:hover:not(:disabled) {
+  background: #512bc8;
 }
 
-.primaryButton:active {
+.primaryButton:active:not(:disabled) {
   transform: translateY(1px);
 }
 
 .primaryButton:disabled {
+  opacity: 0.65;
   cursor: not-allowed;
-
-  opacity: 0.7;
 }
 
-/* =========================
-   RESPONSIVE
-========================= */
-
-@media (max-width: 950px) {
+/* Responsive */
+@media (max-width: 900px) {
   .page {
     padding: 18px;
   }
@@ -318,62 +364,30 @@
   }
 
   .side {
-    padding: 38px 34px;
-  }
-
-  .sideContent {
-    margin-top: 45px;
-  }
-
-  .sideContent h1 {
-    font-size: 38px;
-  }
-
-  .sideContent p {
-    font-size: 17px;
+    display: none;
   }
 
   .panel {
-    padding: 38px 34px;
+    min-height: auto;
+    padding: 32px 28px;
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 500px) {
   .page {
-    padding: 0;
+    padding: 16px;
   }
 
   .shell {
-    min-height: 100vh;
-
-    border-radius: 0;
-  }
-
-  .side {
-    padding: 32px 24px;
-  }
-
-  .brand {
-    font-size: 27px;
-  }
-
-  .sideContent {
-    margin-top: 35px;
-  }
-
-  .sideContent h1 {
-    font-size: 32px;
-  }
-
-  .sideContent p {
-    font-size: 16px;
+    min-height: auto;
+    border-radius: 18px;
   }
 
   .panel {
-    padding: 30px 24px;
+    padding: 28px 20px 32px;
   }
 
   .heading h2 {
-    font-size: 34px;
+    font-size: 32px;
   }
 }

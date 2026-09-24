@@ -2,37 +2,22 @@
 
 import Link from 'next/link'
 import { FormEvent, useState } from 'react'
+import { useRouter } from 'next/navigation'
 
-import styles from './register.module.css'
+import { createClient } from '@/lib/supabase/client'
 
-function getJenisPengguna(email: string) {
-  const cleanEmail = email.trim().toLowerCase()
+import styles from './login.module.css'
 
-  if (cleanEmail.endsWith('@students.undip.ac.id')) {
-    return 'students'
-  }
+export default function LoginPage() {
+  const router = useRouter()
+  const supabase = createClient()
 
-  if (cleanEmail.endsWith('@lecturer.undip.ac.id')) {
-    return 'lecturer'
-  }
-
-  if (cleanEmail.endsWith('@staff.undip.ac.id')) {
-    return 'staff'
-  }
-
-  return null
-}
-
-export default function RegisterPage() {
-  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [nimNip, setNimNip] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
 
   const [loading, setLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
-  const [successMessage, setSuccessMessage] = useState('')
 
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>
@@ -40,130 +25,105 @@ export default function RegisterPage() {
     event.preventDefault()
 
     setErrorMessage('')
-    setSuccessMessage('')
 
-    const cleanName = name.trim()
     const cleanEmail = email.trim().toLowerCase()
-    const cleanNimNip = nimNip.trim()
 
-    // Validasi nama
-    if (cleanName.length < 3) {
-      setErrorMessage(
-        'Nama lengkap minimal 3 karakter.'
-      )
-      return
-    }
-
-    // Validasi format email
-    if (!/^\S+@\S+\.\S+$/.test(cleanEmail)) {
-      setErrorMessage(
-        'Masukkan email yang valid.'
-      )
-      return
-    }
-
-    // Tentukan jenis pengguna berdasarkan domain email
-    const jenisPengguna = getJenisPengguna(cleanEmail)
-
-    if (!jenisPengguna) {
-      setErrorMessage(
-        'Gunakan email SSO Undip yang sesuai: @students.undip.ac.id, @lecturer.undip.ac.id, atau @staff.undip.ac.id.'
-      )
-      return
-    }
-
-    // Validasi NIM/NIP
-    if (!/^\d+$/.test(cleanNimNip)) {
-      setErrorMessage(
-        'NIM/NIP hanya boleh berisi angka.'
-      )
-      return
-    }
-
-    // Validasi NIM mahasiswa
-    if (
-      jenisPengguna === 'students' &&
-      !/^\d{14}$/.test(cleanNimNip)
-    ) {
-      setErrorMessage(
-        'NIM mahasiswa harus terdiri dari 14 digit.'
-      )
-      return
-    }
-
-    // Validasi NIP dosen/staf
-    if (
-      (jenisPengguna === 'lecturer' ||
-        jenisPengguna === 'staff') &&
-      !/^\d{18}$/.test(cleanNimNip)
-    ) {
-      setErrorMessage(
-        'NIP dosen/staf harus terdiri dari 18 digit.'
-      )
-      return
-    }
-
-    // Validasi password
-    if (password.length < 8) {
-      setErrorMessage(
-        'Password minimal 8 karakter.'
-      )
+    if (!cleanEmail || !password) {
+      setErrorMessage('Email dan password wajib diisi.')
       return
     }
 
     setLoading(true)
 
-    try {
-      // Kirim data ke server
-      const response = await fetch(
-        '/api/auth/register',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            name: cleanName,
-            email: cleanEmail,
-            nim_nip: cleanNimNip,
-            password,
-          }),
-        }
-      )
+    // Login menggunakan Supabase Auth
+    const { data, error } =
+      await supabase.auth.signInWithPassword({
+        email: cleanEmail,
+        password,
+      })
 
-      const result = await response.json()
-
-      // Menampilkan error dari server
-      if (!response.ok) {
-        setErrorMessage(
-          result.error ||
-            'Registrasi gagal.'
-        )
-        return
-      }
-
-      // Reset form setelah berhasil
-      setName('')
-      setEmail('')
-      setNimNip('')
-      setPassword('')
-      setShowPassword(false)
-
-      setSuccessMessage(
-        `Pendaftaran berhasil sebagai ${jenisPengguna}. Silakan tunggu verifikasi admin sebelum login.`
-      )
-    } catch (error) {
-      console.error(
-        'REGISTER ERROR:',
-        error
-      )
-
-      setErrorMessage(
-        'Terjadi kesalahan. Silakan coba lagi.'
-      )
-    } finally {
+    if (error) {
       setLoading(false)
+      setErrorMessage('Email atau password salah.')
+      return
     }
+
+    if (!data.user) {
+      setLoading(false)
+      setErrorMessage('Login gagal. Silakan coba lagi.')
+      return
+    }
+
+    // Ambil data user dari public.users
+    const {
+      data: userData,
+      error: userError,
+    } = await supabase
+      .from('users')
+      .select(
+        'id, auth_user_id, name, email, nim_nip, jenis_pengguna, role, status'
+      )
+      .eq('auth_user_id', data.user.id)
+      .single()
+
+    if (userError || !userData) {
+      await supabase.auth.signOut()
+
+      setLoading(false)
+      setErrorMessage(
+        'Data pengguna tidak ditemukan. Silakan hubungi administrator.'
+      )
+      return
+    }
+
+    // Akun masih menunggu verifikasi admin
+    if (userData.status === 'menunggu') {
+      await supabase.auth.signOut()
+
+      setLoading(false)
+      setErrorMessage(
+        'Akun kamu masih menunggu persetujuan administrator.'
+      )
+      return
+    }
+
+    // Akun ditolak admin
+    if (userData.status === 'ditolak') {
+      await supabase.auth.signOut()
+
+      setLoading(false)
+      setErrorMessage(
+        'Pendaftaran akun kamu ditolak oleh administrator.'
+      )
+      return
+    }
+
+    // Status selain aktif tidak boleh login
+    if (userData.status !== 'aktif') {
+      await supabase.auth.signOut()
+
+      setLoading(false)
+      setErrorMessage(
+        'Akun tidak dapat digunakan. Silakan hubungi administrator.'
+      )
+      return
+    }
+
+    // Login berhasil
+    setLoading(false)
+
+    // Pengalihan berdasarkan role
+    if (userData.role === 'admin') {
+      router.push('/admin')
+      return
+    }
+
+    if (userData.role === 'petugas') {
+      router.push('/operator')
+      return
+    }
+
+    router.push('/dashboard')
   }
 
   return (
@@ -182,9 +142,8 @@ export default function RegisterPage() {
             </h1>
 
             <p>
-              Daftar akun Fivora untuk mengakses reservasi
-              fasilitas, pelaporan kerusakan, dan layanan kampus
-              dalam satu platform.
+              Masuk ke akun Fivora untuk mengakses reservasi
+              fasilitas, pelaporan kerusakan, dan layanan kampus.
             </p>
           </div>
         </aside>
@@ -192,10 +151,10 @@ export default function RegisterPage() {
         {/* Panel kanan */}
         <section className={styles.panel}>
           <div className={styles.panelTop}>
-            <span>Sudah punya akun?</span>
+            <span>Belum punya akun?</span>
 
-            <Link href="/login">
-              Login
+            <Link href="/register">
+              Daftar
             </Link>
           </div>
 
@@ -205,10 +164,12 @@ export default function RegisterPage() {
                 FIVORA
               </p>
 
-              <h2>Daftar Akun</h2>
+              <h2>
+                Login
+              </h2>
 
               <p>
-                Lengkapi data diri untuk membuat akun Fivora.
+                Masuk menggunakan akun Fivora kamu.
               </p>
             </div>
 
@@ -216,27 +177,11 @@ export default function RegisterPage() {
               className={styles.form}
               onSubmit={handleSubmit}
             >
-              {/* Nama */}
-              <label className={styles.field}>
-                <span>Nama Lengkap</span>
-
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(event) =>
-                    setName(event.target.value)
-                  }
-                  placeholder="Masukkan nama lengkap"
-                  autoComplete="name"
-                  disabled={loading}
-                  required
-                  minLength={3}
-                />
-              </label>
-
               {/* Email */}
               <label className={styles.field}>
-                <span>Email SSO Undip</span>
+                <span>
+                  Email
+                </span>
 
                 <input
                   type="email"
@@ -244,34 +189,18 @@ export default function RegisterPage() {
                   onChange={(event) =>
                     setEmail(event.target.value)
                   }
-                  placeholder="fivora@undip.ac.id"
+                  placeholder="Masukkan email"
                   autoComplete="email"
-                  disabled={loading}
                   required
-                />
-              </label>
-
-              {/* NIM/NIP */}
-              <label className={styles.field}>
-                <span>NIM / NIP</span>
-
-                <input
-                  type="text"
-                  value={nimNip}
-                  onChange={(event) =>
-                    setNimNip(event.target.value)
-                  }
-                  placeholder="Masukkan NIM atau NIP"
-                  inputMode="numeric"
-                  maxLength={18}
                   disabled={loading}
-                  required
                 />
               </label>
 
               {/* Password */}
               <label className={styles.field}>
-                <span>Password</span>
+                <span>
+                  Password
+                </span>
 
                 <div className={styles.passwordBox}>
                   <input
@@ -284,11 +213,10 @@ export default function RegisterPage() {
                     onChange={(event) =>
                       setPassword(event.target.value)
                     }
-                    placeholder="Minimal 8 karakter"
-                    autoComplete="new-password"
-                    minLength={8}
-                    disabled={loading}
+                    placeholder="Masukkan password"
+                    autoComplete="current-password"
                     required
+                    disabled={loading}
                   />
 
                   <button
@@ -357,16 +285,6 @@ export default function RegisterPage() {
                 </div>
               )}
 
-              {/* Success */}
-              {successMessage && (
-                <div
-                  className={styles.success}
-                  role="status"
-                >
-                  {successMessage}
-                </div>
-              )}
-
               {/* Button */}
               <button
                 type="submit"
@@ -374,8 +292,8 @@ export default function RegisterPage() {
                 disabled={loading}
               >
                 {loading
-                  ? 'Mendaftarkan...'
-                  : 'Daftar'}
+                  ? 'Memproses...'
+                  : 'Login'}
               </button>
             </form>
           </div>

@@ -1,0 +1,38 @@
+export const reports = [
+  {
+    id: 1,
+    facility: 'Laboratorium Komputer 1',
+    category: 'Peralatan',
+    date: '22 September 2026',
+    status: 'baru',
+    description: 'Monitor komputer pada meja nomor 12 tidak menyala.',
+    officerNote: '',
+  },
+  {
+    id: 2,
+    facility: 'Ruang Kelas A101',
+    category: 'Listrik',
+    date: '20 September 2026',
+    status: 'diproses',
+    description: 'Lampu di bagian belakang ruangan berkedip.',
+    officerNote: 'Laporan sedang diperiksa oleh petugas.',
+  },
+  {
+    id: 3,
+    facility: 'Aula Fakultas',
+    category: 'Kebersihan',
+    date: '17 September 2026',
+    status: 'selesai',
+    description: 'Terdapat genangan air di dekat pintu samping.',
+    officerNote: 'Area sudah dibersihkan dan dapat digunakan kembali.',
+  },
+  {
+    id: 4,
+    facility: 'Lapangan Basket',
+    category: 'Peralatan',
+    date: '15 September 2026',
+    status: 'ditolak',
+    description: 'Jaring ring basket bagian utara terlepas.',
+    officerNote: 'Laporan serupa sudah dicatat sebelumnya.',
+  },
+]

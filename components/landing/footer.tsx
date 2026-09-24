@@ -21,7 +21,7 @@ export function Footer() {
               Sistem Informasi Terpadu Reservasi dan Pelaporan Fasilitas Kampus. Mengelola peminjaman ruang kelas, laboratorium, aula, sarana olahraga, serta penanganan kerusakan fasilitas secara terpusat dan transparan.
             </p>
             <div className="font-mono text-[11px] text-[#7b757d]">
-              Mata Kuliah Pengembangan Perangkat Lunak Berorientasi Komponen (PPK)
+              Mata Kuliah Pengembangan Platform Khusus (PPK)
             </div>
           </div>
 
