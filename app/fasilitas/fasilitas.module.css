@@ -1,0 +1,305 @@
+.container {
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: 36px 42px 60px;
+  background: #f6f2ff;
+  color: #21164f;
+  font-family: inherit;
+}
+
+/* Header Section */
+.header {
+  margin-bottom: 28px;
+}
+
+.eyebrow {
+  margin: 0 0 7px;
+  color: #7448ef;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0;
+  color: #21164f;
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+}
+
+.subtitle {
+  margin: 8px 0 0;
+  color: #756c92;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Filter Card */
+.filterCard {
+  margin-bottom: 32px;
+  box-sizing: border-box;
+  padding: 22px;
+  border: 1px solid #e3daf6;
+  border-radius: 17px;
+  background: #ffffff;
+  box-shadow: 0 4px 20px rgba(96, 61, 219, 0.03);
+}
+
+.filterGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.filterGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.filterGroup label {
+  color: #21164f;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.filterInput,
+.filterSelect {
+  width: 100%;
+  height: 42px;
+  box-sizing: border-box;
+  padding: 0 12px;
+  border: 1px solid #ddd6f1;
+  border-radius: 10px;
+  outline: none;
+  background: #ffffff;
+  color: #21164f;
+  font: inherit;
+  font-size: 12px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.filterInput::placeholder {
+  color: #aaa1ba;
+}
+
+.filterInput:focus,
+.filterSelect:focus {
+  border-color: #7650e7;
+  box-shadow: 0 0 0 3px rgba(118, 80, 231, 0.1);
+}
+
+.filterAction {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #f0ebf9;
+}
+
+.resetButton {
+  border: 0;
+  background: transparent;
+  color: #603ddb;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.resetButton:hover {
+  color: #4a28b8;
+  text-decoration: underline;
+}
+
+/* Message & States */
+.loadingState {
+  padding: 60px 20px;
+  color: #756c92;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.errorState {
+  margin-bottom: 24px;
+  padding: 12px 16px;
+  border: 1px solid #efb7bf;
+  border-radius: 12px;
+  background: #fff1f3;
+  color: #c53c50;
+  font-size: 12px;
+}
+
+.emptyState {
+  padding: 50px 20px;
+  border: 1px dashed #cfbfef;
+  border-radius: 17px;
+  background: #ffffff;
+  text-align: center;
+}
+
+.emptyState h3 {
+  margin: 0;
+  color: #21164f;
+  font-size: 16px;
+}
+
+.emptyState p {
+  margin: 6px 0 0;
+  color: #857b99;
+  font-size: 12px;
+}
+
+/* Facility Grid & Cards */
+.facilityGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.facilityCard {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+  padding: 22px;
+  border: 1px solid #e3daf6;
+  border-radius: 17px;
+  background: #ffffff;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.facilityCard:hover {
+  border-color: #c9b9ed;
+  box-shadow: 0 10px 25px rgba(96, 61, 219, 0.06);
+  transform: translateY(-2px);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.facilityName {
+  margin: 0;
+  color: #21164f;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Status Badges */
+.badgeActive {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #effbf5;
+  color: #167d52;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.badgeMaintenance {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #fffbf2;
+  border: 1px solid #e8d5a7;
+  color: #8b6517;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+/* Card Details */
+.cardDetails {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: #756c92;
+}
+
+.cardDetails p {
+  margin: 0;
+}
+
+.cardDetails strong {
+  color: #21164f;
+  font-weight: 600;
+}
+
+.description {
+  margin-top: 12px;
+  color: #857b99;
+  font-size: 11px;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cardFooter {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #eee8f7;
+}
+
+.actionButton {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 10px;
+  background: #603ddb;
+  color: #ffffff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.actionButton:hover {
+  background: #5432c8;
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 1100px) {
+  .facilityGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .filterGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 24px 18px 40px;
+  }
+
+  .title {
+    font-size: 26px;
+  }
+
+  .facilityGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .filterGrid {
+    grid-template-columns: 1fr;
+  }
+}
