@@ -2,30 +2,29 @@
 
 import Link from 'next/link'
 import { FormEvent, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase/client'
 
 import styles from './login.module.css'
 
 export default function LoginPage() {
   const router = useRouter()
-  const searchParams = useSearchParams()
+  const supabase = createClient()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-
   const [showPassword, setShowPassword] = useState(false)
+
   const [loading, setLoading] = useState(false)
-
   const [errorMessage, setErrorMessage] = useState('')
-  const [successMessage, setSuccessMessage] = useState('')
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(
+    event: FormEvent<HTMLFormElement>
+  ) {
     event.preventDefault()
 
     setErrorMessage('')
-    setSuccessMessage('')
 
     const cleanEmail = email.trim().toLowerCase()
 
@@ -36,6 +35,7 @@ export default function LoginPage() {
 
     setLoading(true)
 
+    // Login menggunakan Supabase Auth
     const { data, error } =
       await supabase.auth.signInWithPassword({
         email: cleanEmail,
@@ -44,19 +44,7 @@ export default function LoginPage() {
 
     if (error) {
       setLoading(false)
-
-      if (
-        error.message.toLowerCase().includes('email not confirmed')
-      ) {
-        setErrorMessage(
-          'Email belum diverifikasi. Silakan cek email terlebih dahulu.'
-        )
-      } else {
-        setErrorMessage(
-          'Email atau password salah.'
-        )
-      }
-
+      setErrorMessage('Email atau password salah.')
       return
     }
 
@@ -66,106 +54,65 @@ export default function LoginPage() {
       return
     }
 
-    /*
-     * Pastikan email sudah diverifikasi
-     */
-    if (!data.user.email_confirmed_at) {
-      await supabase.auth.signOut()
-
-      setLoading(false)
-
-      setErrorMessage(
-        'Email belum diverifikasi. Silakan cek email terlebih dahulu.'
+    // Ambil data user dari public.users
+    const {
+      data: userData,
+      error: userError,
+    } = await supabase
+      .from('users')
+      .select(
+        'id, auth_user_id, name, email, nim_nip, jenis_pengguna, role, status'
       )
-
-      return
-    }
-
-    /*
-     * Ambil data user dari public.users
-     */
-    const { data: userData, error: userError } =
-      await supabase
-        .from('users')
-        .select(
-          'id, auth_user_id, name, email, nim_nip, jenis_pengguna, role, status'
-        )
-        .eq('auth_user_id', data.user.id)
-        .single()
+      .eq('auth_user_id', data.user.id)
+      .single()
 
     if (userError || !userData) {
       await supabase.auth.signOut()
 
       setLoading(false)
-
       setErrorMessage(
         'Data pengguna tidak ditemukan. Silakan hubungi administrator.'
       )
-
       return
     }
 
-    /*
-     * Cek status akun
-     */
+    // Akun masih menunggu verifikasi admin
     if (userData.status === 'menunggu') {
       await supabase.auth.signOut()
 
       setLoading(false)
-
       setErrorMessage(
         'Akun kamu masih menunggu persetujuan administrator.'
       )
-
       return
     }
 
+    // Akun ditolak admin
     if (userData.status === 'ditolak') {
       await supabase.auth.signOut()
 
       setLoading(false)
-
       setErrorMessage(
         'Pendaftaran akun kamu ditolak oleh administrator.'
       )
-
       return
     }
 
+    // Status selain aktif tidak boleh login
     if (userData.status !== 'aktif') {
       await supabase.auth.signOut()
 
       setLoading(false)
-
       setErrorMessage(
         'Akun tidak dapat digunakan. Silakan hubungi administrator.'
       )
-
       return
     }
 
-    /*
-     * Login berhasil
-     */
+    // Login berhasil
     setLoading(false)
 
-    /*
-     * Simpan informasi dasar untuk sementara.
-     * Nanti bisa diganti dengan auth context/session helper
-     * ketika modul lain sudah dibuat.
-     */
-    localStorage.setItem('user_id', userData.auth_user_id)
-    localStorage.setItem('role', userData.role)
-    localStorage.setItem('nama', userData.name)
-    localStorage.setItem('nim_nip', userData.nim_nip ?? '')
-    localStorage.setItem(
-      'jenis_pengguna',
-      userData.jenis_pengguna
-    )
-
-    /*
-     * Pengalihan berdasarkan role
-     */
+    // Pengalihan berdasarkan role
     if (userData.role === 'admin') {
       router.push('/admin')
       return
@@ -182,10 +129,8 @@ export default function LoginPage() {
   return (
     <main className={styles.page}>
       <section className={styles.shell}>
-
-        {/* PANEL KIRI */}
+        {/* Panel kiri */}
         <aside className={styles.side}>
-
           <div className={styles.brand}>
             <span className={styles.brandDot} />
             Fivora
@@ -201,12 +146,10 @@ export default function LoginPage() {
               fasilitas, pelaporan kerusakan, dan layanan kampus.
             </p>
           </div>
-
         </aside>
 
-        {/* PANEL KANAN */}
+        {/* Panel kanan */}
         <section className={styles.panel}>
-
           <div className={styles.panelTop}>
             <span>Belum punya akun?</span>
 
@@ -216,9 +159,7 @@ export default function LoginPage() {
           </div>
 
           <div className={styles.formWrap}>
-
             <div className={styles.heading}>
-
               <p className={styles.eyebrow}>
                 FIVORA
               </p>
@@ -230,24 +171,14 @@ export default function LoginPage() {
               <p>
                 Masuk menggunakan akun Fivora kamu.
               </p>
-
             </div>
-
-            {searchParams.get('registered') === 'true' && (
-              <div className={styles.success}>
-                Registrasi berhasil. Silakan cek email kamu
-                untuk verifikasi akun sebelum login.
-              </div>
-            )}
 
             <form
               className={styles.form}
               onSubmit={handleSubmit}
             >
-
-              {/* EMAIL */}
+              {/* Email */}
               <label className={styles.field}>
-
                 <span>
                   Email
                 </span>
@@ -263,18 +194,15 @@ export default function LoginPage() {
                   required
                   disabled={loading}
                 />
-
               </label>
 
-              {/* PASSWORD */}
+              {/* Password */}
               <label className={styles.field}>
-
                 <span>
                   Password
                 </span>
 
                 <div className={styles.passwordBox}>
-
                   <input
                     type={
                       showPassword
@@ -344,12 +272,10 @@ export default function LoginPage() {
                       </svg>
                     )}
                   </button>
-
                 </div>
-
               </label>
 
-              {/* ERROR */}
+              {/* Error */}
               {errorMessage && (
                 <div
                   className={styles.error}
@@ -359,21 +285,19 @@ export default function LoginPage() {
                 </div>
               )}
 
-              {/* BUTTON */}
+              {/* Button */}
               <button
                 type="submit"
                 className={styles.primaryButton}
                 disabled={loading}
               >
-                {loading ? 'Memproses...' : 'Login'}
+                {loading
+                  ? 'Memproses...'
+                  : 'Login'}
               </button>
-
             </form>
-
           </div>
-
         </section>
-
       </section>
     </main>
   )
