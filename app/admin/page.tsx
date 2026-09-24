@@ -2,12 +2,13 @@ import { redirect } from 'next/navigation'
 
 import { createClient } from '@/lib/supabase/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
+
 import AdminDashboard from './admin-dashboard'
 
 export default async function AdminPage() {
   const supabase = await createClient()
 
-  // Ambil user yang sedang login
+  /* Ambil user yang sedang login */
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -16,20 +17,22 @@ export default async function AdminPage() {
     redirect('/login')
   }
 
-  // Ambil data admin dari public.users
-  const { data: currentUser, error: currentUserError } =
-    await supabase
-      .from('users')
-      .select('id, name, email, role, status')
-      .eq('auth_user_id', user.id)
-      .single()
+  /* Ambil data admin dari public.users */
+  const {
+    data: currentUser,
+    error: currentUserError,
+  } = await supabase
+    .from('users')
+    .select('id, name, email, role, status')
+    .eq('auth_user_id', user.id)
+    .single()
 
   if (currentUserError || !currentUser) {
     console.error('CURRENT USER ERROR:', currentUserError)
     redirect('/')
   }
 
-  // Hanya admin aktif yang boleh mengakses dashboard
+  /* Hanya admin aktif yang boleh mengakses dashboard */
   if (
     currentUser.role !== 'admin' ||
     currentUser.status !== 'aktif'
@@ -37,12 +40,14 @@ export default async function AdminPage() {
     redirect('/')
   }
 
-  // Ambil data dashboard
+  /* Ambil data dashboard */
   const [
     pendingUsersResult,
     totalUsersResult,
     totalOperatorsResult,
+    activeAccountsResult,
   ] = await Promise.all([
+    /* Ambil pendaftaran yang masih menunggu */
     supabaseAdmin
       .from('users')
       .select(`
@@ -61,6 +66,7 @@ export default async function AdminPage() {
         ascending: true,
       }),
 
+    /* Hitung seluruh akun */
     supabaseAdmin
       .from('users')
       .select('id', {
@@ -68,6 +74,7 @@ export default async function AdminPage() {
         head: true,
       }),
 
+    /* Hitung petugas aktif */
     supabaseAdmin
       .from('users')
       .select('id', {
@@ -76,6 +83,24 @@ export default async function AdminPage() {
       })
       .eq('role', 'petugas')
       .eq('status', 'aktif'),
+
+    /* Ambil seluruh akun aktif */
+    supabaseAdmin
+      .from('users')
+      .select(`
+        id,
+        name,
+        email,
+        nim_nip,
+        jenis_pengguna,
+        role,
+        status,
+        created_at
+      `)
+      .eq('status', 'aktif')
+      .order('created_at', {
+        ascending: false,
+      }),
   ])
 
   if (pendingUsersResult.error) {
@@ -99,6 +124,13 @@ export default async function AdminPage() {
     )
   }
 
+  if (activeAccountsResult.error) {
+    console.error(
+      'ACTIVE ACCOUNTS ERROR:',
+      activeAccountsResult.error
+    )
+  }
+
   return (
     <AdminDashboard
       adminName={currentUser.name}
@@ -106,6 +138,7 @@ export default async function AdminPage() {
       pendingCount={pendingUsersResult.data?.length ?? 0}
       totalOperators={totalOperatorsResult.count ?? 0}
       pendingUsers={pendingUsersResult.data ?? []}
+      activeAccounts={activeAccountsResult.data ?? []}
     />
   )
 }
