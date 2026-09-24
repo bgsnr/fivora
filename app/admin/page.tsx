@@ -1,12 +1,13 @@
 import { redirect } from 'next/navigation'
+
 import { createClient } from '@/lib/supabase/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
-import RegistrationList from './registration-list'
+import AdminDashboard from './admin-dashboard'
 
 export default async function AdminPage() {
   const supabase = await createClient()
 
-  // Cek apakah ada user yang sedang login
+  // Ambil user yang sedang login
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -15,35 +16,20 @@ export default async function AdminPage() {
     redirect('/login')
   }
 
-  // Ambil data profile user yang sedang login
-  const { data: currentUser, error: currentUserError } = await supabase
-    .from('users')
-    .select('id, name, email, role, status')
-    .eq('auth_user_id', user.id)
-    .single()
+  // Ambil data admin dari public.users
+  const { data: currentUser, error: currentUserError } =
+    await supabase
+      .from('users')
+      .select('id, name, email, role, status')
+      .eq('auth_user_id', user.id)
+      .single()
 
-  // Kalau profile admin tidak ditemukan
   if (currentUserError || !currentUser) {
     console.error('CURRENT USER ERROR:', currentUserError)
-
-    return (
-      <main
-        style={{
-          maxWidth: '900px',
-          margin: '0 auto',
-          padding: '40px 20px',
-        }}
-      >
-        <h1>Admin Fivora</h1>
-
-        <p style={{ color: 'red', marginTop: '20px' }}>
-          Gagal mengambil data admin.
-        </p>
-      </main>
-    )
+    redirect('/')
   }
 
-  // Hanya user dengan role admin dan status aktif yang boleh masuk
+  // Hanya admin aktif yang boleh mengakses dashboard
   if (
     currentUser.role !== 'admin' ||
     currentUser.status !== 'aktif'
@@ -51,9 +37,13 @@ export default async function AdminPage() {
     redirect('/')
   }
 
-  // Ambil semua pendaftaran yang masih menunggu persetujuan
-  const { data: pendingUsers, error: pendingError } =
-    await supabaseAdmin
+  // Ambil data dashboard
+  const [
+    pendingUsersResult,
+    totalUsersResult,
+    totalOperatorsResult,
+  ] = await Promise.all([
+    supabaseAdmin
       .from('users')
       .select(`
         id,
@@ -67,56 +57,55 @@ export default async function AdminPage() {
         created_at
       `)
       .eq('status', 'menunggu')
-      .order('created_at', { ascending: true })
+      .order('created_at', {
+        ascending: true,
+      }),
 
-  // Kalau gagal mengambil data pendaftaran
-  if (pendingError) {
-    console.error('PENDING USERS ERROR:', pendingError)
+    supabaseAdmin
+      .from('users')
+      .select('id', {
+        count: 'exact',
+        head: true,
+      }),
 
-    return (
-      <main
-        style={{
-          maxWidth: '900px',
-          margin: '0 auto',
-          padding: '40px 20px',
-        }}
-      >
-        <h1>Admin Fivora</h1>
+    supabaseAdmin
+      .from('users')
+      .select('id', {
+        count: 'exact',
+        head: true,
+      })
+      .eq('role', 'petugas')
+      .eq('status', 'aktif'),
+  ])
 
-        <p style={{ color: 'red', marginTop: '20px' }}>
-          Gagal mengambil data pendaftaran.
-        </p>
-      </main>
+  if (pendingUsersResult.error) {
+    console.error(
+      'PENDING USERS ERROR:',
+      pendingUsersResult.error
+    )
+  }
+
+  if (totalUsersResult.error) {
+    console.error(
+      'TOTAL USERS ERROR:',
+      totalUsersResult.error
+    )
+  }
+
+  if (totalOperatorsResult.error) {
+    console.error(
+      'TOTAL OPERATORS ERROR:',
+      totalOperatorsResult.error
     )
   }
 
   return (
-    <main
-      style={{
-        maxWidth: '900px',
-        margin: '0 auto',
-        padding: '40px 20px',
-      }}
-    >
-      <h1>Admin Fivora</h1>
-
-      <p style={{ marginTop: '10px' }}>
-        Halo, {currentUser.name}
-      </p>
-
-      <section style={{ marginTop: '30px' }}>
-        <h2>Pendaftaran Menunggu Persetujuan</h2>
-
-        {pendingUsers && pendingUsers.length > 0 ? (
-          <div style={{ marginTop: '20px' }}>
-            <RegistrationList users={pendingUsers} />
-          </div>
-        ) : (
-          <p style={{ marginTop: '20px' }}>
-            Tidak ada pendaftaran yang menunggu persetujuan.
-          </p>
-        )}
-      </section>
-    </main>
+    <AdminDashboard
+      adminName={currentUser.name}
+      totalUsers={totalUsersResult.count ?? 0}
+      pendingCount={pendingUsersResult.data?.length ?? 0}
+      totalOperators={totalOperatorsResult.count ?? 0}
+      pendingUsers={pendingUsersResult.data ?? []}
+    />
   )
 }
