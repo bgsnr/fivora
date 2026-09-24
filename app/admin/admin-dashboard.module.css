@@ -5,6 +5,7 @@
   color: #21164f;
 }
 
+/* Sidebar */
 .sidebar {
   position: fixed;
   top: 0;
@@ -18,17 +19,26 @@
   padding: 28px 18px;
   border-right: 1px solid #e3daf6;
   background: #ffffff;
+  overflow: hidden;
+  transition:
+    width 0.25s ease,
+    padding 0.25s ease;
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 0 11px;
-  color: #21164f;
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: -0.04em;
+  height: 55px;
+  flex: 0 0 55px;
+}
+
+.brandLogo {
+  width: 170px;
+  height: 55px;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+  transform: translateX(-4px);
 }
 
 .brandDot {
@@ -38,16 +48,64 @@
   background: #7448ef;
 }
 
+/* Tombol buka atau tutup sidebar */
+.sidebarToggle {
+  position: absolute;
+  top: 29px;
+  right: 12px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 8px;
+  background: #f3edff;
+  color: #603ddb;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.sidebarToggle:hover {
+  background: #e9defc;
+  color: #5432c8;
+}
+
+/* Navigasi */
 .nav {
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 5px;
-  margin-top: 38px;
+  margin-top: 20px;
+  padding-right: 2px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #ddd4ef transparent;
+}
+
+.nav::-webkit-scrollbar {
+  width: 5px;
+}
+
+.nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.nav::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #ddd4ef;
 }
 
 .navItem {
+  position: relative;
   width: 100%;
   min-height: 45px;
+  flex: 0 0 45px;
   display: flex;
   align-items: center;
   gap: 11px;
@@ -59,9 +117,13 @@
   color: #756c92;
   font: inherit;
   font-size: 13px;
+  font-weight: 700;
   text-align: left;
   text-decoration: none;
   cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
 .navItem:hover {
@@ -96,10 +158,13 @@
   color: #ffffff;
 }
 
+/* Profil admin dan logout */
 .sidebarBottom {
+  flex: 0 0 auto;
   margin-top: auto;
   padding-top: 17px;
   border-top: 1px solid #e7def6;
+  background: #ffffff;
 }
 
 .adminProfile,
@@ -155,6 +220,10 @@
   font: inherit;
   font-size: 11px;
   cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
 .logoutButton:hover {
@@ -163,14 +232,78 @@
   color: #5935db;
 }
 
+/* Konten utama */
 .content {
   width: calc(100% - 250px);
   min-width: 0;
   margin-left: 250px;
   box-sizing: border-box;
   padding: 36px 42px 60px;
+  transition:
+    width 0.25s ease,
+    margin-left 0.25s ease;
 }
 
+/* Konten saat sidebar ditutup */
+.contentExpanded {
+  width: calc(100% - 78px);
+  margin-left: 78px;
+}
+
+/* Sidebar saat ditutup */
+.sidebarCollapsed {
+  width: 78px;
+  padding: 28px 11px;
+}
+
+.sidebarCollapsed .brand {
+  justify-content: center;
+  padding: 0;
+}
+
+.sidebarCollapsed .brandLogo {
+  width: 43px;
+  height: 43px;
+  object-fit: cover;
+  object-position: left center;
+  transform: none;
+}
+
+.sidebarCollapsed .sidebarToggle {
+  top: 85px;
+  right: 50%;
+  transform: translateX(50%);
+}
+
+.sidebarCollapsed .nav {
+  margin-top: 50px;
+  padding-right: 0;
+  align-items: center;
+}
+
+.sidebarCollapsed .navItem {
+  width: 56px;
+  justify-content: center;
+  padding: 0;
+  align-self: center;
+}
+
+.sidebarCollapsed .navItem > span:nth-child(2) {
+  display: none;
+}
+
+.sidebarCollapsed .navBadge {
+  position: absolute;
+  top: 2px;
+  right: 3px;
+  margin-left: 0;
+}
+
+.sidebarCollapsed .sidebarBottom {
+  display: none;
+}
+
+/* Header */
 .topbar {
   display: flex;
   align-items: flex-start;
@@ -247,6 +380,7 @@
   font-weight: 700;
 }
 
+/* Statistik */
 .statsGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -338,6 +472,7 @@
   color: #67470a;
 }
 
+/* Section */
 .section {
   margin-top: 41px;
 }
@@ -373,6 +508,7 @@
   font-weight: 700;
 }
 
+/* Quick action */
 .actionGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -393,6 +529,10 @@
   background: #ffffff;
   color: inherit;
   text-align: left;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    transform 0.2s ease;
 }
 
 .actionCard {
@@ -470,6 +610,7 @@
   font-weight: 700;
 }
 
+/* Card verifikasi dan daftar akun */
 .verificationCard {
   overflow: hidden;
   border: 1px solid #e3daf6;
@@ -642,6 +783,7 @@
   opacity: 0.55;
 }
 
+/* Fitur */
 .featureGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -695,6 +837,7 @@
   line-height: 1.45;
 }
 
+/* Modal */
 .modalBackdrop {
   position: fixed;
   inset: 0;
@@ -760,6 +903,57 @@
   opacity: 0.5;
 }
 
+/* Pilihan jenis akun */
+.accountTypeSelector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 22px;
+  padding: 4px;
+  border-radius: 11px;
+  background: #f3edff;
+}
+
+.accountTypeButton,
+.accountTypeActive {
+  height: 38px;
+  border: 0;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.accountTypeButton {
+  background: transparent;
+  color: #756c92;
+}
+
+.accountTypeButton:hover {
+  background: #e9defc;
+  color: #603ddb;
+}
+
+.accountTypeActive {
+  background: #603ddb;
+  color: #ffffff;
+}
+
+.accountTypeActive:hover {
+  background: #5432c8;
+}
+
+.accountTypeButton:disabled,
+.accountTypeActive:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* Form modal */
 .operatorForm {
   display: flex;
   flex-direction: column;
@@ -799,7 +993,8 @@
 
 .operatorForm input:focus {
   border-color: #7650e7;
-  box-shadow: 0 0 0 3px rgba(118, 80, 231, 0.1);
+  box-shadow:
+    0 0 0 3px rgba(118, 80, 231, 0.1);
 }
 
 .operatorForm small {
@@ -817,20 +1012,30 @@
 }
 
 .passwordBox button {
-  flex: 0 0 auto;
-  padding: 0 10px;
+  width: 40px;
+  height: 43px;
+  flex: 0 0 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
   border: 0;
   border-radius: 9px;
   background: #f0ebf9;
   color: #666079;
-  font: inherit;
-  font-size: 9px;
   cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
 .passwordBox button:hover {
   background: #e8dff5;
   color: #5935db;
+}
+
+.passwordToggle {
+  font-size: 0;
 }
 
 .formError,
@@ -875,9 +1080,13 @@
   opacity: 0.55;
 }
 
+/* Responsive */
 @media (max-width: 1100px) {
   .statsGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(
+      2,
+      minmax(0, 1fr)
+    );
   }
 
   .actionGrid {
@@ -900,8 +1109,22 @@
     padding: 0;
   }
 
-  .brand > span:last-child {
-    display: none;
+  .brandLogo {
+    width: 43px;
+    height: 43px;
+    object-fit: cover;
+    object-position: left center;
+    transform: none;
+  }
+
+  .sidebarToggle {
+    top: 27px;
+    right: 50%;
+    transform: translateX(50%);
+  }
+
+  .nav {
+    margin-top: 25px;
   }
 
   .navItem {
@@ -909,13 +1132,15 @@
     padding: 0;
   }
 
-  .navItem > span:last-child {
+  .navItem > span:nth-child(2) {
     display: none;
   }
 
   .navBadge {
     position: absolute;
-    margin-left: 28px;
+    top: 2px;
+    right: 3px;
+    margin-left: 0;
   }
 
   .sidebarBottom {
@@ -926,6 +1151,11 @@
     width: calc(100% - 72px);
     margin-left: 72px;
     padding: 27px 18px 50px;
+  }
+
+  .contentExpanded {
+    width: calc(100% - 72px);
+    margin-left: 72px;
   }
 
   .topbarRight {
@@ -948,5 +1178,9 @@
   .rejectButton,
   .approveButton {
     flex: 1;
+  }
+
+  .accountTypeSelector {
+    margin-top: 18px;
   }
 }
