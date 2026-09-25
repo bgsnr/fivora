@@ -10,14 +10,12 @@ import {
   Clock,
   AlertTriangle,
   Info,
-  Calendar,
-  Layers,
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
 export interface FacilityItem {
-  id: string
+  id: number
   code: string
   name: string
   type: "Ruang Kelas" | "Laboratorium" | "Aula" | "Lapangan" | "Peralatan"
@@ -29,9 +27,9 @@ export interface FacilityItem {
   operationalInfo: string
 }
 
-const REAL_FACILITIES: FacilityItem[] = [
+export const FALLBACK_FACILITIES: FacilityItem[] = [
   {
-    id: "fac-1",
+    id: 1,
     code: "LAB-MM-01",
     name: "Laboratorium Multimedia dan Rekayasa AI",
     type: "Laboratorium",
@@ -43,7 +41,7 @@ const REAL_FACILITIES: FacilityItem[] = [
     operationalInfo: "Tersedia slot hari ini (07.00 - 20.00 WIB)",
   },
   {
-    id: "fac-2",
+    id: 2,
     code: "AULA-GU",
     name: "Aula Graha Pertemuan Utama",
     type: "Aula",
@@ -55,7 +53,7 @@ const REAL_FACILITIES: FacilityItem[] = [
     operationalInfo: "Sedang digunakan kuliah umum s.d 15.30 WIB",
   },
   {
-    id: "fac-3",
+    id: 3,
     code: "RK-B301",
     name: "Smart Classroom B.301",
     type: "Ruang Kelas",
@@ -67,7 +65,7 @@ const REAL_FACILITIES: FacilityItem[] = [
     operationalInfo: "Tersedia slot hari ini (07.00 - 20.00 WIB)",
   },
   {
-    id: "fac-4",
+    id: 4,
     code: "LAP-FUT",
     name: "Gelanggang Olahraga Futsal Indoor",
     type: "Lapangan",
@@ -79,7 +77,7 @@ const REAL_FACILITIES: FacilityItem[] = [
     operationalInfo: "Tersedia slot sore (15.00 - 20.00 WIB)",
   },
   {
-    id: "fac-5",
+    id: 5,
     code: "EQUIP-SND",
     name: "Paket Mobile Sound System Portable",
     type: "Peralatan",
@@ -91,7 +89,7 @@ const REAL_FACILITIES: FacilityItem[] = [
     operationalInfo: "Siap dipinjam untuk kegiatan resmi fakultas",
   },
   {
-    id: "fac-6",
+    id: 6,
     code: "LAB-CLD-04",
     name: "Laboratorium Komputasi Awan dan Jaringan",
     type: "Laboratorium",
@@ -113,13 +111,17 @@ const CATEGORIES = [
   "Peralatan",
 ] as const
 
-export function FacilityShowcase() {
+export function FacilityShowcase({
+  facilities = FALLBACK_FACILITIES,
+}: {
+  facilities?: FacilityItem[]
+}) {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<string>("Semua")
   const [selectedStatus, setSelectedStatus] = useState<string>("all")
 
   const filteredFacilities = useMemo(() => {
-    return REAL_FACILITIES.filter((facility) => {
+    return facilities.filter((facility) => {
       const query = searchTerm.toLowerCase()
       const matchesSearch =
         facility.name.toLowerCase().includes(query) ||
@@ -135,7 +137,7 @@ export function FacilityShowcase() {
 
       return matchesSearch && matchesCategory && matchesStatus
     })
-  }, [searchTerm, selectedCategory, selectedStatus])
+  }, [facilities, searchTerm, selectedCategory, selectedStatus])
 
   return (
     <section id="katalog" className="scroll-mt-16 py-16 lg:py-24 border-b border-border bg-[#f9f9f9]">
@@ -277,7 +279,7 @@ export function FacilityShowcase() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredFacilities.map((facility, index) => {
+            {filteredFacilities.map((facility) => {
               const isAvailable = facility.status === "available"
               const isInUse = facility.status === "in_use"
               const isMaintenance = facility.status === "maintenance"
@@ -342,7 +344,7 @@ export function FacilityShowcase() {
                   {/* Action Button: Single Verb CTAs */}
                   <div className="mt-5 pt-3 border-t border-[#e2e2e2]">
                     <Link
-                      href={`/login?redirect=/reservations?facilityId=${facility.id}`}
+                      href={`/login?redirect=${isAvailable ? '/reservasi/buat' : '/reservasi'}`}
                       className="w-full block"
                     >
                       <Button
@@ -373,3 +375,4 @@ export function FacilityShowcase() {
     </section>
   )
 }
+

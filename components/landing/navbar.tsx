@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Image from "next/image"
 
 import { Button } from "@/components/ui/button"
 
@@ -9,9 +10,11 @@ export function Navbar() {
 
         {/* Logo Fivora */}
         <Link href="/" className="flex items-center group">
-          <img
+          <Image
             src="/fivora-logo1.png"
             alt="Fivora - Facility & Venue Reservation"
+            width={155}
+            height={160}
             className="w-[155px] h-[160px] object-contain"
           />
         </Link>
@@ -37,6 +40,13 @@ export function Navbar() {
             className="transition-colors hover:text-[#0c021c]"
           >
             Alur Layanan
+          </Link>
+
+          <Link
+            href="/reservasi"
+            className="transition-colors hover:text-[#0c021c]"
+          >
+            Reservasi
           </Link>
         </nav>
 

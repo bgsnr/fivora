@@ -1,11 +1,4 @@
-import {
-  Clock,
-  ShieldCheck,
-  CheckCircle2,
-  CalendarCheck,
-  AlertCircle,
-  Lock,
-} from "lucide-react"
+import { Clock, CheckCircle2, ShieldCheck, Lock } from "lucide-react"
 
 export function Features() {
   return (
