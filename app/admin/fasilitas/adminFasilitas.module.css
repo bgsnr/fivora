@@ -1,0 +1,326 @@
+/* app/admin/fasilitas/adminFasilitas.module.css */
+
+.container {
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: 36px 42px 60px;
+  background: #f6f2ff;
+  color: #21164f;
+}
+
+/* Header Section */
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.eyebrow {
+  margin: 0 0 7px;
+  color: #7448ef;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0;
+  color: #21164f;
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+}
+
+.subtitle {
+  margin: 8px 0 0;
+  color: #756c92;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.createButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  padding: 10px 18px;
+  border: 0;
+  border-radius: 10px;
+  background: #603ddb;
+  color: #ffffff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.createButton:hover {
+  background: #5432c8;
+}
+
+/* Card Tabel Facilities */
+.tableCard {
+  overflow: hidden;
+  border: 1px solid #e3daf6;
+  border-radius: 17px;
+  background: #ffffff;
+  box-shadow: 0 4px 20px rgba(96, 61, 219, 0.03);
+}
+
+.tableWrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.table th {
+  padding: 16px 20px;
+  background: #fbf9ff;
+  border-bottom: 1px solid #e3daf6;
+  color: #756c92;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.table td {
+  padding: 18px 20px;
+  border-bottom: 1px solid #eee8f7;
+  color: #21164f;
+  font-size: 12px;
+}
+
+.table tr:last-child td {
+  border-bottom: 0;
+}
+
+.table tr:hover td {
+  background: #fcfaff;
+}
+
+.facilityName {
+  font-weight: 700;
+  color: #21164f;
+}
+
+/* Badges Status */
+.badgeActive {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #effbf5;
+  color: #167d52;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.badgeInactive {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #fff1f3;
+  color: #c53c50;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.badgeMaintenance {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #fffbf2;
+  border: 1px solid #e8d5a7;
+  color: #8b6517;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+/* Action Buttons */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.editButton {
+  padding: 6px 12px;
+  border: 1px solid #ddd6f1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #603ddb;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.editButton:hover {
+  border-color: #c9b9ed;
+  background: #f8f4ff;
+}
+
+.toggleButton {
+  padding: 6px 12px;
+  border: 1px solid #efb7bf;
+  border-radius: 8px;
+  background: #fff7f8;
+  color: #b33d50;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggleButton:hover {
+  background: #fff0f2;
+  border-color: #e6a6b0;
+}
+
+.activateButton {
+  padding: 6px 12px;
+  border: 1px solid #b5ddc9;
+  border-radius: 8px;
+  background: #effbf5;
+  color: #167d52;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.activateButton:hover {
+  background: #e3f7ec;
+}
+
+/* Modal Backdrop & Body */
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(39, 20, 78, 0.48);
+}
+
+.modal {
+  width: min(520px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 26px;
+  border: 1px solid #e3daf6;
+  border-radius: 19px;
+  background: #ffffff;
+  box-shadow: 0 25px 80px rgba(67, 40, 130, 0.2);
+}
+
+.modalHeader h2 {
+  margin: 0;
+  color: #21164f;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.modalHeader p {
+  margin: 6px 0 0;
+  color: #827995;
+  font-size: 12px;
+}
+
+.warningBox {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 10px;
+  background: #fff1f3;
+  border: 1px solid #efb7bf;
+  color: #c53c50;
+  font-size: 12px;
+}
+
+.reservationList {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.reservationItem {
+  padding: 10px;
+  border-radius: 8px;
+  background: #fbf9ff;
+  border: 1px solid #eee8f7;
+  font-size: 11px;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.cancelModalButton {
+  padding: 8px 14px;
+  border: 1px solid #ddd6f1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #756c92;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.confirmDeactivateButton {
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 8px;
+  background: #c53c50;
+  color: #ffffff;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Loading & Empty State */
+.loadingState {
+  padding: 50px;
+  text-align: center;
+  color: #756c92;
+  font-size: 13px;
+}
+
+.emptyState {
+  padding: 50px;
+  text-align: center;
+  color: #857b99;
+  font-size: 13px;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 24px 18px 40px;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

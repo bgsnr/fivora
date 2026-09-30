@@ -1,11 +1,4 @@
-import {
-  CalendarSearch,
-  CheckCircle2,
-  Camera,
-  ClipboardList,
-  Wrench,
-  ShieldAlert,
-} from "lucide-react"
+import { CalendarSearch, Camera } from "lucide-react"
 
 export function Workflow() {
   return (

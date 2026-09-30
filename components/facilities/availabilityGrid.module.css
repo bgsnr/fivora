@@ -1,0 +1,119 @@
+/* components/facilities/AvailabilityGrid.module.css */
+
+.container {
+  width: 100%;
+}
+
+/* Legend / Keterangan Status */
+.legend {
+  display: flex;
+  gap: 18px;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #e3daf6;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: #756c92;
+  font-weight: 600;
+}
+
+.dotAvailable {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #effbf5;
+  border: 1.5px solid #167d52;
+}
+
+.dotBooked {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fff1f3;
+  border: 1.5px solid #c53c50;
+}
+
+.dotMaintenance {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fffbf2;
+  border: 1.5px solid #8b6517;
+}
+
+/* Grid Layout Slot 30 Menit */
+.slotGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+/* Base Card Slot */
+.slotCard {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-radius: 12px;
+  min-height: 68px;
+  box-sizing: border-box;
+  transition: transform 0.15s ease;
+}
+
+/* Variasi Status */
+.slotAvailable {
+  background: #effbf5;
+  border: 1px solid #b5ddc9;
+  color: #167d52;
+}
+
+.slotBooked {
+  background: #fff1f3;
+  border: 1px solid #efb7bf;
+  color: #c53c50;
+}
+
+.slotMaintenance {
+  background: #fffbf2;
+  border: 1px solid #e8d5a7;
+  color: #8b6517;
+}
+
+/* Text Formatting */
+.slotTime {
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.slotStatus {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.loadingState {
+  padding: 30px;
+  text-align: center;
+  color: #756c92;
+  font-size: 13px;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .legend {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .slotGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

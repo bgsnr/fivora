@@ -1,15 +1,31 @@
 'use client'
 
 import Link from 'next/link'
-import { FormEvent, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { Suspense, FormEvent, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 import { createClient } from '@/lib/supabase/client'
 
 import styles from './login.module.css'
 
 export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className={styles.page}>
+          <section className={styles.panel} />
+        </main>
+      }
+    >
+      <LoginForm />
+    </Suspense>
+  )
+}
+
+function LoginForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectParam = searchParams.get('redirect')
   const supabase = createClient()
 
   const [email, setEmail] = useState('')
@@ -112,18 +128,20 @@ export default function LoginPage() {
     // Login berhasil
     setLoading(false)
 
-    // Pengalihan berdasarkan role
-    if (userData.role === 'admin') {
-      router.push('/admin')
-      return
-    }
+    // Pengalihan: gunakan ?redirect= bila valid (path internal), selain itu sesuai role
+    const defaultTarget =
+      userData.role === 'admin'
+        ? '/admin'
+        : userData.role === 'petugas'
+        ? '/petugas/reservasi'
+        : '/reservasi'
 
-    if (userData.role === 'petugas') {
-      router.push('/operator')
-      return
-    }
+    const redirectTarget =
+      redirectParam && redirectParam.startsWith('/')
+        ? redirectParam
+        : defaultTarget
 
-    router.push('/dashboard')
+    router.push(redirectTarget)
   }
 
   return (

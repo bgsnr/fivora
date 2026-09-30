@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Clock, ShieldCheck, UserCheck, AlertCircle, ArrowUpRight } from "lucide-react"
+import { Clock, ShieldCheck, UserCheck, ArrowUpRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export function OperatingHours() {

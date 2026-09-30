@@ -1,0 +1,304 @@
+/* app/fasilitas/[id]/detail.module.css */
+
+.container {
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: 36px 42px 60px;
+  background: #f6f2ff;
+  color: #21164f;
+}
+
+.backButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 20px;
+  color: #603ddb;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.backButton:hover {
+  color: #4a28b8;
+  text-decoration: underline;
+}
+
+/* Card Detail Fasilitas */
+.facilityCard {
+  box-sizing: border-box;
+  padding: 26px;
+  border: 1px solid #e3daf6;
+  border-radius: 17px;
+  background: #ffffff;
+  box-shadow: 0 4px 20px rgba(96, 61, 219, 0.03);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  color: #7448ef;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0;
+  color: #21164f;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.badgeActive {
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: #effbf5;
+  color: #167d52;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.badgeMaintenance {
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: #fffbf2;
+  border: 1px solid #e8d5a7;
+  color: #8b6517;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+  padding: 16px;
+  border-radius: 12px;
+  background: #fbf9ff;
+  border: 1px solid #f0ebf9;
+}
+
+.infoItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.infoLabel {
+  color: #857b99;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.infoValue {
+  color: #21164f;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.description {
+  margin-top: 18px;
+  color: #756c92;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* Section Schedule / Availability */
+.scheduleSection {
+  margin-top: 32px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.sectionTitle {
+  margin: 0;
+  color: #21164f;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+/* Picker Tanggal */
+.datePickerBox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid #e3daf6;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.datePickerBox label {
+  color: #21164f;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.dateInput {
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: #603ddb;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Keterangan Warna / Legend */
+.legend {
+  display: flex;
+  gap: 18px;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #e3daf6;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: #756c92;
+  font-weight: 600;
+}
+
+.dotAvailable {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #effbf5;
+  border: 1.5px solid #167d52;
+}
+
+.dotBooked {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fff1f3;
+  border: 1.5px solid #c53c50;
+}
+
+.dotMaintenance {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fffbf2;
+  border: 1.5px solid #8b6517;
+}
+
+/* Grid Slot 30 Menit */
+.slotGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.slotCardAvailable,
+.slotCardBooked,
+.slotCardMaintenance {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+  padding: 14px;
+  border-radius: 13px;
+  min-height: 72px;
+  transition: transform 0.15s ease;
+}
+
+.slotCardAvailable {
+  border: 1px solid #b5ddc9;
+  background: #effbf5;
+  color: #167d52;
+}
+
+.slotCardBooked {
+  border: 1px solid #efb7bf;
+  background: #fff1f3;
+  color: #c53c50;
+}
+
+.slotCardMaintenance {
+  border: 1px solid #e8d5a7;
+  background: #fffbf2;
+  color: #8b6517;
+}
+
+.slotTime {
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.slotStatus {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* Loading & Error */
+.loadingState {
+  padding: 40px;
+  text-align: center;
+  color: #756c92;
+  font-size: 13px;
+}
+
+.errorState {
+  padding: 14px;
+  border-radius: 12px;
+  background: #fff1f3;
+  border: 1px solid #efb7bf;
+  color: #c53c50;
+  font-size: 12px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .slotGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 24px 18px 40px;
+  }
+
+  .infoGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .sectionHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .slotGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .legend {
+    flex-wrap: wrap;
+  }
+}
