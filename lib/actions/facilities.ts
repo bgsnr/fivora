@@ -1,10 +1,6 @@
 'use server'
 
 import { getCurrentUser } from '@/lib/auth'
-import {
-  setFacilityInMaintenance,
-  restoreFacilityFromMaintenance,
-} from '@/lib/integration'
 
 export interface FacilityMaintenanceState {
   success: boolean
@@ -14,88 +10,53 @@ export interface FacilityMaintenanceState {
   cancelledApprovedCount?: number
 }
 
-/**
- * Server Action: Petugas menandai fasilitas "dalam perbaikan".
- * Hanya role 'petugas' (AGENTS.md — admin tidak mengelola status perbaikan).
- * Aksi ini juga memproses reservasi aktif yang terdampak (Chapter 12).
- */
 export async function markFacilityForMaintenanceAction(
   facilityId: number,
   reason: string
 ): Promise<FacilityMaintenanceState> {
-  try {
-    const user = await getCurrentUser()
-    if (!user || user.role !== 'petugas') {
-      return {
-        success: false,
-        error: 'Hanya petugas yang memiliki wewenang menandai fasilitas dalam perbaikan',
-      }
-    }
+  const user = await getCurrentUser()
 
-    if (!reason || !reason.trim()) {
-      return {
-        success: false,
-        error: 'Alasan perbaikan fasilitas wajib diisi oleh petugas',
-      }
-    }
-
-    const result = await setFacilityInMaintenance(
-      facilityId,
-      Number(user.id),
-      reason.trim()
-    )
-
-    if (!result.success) {
-      return {
-        success: false,
-        error: result.error,
-        facilityUpdated: result.facilityUpdated,
-      }
-    }
-
-    return {
-      success: true,
-      facilityUpdated: result.facilityUpdated,
-      rejectedPendingCount: result.rejectedPendingCount,
-      cancelledApprovedCount: result.cancelledApprovedCount,
-    }
-  } catch (err: unknown) {
-    const errorMsg = err instanceof Error ? err.message : String(err)
+  if (!user || user.role !== 'petugas' || user.status !== 'aktif') {
     return {
       success: false,
-      error: `Gagal menandai fasilitas dalam perbaikan: ${errorMsg}`,
+      error: 'Hanya petugas aktif yang dapat mengelola perbaikan.',
     }
+  }
+
+  if (
+    !Number.isSafeInteger(facilityId) ||
+    facilityId <= 0 ||
+    typeof reason !== 'string'
+  ) {
+    return { success: false, error: 'Data perbaikan tidak valid.' }
+  }
+
+  return {
+    success: false,
+    error:
+      'Buka detail laporan berstatus Diproses untuk memulai perbaikan fasilitas.',
   }
 }
 
-/**
- * Server Action: Petugas mengembalikan fasilitas ke status 'aktif'.
- * Berlaku sampai petugas mengaktifkan kembali (AGENTS.md).
- */
 export async function restoreFacilityAction(
   facilityId: number
 ): Promise<FacilityMaintenanceState> {
-  try {
-    const user = await getCurrentUser()
-    if (!user || user.role !== 'petugas') {
-      return {
-        success: false,
-        error: 'Hanya petugas yang memiliki wewenang mengaktifkan kembali fasilitas',
-      }
-    }
+  const user = await getCurrentUser()
 
-    const result = await restoreFacilityFromMaintenance(facilityId)
-
-    if (!result.success) {
-      return { success: false, error: result.error }
-    }
-
-    return { success: true }
-  } catch (err: unknown) {
-    const errorMsg = err instanceof Error ? err.message : String(err)
+  if (!user || user.role !== 'petugas' || user.status !== 'aktif') {
     return {
       success: false,
-      error: `Gagal mengaktifkan kembali fasilitas: ${errorMsg}`,
+      error: 'Hanya petugas aktif yang dapat mengelola perbaikan.',
     }
+  }
+
+  if (!Number.isSafeInteger(facilityId) || facilityId <= 0) {
+    return { success: false, error: 'ID fasilitas tidak valid.' }
+  }
+
+  return {
+    success: false,
+    error:
+      'Buka detail laporan terkait untuk menyelesaikan kegiatan perbaikan.',
   }
 }

@@ -137,3 +137,20 @@
     grid-template-columns: 1fr;
   }
 }
+
+.photo {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 520px;
+  margin-top: 12px;
+  border: 1px solid #eee9f7;
+  border-radius: 14px;
+  background: #f8f6ff;
+  object-fit: contain;
+}
+
+.multiline {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

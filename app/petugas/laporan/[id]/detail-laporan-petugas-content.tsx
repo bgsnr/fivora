@@ -1,78 +1,226 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
-import { useState, type FormEvent } from 'react'
-import {
-  useDemoReports,
-  updateDemoReport,
-  type Report,
-} from '@/lib/use-demo-reports'
+import { useRouter } from 'next/navigation'
+import { useRef, useState, useTransition } from 'react'
+import type { FormEvent } from 'react'
+import ReportMaintenance from '@/components/petugas/report-maintenance'
+
 import styles from './detail-laporan-petugas.module.css'
 
-const statusLabels: Record<string, string> = {
+type ReportStatus = 'baru' | 'diproses' | 'selesai' | 'ditolak'
+
+type Report = {
+  id: string
+  facility: string
+  location: string
+  category: string
+  description: string
+  status: ReportStatus
+  officerNote: string
+  date: string
+  processedAt: string | null
+  updatedAt: string
+}
+
+const statusLabels: Record<ReportStatus, string> = {
   baru: 'Baru',
   diproses: 'Diproses',
   selesai: 'Selesai',
   ditolak: 'Ditolak',
 }
 
-export default function DetailLaporanPetugasPage() {
-  const { id } = useParams<{ id: string }>()
-  const reports = useDemoReports()
-  const report = reports.find((item) => String(item.id) === id)
-
-  if (!report) {
-    return (
-      <main className={styles.page}>
-        <section className={styles.container}>
-          <h1>Laporan tidak ditemukan</h1>
-          <Link href="/petugas/laporan" className={styles.backLink}>
-            Kembali ke antrean laporan
-          </Link>
-        </section>
-      </main>
-    )
-  }
-
-  return <ReportDetail key={report.id} report={report} />
+const categoryLabels: Record<string, string> = {
+  peralatan: 'Peralatan',
+  listrik: 'Listrik',
+  kebersihan: 'Kebersihan',
+  bangunan: 'Bangunan',
+  lainnya: 'Lainnya',
 }
 
-function ReportDetail({ report }: { report: Report }) {
-  const currentStatus = report.status
-  const savedNote = report.officerNote
+export default function DetailLaporanPetugasContent({
+  report,
+}: {
+  report: Report
+}) {
+  const router = useRouter()
+  const [refreshing, startTransition] = useTransition()
+  const [message, setMessage] = useState('')
+  const [failedPhotoId, setFailedPhotoId] = useState<string | null>(null)
 
-  const [selectedStatus, setSelectedStatus] = useState(report.status)
+  function handleSaved() {
+    setMessage('Status laporan berhasil diperbarui.')
+
+    startTransition(() => {
+      router.refresh()
+    })
+  }
+
+  return (
+    <main className={styles.page}>
+      <div className={styles.container}>
+        <Link href="/petugas/laporan" className={styles.backLink}>
+          Kembali ke antrean laporan
+        </Link>
+
+        <div className={styles.heading}>
+          <p className={styles.eyebrow}>PETUGAS</p>
+          <h1>Detail Laporan #{report.id}</h1>
+          <p>Periksa kondisi fasilitas dan tentukan tindak lanjut laporan.</p>
+        </div>
+
+        <div className={styles.grid}>
+          <section className={styles.card}>
+            <div className={styles.cardHeading}>
+              <h2>{report.facility}</h2>
+
+              <span
+                className={`${styles.status} ${styles[report.status]}`}
+              >
+                {statusLabels[report.status]}
+              </span>
+            </div>
+
+            <dl className={styles.info}>
+              <div>
+                <dt>Kategori</dt>
+                <dd>
+                  {categoryLabels[report.category] ?? report.category}
+                </dd>
+              </div>
+
+              <div>
+                <dt>Lokasi Fasilitas</dt>
+                <dd>{report.location || 'Lokasi belum dicantumkan'}</dd>
+              </div>
+
+              <div>
+                <dt>Tanggal Laporan</dt>
+                <dd>{report.date}</dd>
+              </div>
+
+              <div>
+                <dt>Waktu Pemrosesan Terakhir</dt>
+                <dd>{report.processedAt ?? 'Belum diproses'}</dd>
+              </div>
+            </dl>
+
+            <h3>Deskripsi Kerusakan</h3>
+            <p className={styles.text}>{report.description}</p>
+
+            <h3>Foto Kerusakan</h3>
+
+            {failedPhotoId === report.id ? (
+              <p className={styles.text} role="alert">
+                Foto gagal dimuat. Coba muat ulang halaman.
+              </p>
+            ) : (
+              <Image
+                key={report.id}
+                src={`/api/reports/${report.id}/photo`}
+                alt={`Foto kerusakan ${report.facility}`}
+                width={800}
+                height={600}
+                className={styles.photo}
+                unoptimized
+                onError={() => setFailedPhotoId(report.id)}
+              />
+            )}
+
+            <h3>Catatan Petugas Tersimpan</h3>
+            <p className={styles.text}>
+              {report.officerNote || 'Belum ada catatan dari petugas.'}
+            </p>
+          </section>
+
+          <section className={styles.card}>
+            <h2>Penanganan Laporan</h2>
+
+            {message && (
+              <div className={styles.success} role="status">
+                {message}
+              </div>
+            )}
+
+                        <HandlingForm
+              key={`${report.id}-${report.updatedAt}`}
+              report={report}
+              refreshing={refreshing}
+              onSaved={handleSaved}
+              onStart={() => setMessage('')}
+            />
+          </section>
+
+          <ReportMaintenance
+            key={report.id}
+            reportId={report.id}
+            reportStatus={report.status}
+          />
+        </div>
+      </div>
+    </main>
+  )
+}
+
+function HandlingForm({
+  report,
+  refreshing,
+  onSaved,
+  onStart,
+}: {
+  report: Report
+  refreshing: boolean
+  onSaved: () => void
+  onStart: () => void
+}) {
+  const [selectedStatus, setSelectedStatus] = useState('')
   const [note, setNote] = useState(report.officerNote)
   const [error, setError] = useState('')
-  const [message, setMessage] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [needsReload, setNeedsReload] = useState(false)
+  const [saved, setSaved] = useState(false)
+
+  const submittingRef = useRef(false)
 
   const isClosed =
-    currentStatus === 'selesai' || currentStatus === 'ditolak'
+    report.status === 'selesai' || report.status === 'ditolak'
 
-  const nextStatuses =
-    currentStatus === 'baru'
+  const nextStatuses: ReportStatus[] =
+    report.status === 'baru'
       ? ['diproses', 'ditolak']
-      : currentStatus === 'diproses'
+      : report.status === 'diproses'
         ? ['selesai', 'ditolak']
         : []
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  const disabled = loading || refreshing || needsReload || saved
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+
+    if (submittingRef.current || disabled) {
+      return
+    }
+
     setError('')
-    setMessage('')
+    onStart()
 
     if (isClosed) {
       setError('Laporan sudah ditutup dan tidak dapat diubah.')
       return
     }
 
-    if (!nextStatuses.includes(selectedStatus)) {
+    if (!nextStatuses.includes(selectedStatus as ReportStatus)) {
       setError('Pilih status penanganan yang baru.')
       return
     }
 
     const cleanNote = note.trim()
+
+    if (cleanNote.length > 5000) {
+      setError('Catatan petugas maksimal 5000 karakter.')
+      return
+    }
 
     if (
       (selectedStatus === 'selesai' || selectedStatus === 'ditolak') &&
@@ -82,157 +230,130 @@ function ReportDetail({ report }: { report: Report }) {
       return
     }
 
+    submittingRef.current = true
+    setLoading(true)
+
     try {
-      updateDemoReport(report.id, selectedStatus, cleanNote)
-      setNote(cleanNote)
-      setMessage('Status laporan berhasil diperbarui.')
-    } catch (error) {
-      setError(
-        error instanceof Error
-          ? error.message
-          : 'Perubahan gagal disimpan di browser.'
+      const response = await fetch(
+        `/api/reports/${report.id}/status`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            status: selectedStatus,
+            note: cleanNote,
+            expectedUpdatedAt: report.updatedAt,
+          }),
+        }
       )
+
+      if (!response.ok) {
+        const result = await response.json().catch(() => null)
+
+        setError(
+          typeof result?.error === 'string'
+            ? result.error
+            : 'Perubahan gagal disimpan. Silakan coba lagi.'
+        )
+
+        if (response.status === 409) {
+          setNeedsReload(true)
+        }
+
+        return
+      }
+
+      setSaved(true)
+      onSaved()
+    } catch {
+      setError(
+        'Koneksi terputus. Muat ulang halaman untuk memeriksa apakah perubahan sudah tersimpan.'
+      )
+      setNeedsReload(true)
+    } finally {
+      submittingRef.current = false
+      setLoading(false)
     }
   }
 
-  return (
-    <main className={styles.page}>
-      <div className={styles.container}>
-        <Link href="/petugas/laporan" className={styles.backLink}>
-          ← Kembali ke antrean laporan
-        </Link>
-
-        <header className={styles.heading}>
-          <p className={styles.eyebrow}>PETUGAS</p>
-          <h1>Detail Laporan #{report.id}</h1>
-          <p>Periksa masalah yang dilaporkan sebelum menentukan tindakan.</p>
-        </header>
-
-        <p className={styles.demoNotice}>
-          Mode demo · Data tersimpan di browser ini.
-        </p>
-
-        <div className={styles.grid}>
-          <section className={styles.card}>
-            <div className={styles.cardHeading}>
-              <h2>Informasi Laporan</h2>
-
-              <span
-                className={`${styles.status} ${styles[currentStatus]}`}
-              >
-                {statusLabels[currentStatus]}
-              </span>
-            </div>
-
-            <dl className={styles.info}>
-              <div>
-                <dt>Fasilitas</dt>
-                <dd>{report.facility}</dd>
-              </div>
-
-              <div>
-                <dt>Kategori</dt>
-                <dd>{report.category}</dd>
-              </div>
-
-              <div>
-                <dt>Tanggal laporan</dt>
-                <dd>{report.date}</dd>
-              </div>
-            </dl>
-
-            <h3>Deskripsi Masalah</h3>
-            <p className={styles.text}>{report.description}</p>
-
-            <h3>Foto Laporan</h3>
-            <div className={styles.photoPlaceholder}>
-              Foto belum tersedia pada data contoh.
-            </div>
-
-            <h3>Catatan Petugas</h3>
-            <p className={styles.text}>
-              {savedNote || 'Belum ada catatan petugas.'}
-            </p>
-          </section>
-
-          <section className={styles.card}>
-            <h2>Penanganan Laporan</h2>
-
-            {isClosed ? (
-              <p className={styles.closedNotice}>
-                Laporan sudah {statusLabels[currentStatus].toLowerCase()}.
-                Status dan catatan tidak dapat diubah lagi.
-              </p>
-            ) : (
-              <form onSubmit={handleSubmit} className={styles.form}>
-                <label className={styles.field}>
-                  <span>Status</span>
-
-                  <select
-                    value={
-                      nextStatuses.includes(selectedStatus)
-                        ? selectedStatus
-                        : currentStatus
-                    }
-                    onChange={(event) => {
-                      setSelectedStatus(event.target.value)
-                      setError('')
-                      setMessage('')
-                    }}
-                  >
-                    <option value={currentStatus}>
-                      {statusLabels[currentStatus]} (saat ini)
-                    </option>
-
-                    {nextStatuses.map((status) => (
-                      <option key={status} value={status}>
-                        {statusLabels[status]}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
-                <label className={styles.field}>
-                  <span>Catatan Petugas</span>
-
-                  <textarea
-                    rows={6}
-                    value={note}
-                    onChange={(event) => {
-                      setNote(event.target.value)
-                      setError('')
-                      setMessage('')
-                    }}
-                    placeholder="Tuliskan tindakan atau alasan penolakan."
-                    aria-describedby="note-help"
-                  />
-                </label>
-
-                <p id="note-help" className={styles.help}>
-                  Wajib diisi jika laporan diselesaikan atau ditolak.
-                  Untuk laporan duplikat, cantumkan nomor laporan utama.
-                </p>
-
-                <button type="submit" className={styles.primaryButton}>
-                  Terapkan Status
-                </button>
-              </form>
-            )}
-
-            {error && (
-              <p className={styles.error} role="alert">
-                {error}
-              </p>
-            )}
-
-            {message && (
-              <p className={styles.success} role="status">
-                {message}
-              </p>
-            )}
-          </section>
-        </div>
+  if (isClosed) {
+    return (
+      <div className={styles.closedNotice}>
+        Laporan sudah {statusLabels[report.status].toLowerCase()} dan
+        tidak dapat diubah kembali.
       </div>
-    </main>
+    )
+  }
+
+  return (
+    <form className={styles.form} onSubmit={handleSubmit}>
+      <label className={styles.field}>
+        <span>Status Penanganan</span>
+
+        <select
+          value={selectedStatus}
+          onChange={(event) => setSelectedStatus(event.target.value)}
+          disabled={disabled}
+        >
+          <option value="">Pilih status baru</option>
+
+          {nextStatuses.map((status) => (
+            <option key={status} value={status}>
+              {statusLabels[status]}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label className={styles.field}>
+        <span>Catatan Petugas</span>
+
+        <textarea
+          value={note}
+          onChange={(event) => setNote(event.target.value)}
+          placeholder="Tuliskan hasil pemeriksaan atau alasan penutupan laporan"
+          rows={6}
+          maxLength={5000}
+          disabled={disabled}
+        />
+      </label>
+
+      <p className={styles.help}>
+        Catatan wajib diisi untuk status Selesai atau Ditolak.
+        Untuk laporan duplikat, cantumkan nomor laporan utama.
+      </p>
+
+      {error && (
+        <div className={styles.error} role="alert">
+          {error}
+        </div>
+      )}
+
+      {needsReload ? (
+        <button
+          type="button"
+          className={styles.primaryButton}
+          onClick={() => window.location.reload()}
+        >
+          Muat ulang halaman
+        </button>
+      ) : (
+        <button
+          type="submit"
+          className={styles.primaryButton}
+          disabled={disabled}
+        >
+          {loading
+            ? 'Menyimpan...'
+            : refreshing
+              ? 'Memuat perubahan...'
+              : saved
+                ? 'Tersimpan'
+                : 'Simpan Perubahan'}
+        </button>
+      )}
+    </form>
   )
 }
