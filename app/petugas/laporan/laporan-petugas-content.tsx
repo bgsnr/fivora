@@ -87,6 +87,10 @@ export default function LaporanPetugasContent({
   return (
     <main className={styles.page}>
       <section className={styles.container}>
+        <Link href="/petugas" className={styles.backLink}>
+          ← Dashboard petugas
+        </Link>
+
         <div className={styles.heading}>
           <div>
             <p className={styles.eyebrow}>PETUGAS</p>
