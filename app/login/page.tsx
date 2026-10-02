@@ -130,16 +130,19 @@ function LoginForm() {
 
     // Pengalihan: gunakan ?redirect= bila valid (path internal), selain itu sesuai role
     const defaultTarget =
-      userData.role === 'admin'
-        ? '/admin'
-        : userData.role === 'petugas'
-        ? '/petugas/reservasi'
-        : '/reservasi'
+  userData.role === 'admin'
+    ? '/admin'
+    : userData.role === 'petugas'
+      ? '/petugas'
+      : '/reservasi'
 
     const redirectTarget =
-      redirectParam && redirectParam.startsWith('/')
-        ? redirectParam
-        : defaultTarget
+  redirectParam &&
+  redirectParam.startsWith('/') &&
+  !redirectParam.startsWith('//') &&
+  !redirectParam.includes('\\')
+    ? redirectParam
+    : defaultTarget
 
     router.push(redirectTarget)
   }

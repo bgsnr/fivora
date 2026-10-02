@@ -58,7 +58,7 @@ export function Hero() {
                 </Button>
               </Link>
 
-              <Link href="/reports">
+              <Link href="/laporan/buat">
                 <Button
                   variant="outline"
                   size="lg"

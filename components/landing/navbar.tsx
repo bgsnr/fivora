@@ -43,7 +43,7 @@ export function Navbar() {
           </Link>
 
           <Link
-            href="/reservasi"
+            href="/reservationsGet"
             className="transition-colors hover:text-[#0c021c]"
           >
             Reservasi
