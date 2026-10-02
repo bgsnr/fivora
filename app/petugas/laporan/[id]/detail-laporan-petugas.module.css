@@ -1,8 +1,8 @@
 .page {
   min-height: 100vh;
   padding: 48px 24px;
-  background: #f5f2fc;
-  color: #21164f;
+  background: #f7f9fc;
+  color: #010736;
 }
 
 .container {
@@ -13,12 +13,13 @@
 .backLink {
   display: inline-block;
   margin-bottom: 24px;
-  color: #603ddb;
+  color: #22396f;
   font-weight: 600;
   text-decoration: none;
 }
 
 .backLink:hover {
+  color: #010736;
   text-decoration: underline;
 }
 
@@ -28,7 +29,7 @@
 
 .eyebrow {
   margin: 0 0 8px;
-  color: #7045e8;
+  color: #22396f;
   font-size: 14px;
   font-weight: 800;
   letter-spacing: 0.14em;
@@ -36,17 +37,19 @@
 
 .heading h1 {
   margin: 0;
+  color: #010736;
   font-size: 34px;
+  font-weight: 600;
 }
 
 .heading > p:last-child {
   margin-top: 10px;
-  color: #756c92;
+  color: #52627d;
 }
 
 .demoNotice {
   margin-bottom: 20px;
-  color: #756c92;
+  color: #718097;
   font-size: 13px;
 }
 
@@ -60,7 +63,7 @@
 .card {
   min-width: 0;
   padding: 28px;
-  border: 1px solid #e4def2;
+  border: 1px solid #d8dfea;
   border-radius: 18px;
   background: #ffffff;
 }
@@ -75,12 +78,16 @@
 
 .card h2 {
   margin: 0;
+  color: #010736;
   font-size: 22px;
+  font-weight: 600;
 }
 
 .card h3 {
   margin: 24px 0 10px;
+  color: #010736;
   font-size: 15px;
+  font-weight: 600;
 }
 
 .info {
@@ -91,18 +98,19 @@
 
 .info dt {
   margin-bottom: 4px;
-  color: #756c92;
+  color: #52627d;
   font-size: 13px;
 }
 
 .info dd {
   margin: 0;
+  color: #010736;
   font-weight: 600;
 }
 
 .text {
   margin: 0;
-  color: #655b80;
+  color: #52627d;
   line-height: 1.7;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -110,9 +118,10 @@
 
 .photoPlaceholder {
   padding: 32px 16px;
-  border: 1px dashed #d8d0e9;
+  border: 1px dashed #d8dfea;
   border-radius: 12px;
-  color: #756c92;
+  background: #f8fafc;
+  color: #718097;
   text-align: center;
   font-size: 14px;
 }
@@ -125,8 +134,8 @@
 }
 
 .baru {
-  background: #eee8ff;
-  color: #603ddb;
+  background: #eef2f7;
+  color: #22396f;
 }
 
 .diproses {
@@ -155,6 +164,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  color: #010736;
   font-size: 14px;
   font-weight: 600;
 }
@@ -163,10 +173,10 @@
 .field textarea {
   width: 100%;
   padding: 12px;
-  border: 1px solid #d8d0e9;
+  border: 1px solid #d8dfea;
   border-radius: 10px;
   background: #ffffff;
-  color: #21164f;
+  color: #010736;
   font: inherit;
 }
 
@@ -176,13 +186,14 @@
 
 .field select:focus,
 .field textarea:focus {
-  outline: 2px solid #7045e8;
+  outline: 2px solid #22396f;
   outline-offset: 2px;
+  border-color: #22396f;
 }
 
 .help {
   margin: -8px 0 0;
-  color: #756c92;
+  color: #718097;
   font-size: 13px;
   line-height: 1.6;
 }
@@ -191,21 +202,35 @@
   padding: 13px 18px;
   border: none;
   border-radius: 10px;
-  background: #603ddb;
+  background: #010736;
   color: #ffffff;
   font: inherit;
   font-weight: 700;
   cursor: pointer;
+  transition:
+    background 150ms ease,
+    transform 150ms ease;
 }
 
 .primaryButton:hover {
-  background: #5131c2;
+  background: #0d1c42;
 }
 
 .primaryButton:focus-visible,
 .backLink:focus-visible {
-  outline: 2px solid #7045e8;
+  outline: 2px solid #22396f;
   outline-offset: 4px;
+}
+
+.primaryButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.field select:disabled,
+.field textarea:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 .error,
@@ -229,8 +254,19 @@
 }
 
 .closedNotice {
-  background: #f3effb;
-  color: #655b80;
+  background: #f1f4f8;
+  color: #52627d;
+}
+
+.photo {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 480px;
+  border: 1px solid #d8dfea;
+  border-radius: 12px;
+  background: #f8fafc;
+  object-fit: contain;
 }
 
 @media (max-width: 800px) {

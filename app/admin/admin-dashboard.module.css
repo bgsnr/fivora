@@ -1,11 +1,12 @@
 .page {
   min-height: 100vh;
   display: flex;
-  background: #f6f2ff;
-  color: #21164f;
+  background: #f7f9fc;
+  color: #010736;
 }
 
 /* Sidebar */
+
 .sidebar {
   position: fixed;
   top: 0;
@@ -17,7 +18,7 @@
   flex-direction: column;
   box-sizing: border-box;
   padding: 28px 18px;
-  border-right: 1px solid #e3daf6;
+  border-right: 1px solid #d8dfea;
   background: #ffffff;
   overflow: hidden;
   transition:
@@ -45,10 +46,11 @@
   width: 11px;
   height: 11px;
   border-radius: 50%;
-  background: #7448ef;
+  background: #010736;
 }
 
 /* Tombol buka atau tutup sidebar */
+
 .sidebarToggle {
   position: absolute;
   top: 29px;
@@ -60,8 +62,8 @@
   justify-content: center;
   border: 0;
   border-radius: 8px;
-  background: #f3edff;
-  color: #603ddb;
+  background: #fcf1d0;
+  color: #010736;
   cursor: pointer;
   transition:
     background 0.2s ease,
@@ -69,11 +71,12 @@
 }
 
 .sidebarToggle:hover {
-  background: #e9defc;
-  color: #5432c8;
+  background: #f5e5b5;
+  color: #0d1c42;
 }
 
 /* Navigasi */
+
 .nav {
   flex: 1;
   min-height: 0;
@@ -85,7 +88,7 @@
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-width: thin;
-  scrollbar-color: #ddd4ef transparent;
+  scrollbar-color: #c9d2e0 transparent;
 }
 
 .nav::-webkit-scrollbar {
@@ -98,7 +101,7 @@
 
 .nav::-webkit-scrollbar-thumb {
   border-radius: 999px;
-  background: #ddd4ef;
+  background: #c9d2e0;
 }
 
 .navItem {
@@ -114,7 +117,7 @@
   border: 0;
   border-radius: 11px;
   background: transparent;
-  color: #756c92;
+  color: #52627d;
   font: inherit;
   font-size: 13px;
   font-weight: 700;
@@ -127,13 +130,13 @@
 }
 
 .navItem:hover {
-  background: #f3edff;
-  color: #5935db;
+  background: #f4f6fa;
+  color: #010736;
 }
 
 .navItemActive,
 .navItemActive:hover {
-  background: #603ddb;
+  background: #010736;
   color: #ffffff;
 }
 
@@ -147,23 +150,24 @@
   margin-left: auto;
   padding: 0 6px;
   border-radius: 999px;
-  background: #efb7bf;
-  color: #9f2e42;
+  background: #fcf1d0;
+  color: #010736;
   font-size: 10px;
   font-weight: 700;
 }
 
 .navItemActive .navBadge {
-  background: rgba(255, 255, 255, 0.2);
-  color: #ffffff;
+  background: rgba(252, 241, 208, 0.2);
+  color: #fcf1d0;
 }
 
 /* Profil admin dan logout */
+
 .sidebarBottom {
   flex: 0 0 auto;
   margin-top: auto;
   padding-top: 17px;
-  border-top: 1px solid #e7def6;
+  border-top: 1px solid #d8dfea;
   background: #ffffff;
 }
 
@@ -182,7 +186,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: #7448ef;
+  background: #010736;
   color: #ffffff;
   font-size: 13px;
   font-weight: 700;
@@ -195,7 +199,7 @@
 .profileText strong {
   display: block;
   overflow: hidden;
-  color: #21164f;
+  color: #010736;
   font-size: 12px;
   font-weight: 700;
   text-overflow: ellipsis;
@@ -205,7 +209,7 @@
 .profileText span {
   display: block;
   margin-top: 3px;
-  color: #8e84a5;
+  color: #7b879b;
   font-size: 10px;
 }
 
@@ -213,10 +217,10 @@
   width: 100%;
   height: 38px;
   margin-top: 15px;
-  border: 1px solid #ddd6f1;
+  border: 1px solid #d8dfea;
   border-radius: 10px;
   background: #ffffff;
-  color: #756c92;
+  color: #52627d;
   font: inherit;
   font-size: 11px;
   cursor: pointer;
@@ -227,12 +231,13 @@
 }
 
 .logoutButton:hover {
-  border-color: #c9b9ed;
-  background: #f8f4ff;
-  color: #5935db;
+  border-color: #22396f;
+  background: #f7f9fc;
+  color: #010736;
 }
 
 /* Konten utama */
+
 .content {
   width: calc(100% - 250px);
   min-width: 0;
@@ -245,12 +250,14 @@
 }
 
 /* Konten saat sidebar ditutup */
+
 .contentExpanded {
   width: calc(100% - 78px);
   margin-left: 78px;
 }
 
 /* Sidebar saat ditutup */
+
 .sidebarCollapsed {
   width: 78px;
   padding: 28px 11px;
@@ -304,6 +311,7 @@
 }
 
 /* Header */
+
 .topbar {
   display: flex;
   align-items: flex-start;
@@ -314,7 +322,7 @@
 .eyebrow,
 .sectionEyebrow {
   margin: 0 0 7px;
-  color: #7448ef;
+  color: #22396f;
   font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.16em;
@@ -322,7 +330,7 @@
 
 .topbar h1 {
   margin: 0;
-  color: #21164f;
+  color: #010736;
   font-size: 34px;
   line-height: 1;
   letter-spacing: -0.05em;
@@ -330,7 +338,7 @@
 
 .subtitle {
   margin: 10px 0 0;
-  color: #756c92;
+  color: #52627d;
   font-size: 13px;
   line-height: 1.5;
 }
@@ -349,16 +357,16 @@
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  border: 1px solid #ddd6f1;
+  border: 1px solid #d8dfea;
   border-radius: 11px;
   background: #ffffff;
-  color: #6940df;
+  color: #010736;
   font-size: 16px;
 }
 
 .notification:hover {
-  border-color: #cdbdee;
-  background: #faf7ff;
+  border-color: #22396f;
+  background: #f7f9fc;
 }
 
 .notificationBadge {
@@ -372,15 +380,16 @@
   justify-content: center;
   box-sizing: border-box;
   padding: 0 5px;
-  border: 2px solid #f6f2ff;
+  border: 2px solid #f7f9fc;
   border-radius: 999px;
-  background: #efb7bf;
-  color: #9f2e42;
+  background: #fcf1d0;
+  color: #010736;
   font-size: 8px;
   font-weight: 700;
 }
 
 /* Statistik */
+
 .statsGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -397,23 +406,23 @@
   gap: 14px;
   box-sizing: border-box;
   padding: 19px;
-  border: 1px solid #e3daf6;
+  border: 1px solid #d8dfea;
   border-radius: 17px;
   background: #ffffff;
 }
 
 .statCard:hover {
-  border-color: #cfbfef;
+  border-color: #22396f;
 }
 
 .statCardWarning {
-  border-color: #e8d5a7;
-  background: #fffbf2;
+  border-color: #ead9a3;
+  background: #fffcf3;
 }
 
 .statCardMuted {
-  color: #8d84a0;
-  background: #fbf9ff;
+  color: #7b879b;
+  background: #f4f6fa;
 }
 
 .statCardMuted small {
@@ -422,8 +431,8 @@
   right: 14px;
   padding: 4px 7px;
   border-radius: 999px;
-  background: #f0ebf9;
-  color: #8e84a5;
+  background: #e9edf4;
+  color: #7b879b;
   font-size: 8px;
   font-weight: 700;
 }
@@ -436,25 +445,25 @@
   align-items: center;
   justify-content: center;
   border-radius: 13px;
-  background: #f1ebff;
-  color: #6940df;
+  background: #fcf1d0;
+  color: #010736;
   font-size: 18px;
 }
 
 .statCardWarning .statIcon {
-  background: #f9e8bb;
+  background: #fff0bc;
   color: #8b6517;
 }
 
 .statCardMuted .statIcon {
-  background: #f0ebf9;
-  color: #9288a5;
+  background: #e9edf4;
+  color: #7b879b;
 }
 
 .statCard > div:last-child span,
 .statCardMuted > div span {
   display: block;
-  color: #7e7494;
+  color: #6f7d94;
   font-size: 11px;
 }
 
@@ -462,7 +471,7 @@
 .statCardMuted strong {
   display: block;
   margin-top: 6px;
-  color: #21164f;
+  color: #010736;
   font-size: 27px;
   line-height: 1;
   letter-spacing: -0.04em;
@@ -473,6 +482,7 @@
 }
 
 /* Section */
+
 .section {
   margin-top: 41px;
 }
@@ -487,7 +497,7 @@
 
 .sectionHeader h2 {
   margin: 0;
-  color: #21164f;
+  color: #010736;
   font-size: 21px;
   line-height: 1.1;
   letter-spacing: -0.04em;
@@ -495,20 +505,21 @@
 
 .sectionHeader p {
   margin: 7px 0 0;
-  color: #807595;
+  color: #6f7d94;
   font-size: 12px;
 }
 
 .sectionCount {
   padding: 7px 10px;
   border-radius: 999px;
-  background: #eee7fb;
-  color: #6940df;
+  background: #fcf1d0;
+  color: #010736;
   font-size: 10px;
   font-weight: 700;
 }
 
 /* Quick action */
+
 .actionGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -524,7 +535,7 @@
   gap: 14px;
   box-sizing: border-box;
   padding: 19px;
-  border: 1px solid #e3daf6;
+  border: 1px solid #d8dfea;
   border-radius: 17px;
   background: #ffffff;
   color: inherit;
@@ -532,7 +543,8 @@
   transition:
     border-color 0.2s ease,
     background 0.2s ease,
-    transform 0.2s ease;
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .actionCard {
@@ -540,9 +552,10 @@
 }
 
 .actionCard:hover {
-  border-color: #cab9ed;
-  background: #fcfaff;
+  border-color: #22396f;
+  background: #ffffff;
   transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(1, 7, 54, 0.06);
 }
 
 .actionCardDisabled {
@@ -559,15 +572,15 @@
   justify-content: center;
   box-sizing: border-box;
   border-radius: 13px;
-  background: #603ddb;
+  background: #010736;
   color: #ffffff;
   font-size: 19px;
   font-weight: 700;
 }
 
 .actionIconMuted {
-  background: #f0ebf9;
-  color: #7e7195;
+  background: #e9edf4;
+  color: #7b879b;
 }
 
 .actionContent {
@@ -576,13 +589,13 @@
 
 .actionContent h3 {
   margin: 0;
-  color: #21164f;
+  color: #010736;
   font-size: 13px;
 }
 
 .actionContent p {
   margin: 5px 0 0;
-  color: #857b99;
+  color: #7a879a;
   font-size: 11px;
   line-height: 1.45;
 }
@@ -593,8 +606,8 @@
   right: 12px;
   padding: 4px 7px;
   border-radius: 999px;
-  background: #eee5ff;
-  color: #603ddb;
+  background: #fcf1d0;
+  color: #010736;
   font-size: 8px;
   font-weight: 700;
 }
@@ -604,18 +617,20 @@
   flex: 0 0 auto;
   padding: 5px 7px;
   border-radius: 999px;
-  background: #f0ebf9;
-  color: #9186a4;
+  background: #e9edf4;
+  color: #7b879b;
   font-size: 8px;
   font-weight: 700;
 }
 
 /* Card verifikasi dan daftar akun */
+
 .verificationCard {
   overflow: hidden;
-  border: 1px solid #e3daf6;
+  border: 1px solid #d8dfea;
   border-radius: 17px;
   background: #ffffff;
+  box-shadow: 0 4px 18px rgba(1, 7, 54, 0.03);
 }
 
 .emptyState {
@@ -639,13 +654,13 @@
 
 .emptyState h3 {
   margin: 0;
-  color: #21164f;
+  color: #010736;
   font-size: 15px;
 }
 
 .emptyState p {
   margin: 7px 0 0;
-  color: #89809b;
+  color: #7b879b;
   font-size: 12px;
 }
 
@@ -670,7 +685,7 @@
   justify-content: space-between;
   gap: 20px;
   padding: 18px 20px;
-  border-bottom: 1px solid #eee8f7;
+  border-bottom: 1px solid #e7ebf1;
 }
 
 .registrationItem:last-child {
@@ -678,7 +693,7 @@
 }
 
 .registrationItem:hover {
-  background: #fcfaff;
+  background: #f8fafc;
 }
 
 .registrationMain {
@@ -696,8 +711,8 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: #eee7fb;
-  color: #6940df;
+  background: #fcf1d0;
+  color: #010736;
   font-size: 13px;
   font-weight: 700;
 }
@@ -708,7 +723,7 @@
 
 .registrationName {
   overflow: hidden;
-  color: #21164f;
+  color: #010736;
   font-size: 13px;
   font-weight: 700;
   text-overflow: ellipsis;
@@ -718,7 +733,7 @@
 .registrationEmail {
   margin-top: 3px;
   overflow: hidden;
-  color: #7f7591;
+  color: #718097;
   font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -734,8 +749,8 @@
 .registrationMeta span {
   padding: 4px 7px;
   border-radius: 999px;
-  background: #f3eefb;
-  color: #776d8d;
+  background: #eef2f7;
+  color: #627087;
   font-size: 8px;
 }
 
@@ -769,12 +784,12 @@
 
 .approveButton {
   border: 0;
-  background: #603ddb;
+  background: #010736;
   color: #ffffff;
 }
 
 .approveButton:hover {
-  background: #5432c8;
+  background: #0d1c42;
 }
 
 .rejectButton:disabled,
@@ -784,6 +799,7 @@
 }
 
 /* Fitur */
+
 .featureGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -797,14 +813,14 @@
   min-height: 84px;
   box-sizing: border-box;
   padding: 17px;
-  border: 1px solid #e3daf6;
+  border: 1px solid #d8dfea;
   border-radius: 15px;
   background: #ffffff;
 }
 
 .featureCard:hover {
-  border-color: #d0c0ef;
-  background: #fcfaff;
+  border-color: #22396f;
+  background: #f9fbfd;
 }
 
 .featureIcon {
@@ -815,8 +831,8 @@
   align-items: center;
   justify-content: center;
   border-radius: 11px;
-  background: #f1ebff;
-  color: #6940df;
+  background: #fcf1d0;
+  color: #010736;
   font-size: 15px;
 }
 
@@ -826,18 +842,19 @@
 
 .featureText h3 {
   margin: 0;
-  color: #21164f;
+  color: #010736;
   font-size: 13px;
 }
 
 .featureText p {
   margin: 5px 0 0;
-  color: #878097;
+  color: #7b879b;
   font-size: 10px;
   line-height: 1.45;
 }
 
 /* Modal */
+
 .modalBackdrop {
   position: fixed;
   inset: 0;
@@ -847,7 +864,7 @@
   justify-content: center;
   box-sizing: border-box;
   padding: 20px;
-  background: rgba(39, 20, 78, 0.48);
+  background: rgba(1, 7, 54, 0.55);
 }
 
 .modal {
@@ -856,10 +873,10 @@
   overflow-y: auto;
   box-sizing: border-box;
   padding: 27px;
-  border: 1px solid #e3daf6;
+  border: 1px solid #d8dfea;
   border-radius: 19px;
   background: #ffffff;
-  box-shadow: 0 25px 80px rgba(67, 40, 130, 0.2);
+  box-shadow: 0 25px 80px rgba(1, 7, 54, 0.2);
 }
 
 .modalHeader {
@@ -871,14 +888,14 @@
 
 .modalHeader h2 {
   margin: 0;
-  color: #21164f;
+  color: #010736;
   font-size: 21px;
   letter-spacing: -0.03em;
 }
 
 .modalHeader p:last-child {
   margin: 6px 0 0;
-  color: #827995;
+  color: #7b879b;
   font-size: 11px;
 }
 
@@ -887,15 +904,15 @@
   height: 33px;
   border: 0;
   border-radius: 9px;
-  background: #f0ebf9;
-  color: #635774;
+  background: #eef2f7;
+  color: #52627d;
   font-size: 21px;
   cursor: pointer;
 }
 
 .closeButton:hover {
-  background: #e8dff5;
-  color: #5935db;
+  background: #fcf1d0;
+  color: #010736;
 }
 
 .closeButton:disabled {
@@ -904,6 +921,7 @@
 }
 
 /* Pilihan jenis akun */
+
 .accountTypeSelector {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -911,7 +929,7 @@
   margin-top: 22px;
   padding: 4px;
   border-radius: 11px;
-  background: #f3edff;
+  background: #eef2f7;
 }
 
 .accountTypeButton,
@@ -930,21 +948,21 @@
 
 .accountTypeButton {
   background: transparent;
-  color: #756c92;
+  color: #52627d;
 }
 
 .accountTypeButton:hover {
-  background: #e9defc;
-  color: #603ddb;
+  background: #ffffff;
+  color: #010736;
 }
 
 .accountTypeActive {
-  background: #603ddb;
+  background: #010736;
   color: #ffffff;
 }
 
 .accountTypeActive:hover {
-  background: #5432c8;
+  background: #0d1c42;
 }
 
 .accountTypeButton:disabled,
@@ -954,6 +972,7 @@
 }
 
 /* Form modal */
+
 .operatorForm {
   display: flex;
   flex-direction: column;
@@ -968,7 +987,7 @@
 }
 
 .operatorForm label > span {
-  color: #21164f;
+  color: #010736;
   font-size: 11px;
   font-weight: 700;
 }
@@ -978,27 +997,26 @@
   height: 43px;
   box-sizing: border-box;
   padding: 0 12px;
-  border: 1px solid #ddd6f1;
+  border: 1px solid #d8dfea;
   border-radius: 10px;
   outline: none;
   background: #ffffff;
-  color: #241752;
+  color: #010736;
   font: inherit;
   font-size: 12px;
 }
 
 .operatorForm input::placeholder {
-  color: #aaa1ba;
+  color: #a0aabb;
 }
 
 .operatorForm input:focus {
-  border-color: #7650e7;
-  box-shadow:
-    0 0 0 3px rgba(118, 80, 231, 0.1);
+  border-color: #22396f;
+  box-shadow: 0 0 0 3px rgba(34, 57, 111, 0.1);
 }
 
 .operatorForm small {
-  color: #8a809c;
+  color: #7b879b;
   font-size: 9px;
 }
 
@@ -1021,8 +1039,8 @@
   padding: 0;
   border: 0;
   border-radius: 9px;
-  background: #f0ebf9;
-  color: #666079;
+  background: #eef2f7;
+  color: #52627d;
   cursor: pointer;
   transition:
     background 0.2s ease,
@@ -1030,8 +1048,8 @@
 }
 
 .passwordBox button:hover {
-  background: #e8dff5;
-  color: #5935db;
+  background: #fcf1d0;
+  color: #010736;
 }
 
 .passwordToggle {
@@ -1063,7 +1081,7 @@
   margin-top: 2px;
   border: 0;
   border-radius: 10px;
-  background: #603ddb;
+  background: #010736;
   color: #ffffff;
   font: inherit;
   font-size: 11px;
@@ -1072,7 +1090,7 @@
 }
 
 .submitButton:hover:not(:disabled) {
-  background: #5432c8;
+  background: #0d1c42;
 }
 
 .submitButton:disabled {
@@ -1081,12 +1099,10 @@
 }
 
 /* Responsive */
+
 @media (max-width: 1100px) {
   .statsGrid {
-    grid-template-columns: repeat(
-      2,
-      minmax(0, 1fr)
-    );
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .actionGrid {

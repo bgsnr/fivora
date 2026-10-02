@@ -80,139 +80,139 @@ export default function AccountList({
   }, [accounts, search, roleFilter])
 
   return (
-    <div className="overflow-hidden rounded-xl border border-[#e3daf6] bg-white">
-        {/* Filter */}
-        <div className="flex flex-col gap-3 border-b border-[#eee8f7] p-4 md:flex-row">
+    <div className="overflow-hidden rounded-2xl border border-[#D8DFEA] bg-white shadow-sm">
+      {/* Filter */}
+      <div className="flex flex-col gap-3 border-b border-[#D8DFEA] bg-[#F8FAFC] p-4 md:flex-row">
         <input
-            type="text"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Cari nama, email, atau NIM/NIP..."
-            className="min-h-10 flex-1 rounded-lg border border-[#ddd6f1] bg-white px-3 text-sm text-[#21164f] outline-none transition focus:border-[#7650e7] focus:ring-2 focus:ring-[#7650e7]/10"
+          type="text"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder="Cari nama, email, atau NIM/NIP..."
+          className="min-h-10 flex-1 rounded-full border border-[#D8DFEA] bg-white px-4 text-sm text-[#010736] outline-none transition placeholder:text-[#9AA5B5] focus:border-[#22396F] focus:ring-2 focus:ring-[#22396F]/10"
         />
 
         <select
-            value={roleFilter}
-            onChange={(event) => setRoleFilter(event.target.value)}
-            className="min-h-10 rounded-lg border border-[#ddd6f1] bg-white px-3 text-sm text-[#21164f] outline-none focus:border-[#7650e7]"
+          value={roleFilter}
+          onChange={(event) => setRoleFilter(event.target.value)}
+          className="min-h-10 rounded-full border border-[#D8DFEA] bg-white px-4 text-sm text-[#010736] outline-none focus:border-[#22396F] focus:ring-2 focus:ring-[#22396F]/10"
         >
-            <option value="semua">Semua Role</option>
-            <option value="pengguna">Pengguna</option>
-            <option value="petugas">Petugas</option>
-            <option value="admin">Admin</option>
+          <option value="semua">Semua Role</option>
+          <option value="pengguna">Pengguna</option>
+          <option value="petugas">Petugas</option>
+          <option value="admin">Admin</option>
         </select>
-        </div>
+      </div>
 
-        {/* Jumlah akun */}
-        <div className="px-4 py-3 text-xs text-[#7f7591]">
+      {/* Jumlah akun */}
+      <div className="border-b border-[#D8DFEA] px-4 py-3 text-xs text-[#52627D]">
         Menampilkan {filteredAccounts.length} dari {accounts.length} akun aktif.
-        </div>
+      </div>
 
-        {/* Daftar akun */}
-        {filteredAccounts.length === 0 ? (
-        <div className="p-8 text-center">
-            <div className="mb-3 text-2xl">🔎</div>
+      {/* Daftar akun */}
+      {filteredAccounts.length === 0 ? (
+        <div className="p-10 text-center">
+          <div className="mb-3 text-2xl">🔎</div>
 
-            <h3 className="text-sm font-bold text-[#21164f]">
+          <h3 className="font-heading text-sm font-bold text-[#010736]">
             Akun tidak ditemukan
-            </h3>
+          </h3>
 
-            <p className="mt-1 text-xs text-[#89809b]">
+          <p className="mt-1 text-xs text-[#7B879B]">
             Coba gunakan kata kunci atau filter yang berbeda.
-            </p>
+          </p>
         </div>
-        ) : (
-        <div className="overflow-x-auto border-t border-[#eee8f7]">
-            <table className="w-full min-w-[850px] border-collapse">
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[850px] border-collapse">
             <thead>
-                <tr className="border-b border-[#eee8f7] bg-[#faf8ff] text-left">
-                <th className="px-4 py-3 text-[11px] font-bold text-[#756c92]">
-                    AKUN
+              <tr className="border-b border-[#D8DFEA] bg-[#F8FAFC] text-left">
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-[#52627D]">
+                  AKUN
                 </th>
 
-                <th className="px-4 py-3 text-[11px] font-bold text-[#756c92]">
-                    NIM / NIP
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-[#52627D]">
+                  NIM / NIP
                 </th>
 
-                <th className="px-4 py-3 text-[11px] font-bold text-[#756c92]">
-                    JENIS
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-[#52627D]">
+                  JENIS
                 </th>
 
-                <th className="px-4 py-3 text-[11px] font-bold text-[#756c92]">
-                    ROLE
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-[#52627D]">
+                  ROLE
                 </th>
 
-                <th className="px-4 py-3 text-[11px] font-bold text-[#756c92]">
-                    STATUS
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-[#52627D]">
+                  STATUS
                 </th>
 
-                <th className="px-4 py-3 text-[11px] font-bold text-[#756c92]">
-                    DIBUAT
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-[#52627D]">
+                  DIBUAT
                 </th>
-                </tr>
+              </tr>
             </thead>
 
             <tbody>
-                {filteredAccounts.map((account) => (
+              {filteredAccounts.map((account) => (
                 <tr
-                    key={account.id}
-                    className="border-b border-[#eee8f7] last:border-b-0 hover:bg-[#fcfaff]"
+                  key={account.id}
+                  className="border-b border-[#E7EBF1] last:border-b-0 hover:bg-[#F8FAFC]"
                 >
-                    <td className="px-4 py-4">
+                  <td className="px-4 py-4">
                     <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#eee7fb] text-xs font-bold text-[#6940df]">
+                      <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#FCF1D0] text-xs font-bold text-[#010736]">
                         {account.name.charAt(0).toUpperCase()}
+                      </div>
+
+                      <div className="min-w-0">
+                        <div className="truncate text-xs font-bold text-[#010736]">
+                          {account.name}
                         </div>
 
-                        <div className="min-w-0">
-                        <div className="truncate text-xs font-bold text-[#21164f]">
-                            {account.name}
+                        <div className="mt-1 truncate text-[11px] text-[#718097]">
+                          {account.email}
                         </div>
-
-                        <div className="mt-1 truncate text-[11px] text-[#7f7591]">
-                            {account.email}
-                        </div>
-                        </div>
+                      </div>
                     </div>
-                    </td>
+                  </td>
 
-                    <td className="px-4 py-4 text-xs text-[#4a415e]">
+                  <td className="px-4 py-4 font-mono text-xs text-[#52627D]">
                     {account.nim_nip || '-'}
-                    </td>
+                  </td>
 
-                    <td className="px-4 py-4 text-xs text-[#4a415e]">
+                  <td className="px-4 py-4 text-xs text-[#52627D]">
                     {getJenisPenggunaLabel(account.jenis_pengguna)}
-                    </td>
+                  </td>
 
-                    <td className="px-4 py-4">
+                  <td className="px-4 py-4">
                     <span
-                        className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold ${
+                      className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold ${
                         account.role === 'admin'
-                            ? 'bg-[#eee7fb] text-[#603ddb]'
-                            : account.role === 'petugas'
-                            ? 'bg-[#eef7ff] text-[#2563a8]'
-                            : 'bg-[#f3f4f6] text-[#4b5563]'
-                        }`}
+                          ? 'bg-[#010736] text-white'
+                          : account.role === 'petugas'
+                          ? 'bg-[#0D1C42] text-white'
+                          : 'bg-[#EEF2F7] text-[#52627D]'
+                      }`}
                     >
-                        {getRoleLabel(account.role)}
+                      {getRoleLabel(account.role)}
                     </span>
-                    </td>
+                  </td>
 
-                    <td className="px-4 py-4">
+                  <td className="px-4 py-4">
                     <span className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-700">
-                        Aktif
+                      Aktif
                     </span>
-                    </td>
+                  </td>
 
-                    <td className="px-4 py-4 text-xs text-[#7f7591]">
+                  <td className="px-4 py-4 text-xs text-[#7B879B]">
                     {formatDate(account.created_at)}
-                    </td>
+                  </td>
                 </tr>
-                ))}
+              ))}
             </tbody>
-            </table>
+          </table>
         </div>
-        )}
+      )}
     </div>
-    )
+  )
 }

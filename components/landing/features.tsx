@@ -1,133 +1,231 @@
 import {
   Clock,
-  ShieldCheck,
   CheckCircle2,
-  CalendarCheck,
-  AlertCircle,
+  ShieldCheck,
   Lock,
+  ArrowUpRight,
 } from "lucide-react"
 
 export function Features() {
   return (
-    <section className="py-16 lg:py-24 border-b border-border bg-white">
+    <section className="border-b border-[#D8DFEA] bg-white py-16 lg:py-24">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        
-        {/* Editorial Section Header */}
-        <div className="max-w-3xl mb-12">
-          <div className="font-mono text-xs font-semibold text-[#5318eb] uppercase tracking-wider mb-2">
-            STANDAR DAN INTEGRITAS SISTEM
+
+        {/* Section Header */}
+        <div className="mb-12 max-w-3xl">
+          <div className="mb-3 inline-flex items-center rounded-full bg-[#FCF1D0] px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[#010736]">
+            Standar dan Integritas Sistem
           </div>
-          <h2 className="font-heading text-3xl sm:text-4xl font-extrabold tracking-tight text-[#0c021c]">
-            Arsitektur Pengelolaan Fasilitas Kampus
+
+          <h2 className="font-heading text-3xl font-extrabold leading-tight tracking-tight text-[#010736] sm:text-4xl">
+            Arsitektur Pengelolaan
+            <br className="hidden sm:block" />
+            Fasilitas Kampus
           </h2>
-          <p className="mt-3 text-sm text-[#4a454d] leading-relaxed">
-            Fivora menerapkan aturan bisnis ketat di sisi server dan database Postgres. Setiap transaksi peminjaman dan pelaporan sarana kampus diproses secara transparan serta akuntabel.
+
+          <p className="mt-4 max-w-2xl text-sm leading-7 text-[#52627D]">
+            Fivora menerapkan aturan bisnis yang ketat di sisi server dan
+            database PostgreSQL. Setiap proses reservasi dan pengelolaan
+            fasilitas dirancang agar transparan, konsisten, dan akuntabel.
           </p>
         </div>
 
-        {/* Asymmetric Content Composition (RHYTHM 3) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          
-          {/* Featured Large Block (7 cols): Slot 30 Menit & Pencegahan Bentrok */}
-          <div className="lg:col-span-7 rounded-2xl border border-[#e2e2e2] bg-[#f9f9f9] p-7 md:p-9 flex flex-col justify-between">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="flex size-8 items-center justify-center rounded-lg bg-[#0c021c] text-white">
-                  <Clock className="size-4" />
+        {/* Main Content */}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+
+          {/* Main Feature */}
+          <div className="relative overflow-hidden rounded-3xl bg-[#010736] p-7 text-white shadow-xl shadow-[#010736]/10 md:p-9 lg:col-span-7">
+
+            {/* Decorative Accent */}
+            <div className="absolute -right-20 -top-20 size-56 rounded-full bg-[#22396F]/40 blur-3xl" />
+            <div className="absolute -bottom-24 -left-12 size-48 rounded-full bg-[#FCF1D0]/10 blur-3xl" />
+
+            <div className="relative">
+
+              {/* Label */}
+              <div className="mb-7 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex size-11 items-center justify-center rounded-2xl bg-[#FCF1D0] text-[#010736]">
+                    <Clock className="size-5" />
+                  </div>
+
+                  <div>
+                    <p className="font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-[#FCF1D0]">
+                      Logika Validasi Server
+                    </p>
+
+                    <p className="mt-0.5 text-xs text-white/55">
+                      Otomatis dan konsisten
+                    </p>
+                  </div>
                 </div>
-                <span className="font-mono text-xs font-bold text-[#0c021c] uppercase tracking-wider">
-                  Logika Validasi Server
+
+                <div className="hidden items-center gap-1.5 rounded-full border border-green-400/20 bg-green-400/10 px-2.5 py-1 text-[10px] font-semibold text-green-300 sm:flex">
+                  <CheckCircle2 className="size-3" />
+                  Aktif
+                </div>
+              </div>
+
+              {/* Title */}
+              <h3 className="max-w-2xl font-heading text-2xl font-bold leading-tight tracking-tight text-white md:text-[30px]">
+                Slot waktu baku 30 menit dan pencegahan bentrok otomatis
+              </h3>
+
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-white/65">
+                Seluruh pengajuan reservasi diverifikasi langsung di server
+                melalui Server Actions. Waktu mulai dan selesai wajib berupa
+                kelipatan 30 menit dalam rentang operasional 07.00–20.00 WIB.
+                Sistem juga mencegah petugas menyetujui reservasi yang
+                bertabrakan pada fasilitas yang sama.
+              </p>
+
+              {/* Rules */}
+              <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
+
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+                  <div className="mb-3 flex items-center gap-2">
+                    <div className="size-2 rounded-full bg-[#FCF1D0]" />
+
+                    <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#FCF1D0]">
+                      Operasional
+                    </p>
+                  </div>
+
+                  <p className="font-heading text-xl font-bold text-white">
+                    07.00–20.00 WIB
+                  </p>
+
+                  <p className="mt-2 text-xs leading-6 text-white/55">
+                    Pengajuan di luar jam operasional otomatis ditolak oleh
+                    sistem.
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-white/10 bg-[#0D1C42] p-5">
+                  <div className="mb-3 flex items-center gap-2">
+                    <div className="size-2 rounded-full bg-[#22396F]" />
+
+                    <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-white/70">
+                      Anti-Overlap
+                    </p>
+                  </div>
+
+                  <p className="font-heading text-xl font-bold text-white">
+                    Validasi Otomatis
+                  </p>
+
+                  <p className="mt-2 text-xs leading-6 text-white/55">
+                    Sistem mendeteksi irisan waktu sebelum reservasi
+                    disetujui petugas.
+                  </p>
+                </div>
+
+              </div>
+
+              {/* Bottom Note */}
+              <div className="mt-8 flex items-center gap-2 border-t border-white/10 pt-5 text-xs text-white/55">
+                <CheckCircle2 className="size-4 shrink-0 text-green-400" />
+
+                <span>
+                  Berlaku untuk seluruh ruang, aula, laboratorium, dan
+                  perlengkapan kampus.
                 </span>
               </div>
 
-              <h3 className="font-heading text-2xl font-bold text-[#0c021c]">
-                Slot Waktu Baku 30 Menit dan Pencegahan Bentrok Otomatis
-              </h3>
-              
-              <p className="mt-3 text-sm text-[#4a454d] leading-relaxed">
-                Seluruh pengajuan reservasi diverifikasi langsung di server (Server Actions). Waktu mulai dan selesai wajib berupa kelipatan 30 menit dalam rentang jam operasional resmi (07.00 sampai 20.00 WIB). Petugas sarpras tidak dapat menyetujui reservasi yang memiliki jadwal bertabrakan pada fasilitas yang sama.
+            </div>
+          </div>
+
+          {/* Right Column */}
+          <div className="grid grid-cols-1 gap-6 lg:col-span-5">
+
+            {/* RLS Card */}
+            <div className="group rounded-3xl border border-[#D8DFEA] bg-white p-7 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#22396F]/25 hover:shadow-lg hover:shadow-[#010736]/5">
+
+              <div className="flex items-start justify-between gap-4">
+
+                <div className="flex size-11 items-center justify-center rounded-2xl bg-[#0D1C42] text-[#FCF1D0]">
+                  <Lock className="size-5" />
+                </div>
+
+                <ArrowUpRight className="size-4 text-[#22396F]/40 transition-colors group-hover:text-[#010736]" />
+
+              </div>
+
+              <p className="mt-7 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-[#22396F]">
+                Supabase Row Level Security
               </p>
 
-              {/* Visual Breakdown Matrix */}
-              <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div className="rounded-xl border border-[#e2e2e2] bg-white p-4">
-                  <div className="font-mono text-xs font-bold text-[#5318eb] mb-1">
-                    OPERASIONAL 07.00 - 20.00 WIB
-                  </div>
-                  <p className="text-xs text-[#4a454d]">
-                    Peminjaman di luar jam layanan kampus otomatis ditolak sistem untuk menjamin keamanan sarana.
-                  </p>
-                </div>
-                <div className="rounded-xl border border-[#e2e2e2] bg-white p-4">
-                  <div className="font-mono text-xs font-bold text-[#5318eb] mb-1">
-                    VALIDASI ANTI-OVERLAP
-                  </div>
-                  <p className="text-xs text-[#4a454d]">
-                    Query database mendeteksi irisan waktu secara presisi sebelum status disetujui petugas.
-                  </p>
-                </div>
+              <h4 className="mt-2 font-heading text-xl font-bold text-[#010736]">
+                Otorisasi di Level Basis Data
+              </h4>
+
+              <p className="mt-3 text-sm leading-6 text-[#52627D]">
+                Akses data dibatasi langsung pada PostgreSQL. Pengunjung,
+                Pengguna, Petugas, dan Admin memiliki hak akses sesuai
+                perannya.
+              </p>
+
+              <div className="mt-7 flex flex-wrap gap-2 border-t border-[#D8DFEA] pt-4">
+                <span className="rounded-full bg-[#F3F5F8] px-2.5 py-1 font-mono text-[10px] font-medium text-[#52627D]">
+                  Pengunjung
+                </span>
+
+                <span className="rounded-full bg-[#F3F5F8] px-2.5 py-1 font-mono text-[10px] font-medium text-[#52627D]">
+                  Pengguna
+                </span>
+
+                <span className="rounded-full bg-[#F3F5F8] px-2.5 py-1 font-mono text-[10px] font-medium text-[#52627D]">
+                  Petugas
+                </span>
+
+                <span className="rounded-full bg-[#010736] px-2.5 py-1 font-mono text-[10px] font-medium text-white">
+                  Admin
+                </span>
               </div>
+
             </div>
 
-            <div className="mt-6 pt-4 border-t border-[#e2e2e2] flex items-center gap-2 text-xs font-medium text-[#4a454d]">
-              <CheckCircle2 className="size-4 text-emerald-600 shrink-0" />
-              <span>Diterapkan pada seluruh tipe ruang, aula, dan perlengkapan.</span>
-            </div>
-          </div>
+            {/* Verification Card */}
+            <div className="group rounded-3xl border border-[#D8DFEA] bg-[#F6F8FB] p-7 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#22396F]/25 hover:shadow-lg hover:shadow-[#010736]/5">
 
-          {/* Right Column (5 cols): RLS & Otorisasi Berjenjang */}
-          <div className="lg:col-span-5 flex flex-col gap-6">
-            
-            {/* Card 1: Row Level Security */}
-            <div className="rounded-2xl border border-[#e2e2e2] bg-[#f9f9f9] p-6 flex-1 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="flex size-7 items-center justify-center rounded-md bg-[#5318eb] text-white">
-                    <Lock className="size-3.5" />
-                  </div>
-                  <span className="font-mono text-xs font-bold text-[#0c021c]">
-                    SUPABASE ROW LEVEL SECURITY (RLS)
-                  </span>
-                </div>
-                <h4 className="font-heading text-lg font-bold text-[#0c021c]">
-                  Otorisasi di Level Basis Data
-                </h4>
-                <p className="mt-2 text-xs text-[#4a454d] leading-relaxed">
-                  Akses data dibatasi langsung di tingkat Postgres. Pengunjung hanya dapat membaca ketersediaan umum, Pengguna mengelola reservasinya sendiri, sedangkan Petugas dan Admin memproses verifikasi.
-                </p>
-              </div>
-              <div className="mt-4 pt-3 border-t border-[#e2e2e2] text-[11px] font-mono text-[#5318eb]">
-                RLS Policies: Pengunjung • Pengguna • Petugas • Admin
-              </div>
-            </div>
+              <div className="flex items-start justify-between gap-4">
 
-            {/* Card 2: Verifikasi Sivitas Mandiri */}
-            <div className="rounded-2xl border border-[#e2e2e2] bg-[#f9f9f9] p-6 flex-1 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="flex size-7 items-center justify-center rounded-md bg-[#0c021c] text-white">
-                    <ShieldCheck className="size-3.5" />
-                  </div>
-                  <span className="font-mono text-xs font-bold text-[#0c021c]">
-                    AKUNTABILITAS PENGGUNA
-                  </span>
+                <div className="flex size-11 items-center justify-center rounded-2xl bg-[#FCF1D0] text-[#010736]">
+                  <ShieldCheck className="size-5" />
                 </div>
-                <h4 className="font-heading text-lg font-bold text-[#0c021c]">
-                  Verifikasi Akun Sivitas oleh Admin
-                </h4>
-                <p className="mt-2 text-xs text-[#4a454d] leading-relaxed">
-                  Mahasiswa dan dosen yang mendaftar secara mandiri wajib diverifikasi oleh Administrator sebelum dapat melakukan reservasi fasilitas, mencegah penyalahgunaan aset kampus.
-                </p>
+
+                <div className="rounded-full bg-white px-2.5 py-1 font-mono text-[10px] font-semibold text-[#22396F]">
+                  VERIFIED
+                </div>
+
               </div>
-              <div className="mt-4 pt-3 border-t border-[#e2e2e2] text-[11px] font-mono text-[#4a454d]">
-                Akun Petugas diterbitkan secara eksklusif oleh Admin
+
+              <p className="mt-7 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-[#22396F]">
+                Akuntabilitas Pengguna
+              </p>
+
+              <h4 className="mt-2 font-heading text-xl font-bold text-[#010736]">
+                Verifikasi Akun Sivitas oleh Admin
+              </h4>
+
+              <p className="mt-3 text-sm leading-6 text-[#52627D]">
+                Mahasiswa dan dosen yang mendaftar secara mandiri perlu
+                diverifikasi oleh Administrator sebelum dapat menggunakan
+                layanan reservasi fasilitas.
+              </p>
+
+              <div className="mt-7 flex items-center gap-2 border-t border-[#D8DFEA] pt-4 text-xs font-medium text-[#010736]">
+                <CheckCircle2 className="size-4 text-[#22396F]" />
+
+                <span>
+                  Akun Petugas diterbitkan secara eksklusif oleh Admin.
+                </span>
               </div>
+
             </div>
 
           </div>
-
         </div>
-
       </div>
     </section>
   )

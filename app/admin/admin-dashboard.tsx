@@ -410,7 +410,7 @@ export default function AdminDashboard({
         {/* Logo */}
         <div className={styles.brand}>
           <img
-            src="/fivora-logo1.png"
+            src="/fivora-logo.png"
             alt="Fivora - Facility & Venue Reservation"
             className={styles.brandLogo}
           />
