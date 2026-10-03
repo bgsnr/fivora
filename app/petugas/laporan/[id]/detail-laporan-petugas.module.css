@@ -288,3 +288,25 @@
     font-size: 28px;
   }
 }
+
+.photo {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 480px;
+  border: 1px solid #e4def2;
+  border-radius: 12px;
+  background: #f8f6ff;
+  object-fit: contain;
+}
+
+.primaryButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.field select:disabled,
+.field textarea:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
