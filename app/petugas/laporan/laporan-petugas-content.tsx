@@ -7,6 +7,7 @@ import { useTransition } from 'react'
 import styles from './laporan-petugas.module.css'
 
 type ReportStatus = 'baru' | 'diproses' | 'selesai' | 'ditolak'
+
 type StatusFilter = 'semua' | ReportStatus
 
 type Report = {
@@ -141,7 +142,8 @@ export default function LaporanPetugasContent({
 
         {!summary && (
           <p role="alert">
-            Ringkasan laporan gagal dimuat. Klik Muat ulang untuk mencoba lagi.
+            Ringkasan laporan gagal dimuat. Klik Muat ulang untuk mencoba
+            lagi.
           </p>
         )}
 
@@ -179,7 +181,10 @@ export default function LaporanPetugasContent({
               </div>
             ) : reports.length > 0 ? (
               reports.map((report) => (
-                <article key={report.id} className={styles.reportCard}>
+                <article
+                  key={report.id}
+                  className={styles.reportCard}
+                >
                   <div className={styles.reportContent}>
                     <div className={styles.reportTop}>
                       <span
@@ -224,24 +229,25 @@ export default function LaporanPetugasContent({
           {!errorMessage && totalPages > 1 && (
             <nav
               aria-label="Halaman antrean laporan"
-              className={styles.toolbar}
-              style={{ marginTop: '24px' }}
+              className={styles.pagination}
             >
               {page > 1 && (
                 <Link
                   href={`/petugas/laporan?status=${selectedStatus}&page=${page - 1}`}
+                  className={styles.paginationLink}
                 >
                   Sebelumnya
                 </Link>
               )}
 
-              <span>
+              <span className={styles.pageInfo}>
                 Halaman {page} dari {totalPages}
               </span>
 
               {page < totalPages && (
                 <Link
                   href={`/petugas/laporan?status=${selectedStatus}&page=${page + 1}`}
+                  className={styles.paginationLink}
                 >
                   Berikutnya
                 </Link>

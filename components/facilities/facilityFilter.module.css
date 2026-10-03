@@ -4,10 +4,10 @@
   margin-bottom: 32px;
   box-sizing: border-box;
   padding: 22px;
-  border: 1px solid #e3daf6;
+  border: 1px solid #d8dfea;
   border-radius: 17px;
   background: #ffffff;
-  box-shadow: 0 4px 20px rgba(96, 61, 219, 0.03);
+  box-shadow: 0 4px 20px rgba(1, 7, 54, 0.04);
 }
 
 .filterGrid {
@@ -23,7 +23,7 @@
 }
 
 .filterGroup label {
-  color: #21164f;
+  color: #010736;
   font-size: 11px;
   font-weight: 700;
 }
@@ -34,24 +34,26 @@
   height: 42px;
   box-sizing: border-box;
   padding: 0 12px;
-  border: 1px solid #ddd6f1;
+  border: 1px solid #d8dfea;
   border-radius: 10px;
   outline: none;
   background: #ffffff;
-  color: #21164f;
+  color: #010736;
   font: inherit;
   font-size: 12px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .filterInput::placeholder {
-  color: #aaa1ba;
+  color: #718097;
 }
 
 .filterInput:focus,
 .filterSelect:focus {
-  border-color: #7650e7;
-  box-shadow: 0 0 0 3px rgba(118, 80, 231, 0.1);
+  border-color: #22396f;
+  box-shadow: 0 0 0 3px rgba(34, 57, 111, 0.1);
 }
 
 .filterAction {
@@ -59,13 +61,13 @@
   justify-content: flex-end;
   margin-top: 14px;
   padding-top: 12px;
-  border-top: 1px solid #f0ebf9;
+  border-top: 1px solid #d8dfea;
 }
 
 .resetButton {
   border: 0;
   background: transparent;
-  color: #603ddb;
+  color: #22396f;
   font: inherit;
   font-size: 11px;
   font-weight: 700;
@@ -74,11 +76,12 @@
 }
 
 .resetButton:hover {
-  color: #4a28b8;
+  color: #010736;
   text-decoration: underline;
 }
 
 /* Responsive */
+
 @media (max-width: 1100px) {
   .filterGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));

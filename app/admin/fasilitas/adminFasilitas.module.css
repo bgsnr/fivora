@@ -1,14 +1,13 @@
-/* app/admin/fasilitas/adminFasilitas.module.css */
-
 .container {
   min-height: 100vh;
   box-sizing: border-box;
   padding: 36px 42px 60px;
-  background: #f6f2ff;
-  color: #21164f;
+  background: #f7f9fc;
+  color: #010736;
 }
 
 /* Header Section */
+
 .header {
   display: flex;
   align-items: flex-end;
@@ -19,7 +18,7 @@
 
 .eyebrow {
   margin: 0 0 7px;
-  color: #7448ef;
+  color: #22396f;
   font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.16em;
@@ -28,7 +27,7 @@
 
 .title {
   margin: 0;
-  color: #21164f;
+  color: #010736;
   font-size: 32px;
   font-weight: 800;
   line-height: 1.1;
@@ -37,7 +36,8 @@
 
 .subtitle {
   margin: 8px 0 0;
-  color: #756c92;
+  max-width: 720px;
+  color: #52627d;
   font-size: 13px;
   line-height: 1.5;
 }
@@ -49,28 +49,34 @@
   box-sizing: border-box;
   padding: 10px 18px;
   border: 0;
-  border-radius: 10px;
-  background: #603ddb;
+  border-radius: 999px;
+  background: #010736;
   color: #ffffff;
   font: inherit;
   font-size: 12px;
   font-weight: 700;
   text-decoration: none;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .createButton:hover {
-  background: #5432c8;
+  background: #0d1c42;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(1, 7, 54, 0.12);
 }
 
 /* Card Tabel Facilities */
+
 .tableCard {
   overflow: hidden;
-  border: 1px solid #e3daf6;
-  border-radius: 17px;
+  border: 1px solid #d8dfea;
+  border-radius: 20px;
   background: #ffffff;
-  box-shadow: 0 4px 20px rgba(96, 61, 219, 0.03);
+  box-shadow: 0 4px 20px rgba(1, 7, 54, 0.04);
 }
 
 .tableWrapper {
@@ -86,19 +92,20 @@
 
 .table th {
   padding: 16px 20px;
-  background: #fbf9ff;
-  border-bottom: 1px solid #e3daf6;
-  color: #756c92;
+  background: #f8fafc;
+  border-bottom: 1px solid #d8dfea;
+  color: #52627d;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 
 .table td {
   padding: 18px 20px;
-  border-bottom: 1px solid #eee8f7;
-  color: #21164f;
+  border-bottom: 1px solid #e7ebf1;
+  color: #52627d;
   font-size: 12px;
 }
 
@@ -107,44 +114,57 @@
 }
 
 .table tr:hover td {
-  background: #fcfaff;
+  background: #f8fafc;
 }
 
 .facilityName {
   font-weight: 700;
-  color: #21164f;
+  color: #010736;
 }
 
 /* Badges Status */
+
 .badgeActive {
-  padding: 4px 8px;
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 9px;
+  border: 1px solid #b8e3cd;
   border-radius: 999px;
   background: #effbf5;
   color: #167d52;
   font-size: 9px;
   font-weight: 800;
+  white-space: nowrap;
 }
 
 .badgeInactive {
-  padding: 4px 8px;
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 9px;
+  border: 1px solid #efb7bf;
   border-radius: 999px;
   background: #fff1f3;
   color: #c53c50;
   font-size: 9px;
   font-weight: 800;
+  white-space: nowrap;
 }
 
 .badgeMaintenance {
-  padding: 4px 8px;
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 9px;
+  border: 1px solid #ead9a3;
   border-radius: 999px;
   background: #fffbf2;
-  border: 1px solid #e8d5a7;
   color: #8b6517;
   font-size: 9px;
   font-weight: 800;
+  white-space: nowrap;
 }
 
 /* Action Buttons */
+
 .actions {
   display: flex;
   align-items: center;
@@ -152,34 +172,40 @@
 }
 
 .editButton {
-  padding: 6px 12px;
-  border: 1px solid #ddd6f1;
-  border-radius: 8px;
+  padding: 7px 12px;
+  border: 1px solid #d8dfea;
+  border-radius: 999px;
   background: #ffffff;
-  color: #603ddb;
+  color: #010736;
   font: inherit;
   font-size: 11px;
   font-weight: 700;
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
 .editButton:hover {
-  border-color: #c9b9ed;
-  background: #f8f4ff;
+  border-color: #22396f;
+  background: #fcf1d0;
+  color: #010736;
 }
 
 .toggleButton {
-  padding: 6px 12px;
+  padding: 7px 12px;
   border: 1px solid #efb7bf;
-  border-radius: 8px;
+  border-radius: 999px;
   background: #fff7f8;
   color: #b33d50;
   font: inherit;
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .toggleButton:hover {
@@ -187,24 +213,33 @@
   border-color: #e6a6b0;
 }
 
+.toggleButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 .activateButton {
-  padding: 6px 12px;
+  padding: 7px 12px;
   border: 1px solid #b5ddc9;
-  border-radius: 8px;
+  border-radius: 999px;
   background: #effbf5;
   color: #167d52;
   font: inherit;
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .activateButton:hover {
   background: #e3f7ec;
+  border-color: #92d1b0;
 }
 
 /* Modal Backdrop & Body */
+
 .modalBackdrop {
   position: fixed;
   inset: 0;
@@ -213,7 +248,7 @@
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: rgba(39, 20, 78, 0.48);
+  background: rgba(1, 7, 54, 0.55);
 }
 
 .modal {
@@ -221,34 +256,88 @@
   max-height: 90vh;
   overflow-y: auto;
   box-sizing: border-box;
-  padding: 26px;
-  border: 1px solid #e3daf6;
-  border-radius: 19px;
+  padding: 27px;
+  border: 1px solid #d8dfea;
+  border-radius: 20px;
   background: #ffffff;
-  box-shadow: 0 25px 80px rgba(67, 40, 130, 0.2);
+  box-shadow: 0 25px 80px rgba(1, 7, 54, 0.2);
+}
+
+.modalHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
 }
 
 .modalHeader h2 {
   margin: 0;
-  color: #21164f;
+  color: #010736;
   font-size: 20px;
   font-weight: 800;
+  letter-spacing: -0.03em;
 }
 
 .modalHeader p {
   margin: 6px 0 0;
-  color: #827995;
+  color: #718097;
   font-size: 12px;
+}
+
+.modalHeader strong {
+  color: #010736;
+}
+
+.closeModalButton {
+  width: 33px;
+  height: 33px;
+  flex: 0 0 33px;
+  border: 0;
+  border-radius: 10px;
+  background: #eef2f7;
+  color: #52627d;
+  font-size: 21px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.closeModalButton:hover {
+  background: #fcf1d0;
+  color: #010736;
+}
+
+.closeModalButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .warningBox {
   margin-top: 16px;
-  padding: 12px;
-  border-radius: 10px;
-  background: #fff1f3;
+  padding: 13px;
   border: 1px solid #efb7bf;
+  border-radius: 12px;
+  background: #fff1f3;
+  color: #b33d50;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.warningBox strong {
+  color: #8f2639;
+}
+
+.errorBox {
+  margin-top: 16px;
+  padding: 13px;
+  border: 1px solid #efb7bf;
+  border-radius: 12px;
+  background: #fff1f3;
   color: #c53c50;
   font-size: 12px;
+  line-height: 1.5;
 }
 
 .reservationList {
@@ -261,11 +350,31 @@
 }
 
 .reservationItem {
-  padding: 10px;
-  border-radius: 8px;
-  background: #fbf9ff;
-  border: 1px solid #eee8f7;
+  padding: 11px 12px;
+  border: 1px solid #d8dfea;
+  border-radius: 11px;
+  background: #f8fafc;
+  color: #52627d;
   font-size: 11px;
+  line-height: 1.55;
+}
+
+.reservationItem strong {
+  color: #010736;
+}
+
+.modalHint {
+  margin: 12px 0 0;
+  color: #718097;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.modalDescription {
+  margin: 16px 0 0;
+  color: #52627d;
+  font-size: 12px;
+  line-height: 1.6;
 }
 
 .modalActions {
@@ -276,41 +385,72 @@
 }
 
 .cancelModalButton {
-  padding: 8px 14px;
-  border: 1px solid #ddd6f1;
-  border-radius: 8px;
+  padding: 9px 15px;
+  border: 1px solid #d8dfea;
+  border-radius: 999px;
   background: #ffffff;
-  color: #756c92;
+  color: #52627d;
   font: inherit;
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.cancelModalButton:hover {
+  border-color: #22396f;
+  background: #f7f9fc;
+  color: #010736;
+}
+
+.cancelModalButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .confirmDeactivateButton {
-  padding: 8px 14px;
+  padding: 9px 15px;
   border: 0;
-  border-radius: 8px;
+  border-radius: 999px;
   background: #c53c50;
   color: #ffffff;
   font: inherit;
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
+  transition:
+    background 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.confirmDeactivateButton:hover:not(:disabled) {
+  background: #a92f42;
+}
+
+.confirmDeactivateButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 /* Loading & Empty State */
+
 .loadingState {
   padding: 50px;
   text-align: center;
-  color: #756c92;
+  color: #52627d;
   font-size: 13px;
 }
 
 .emptyState {
   padding: 50px;
+  border: 1px solid #d8dfea;
+  border-radius: 20px;
+  background: #ffffff;
   text-align: center;
-  color: #857b99;
+  color: #718097;
   font-size: 13px;
 }
 
@@ -322,5 +462,27 @@
   .header {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .createButton {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .actions {
+    flex-wrap: wrap;
+  }
+
+  .modal {
+    padding: 22px;
+  }
+
+  .modalActions {
+    flex-direction: column-reverse;
+  }
+
+  .cancelModalButton,
+  .confirmDeactivateButton {
+    width: 100%;
   }
 }

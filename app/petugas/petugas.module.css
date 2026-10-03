@@ -1,8 +1,8 @@
 .page {
   min-height: 100vh;
   padding: 28px 40px 80px;
-  background: #faf9f6;
-  color: #242126;
+  background: #f7f9fc;
+  color: #010736;
   font-family: var(--font-petugas), sans-serif;
   -webkit-font-smoothing: antialiased;
 }
@@ -17,22 +17,26 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px 0 26px;
-  border-bottom: 1px solid #dedbd5;
+  border-bottom: 1px solid #d8dfea;
 }
 
 .brand {
-  color: #35205c;
+  color: #010736;
   font-size: 23px;
   font-weight: 700;
   letter-spacing: -0.8px;
   text-decoration: none;
 }
 
+.brand:hover {
+  color: #0d1c42;
+}
+
 .role {
   display: flex;
   align-items: center;
   gap: 9px;
-  color: #68636c;
+  color: #52627d;
   font-size: 13px;
   font-weight: 400;
 }
@@ -42,8 +46,10 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #78977b;
+  background: #22396f;
 }
+
+/* Welcome */
 
 .welcome {
   max-width: 780px;
@@ -52,16 +58,17 @@
 
 .eyebrow {
   margin: 0 0 18px;
-  color: #827b88;
+  color: #22396f;
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 2px;
 }
 
 .welcome h1 {
   margin: 0;
+  color: #010736;
   font-size: clamp(32px, 4.5vw, 52px);
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.15;
   letter-spacing: -1.8px;
   overflow-wrap: anywhere;
@@ -70,17 +77,19 @@
 .welcome > p:last-child {
   max-width: 580px;
   margin: 20px 0 0;
-  color: #77717a;
+  color: #52627d;
   font-size: 15px;
   font-weight: 400;
   line-height: 1.8;
 }
 
+/* Menu */
+
 .menu {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  border-top: 1px solid #dedbd5;
-  border-bottom: 1px solid #dedbd5;
+  border-top: 1px solid #d8dfea;
+  border-bottom: 1px solid #d8dfea;
 }
 
 .card {
@@ -94,7 +103,7 @@
 .card + .card {
   padding-left: 40px;
   padding-right: 0;
-  border-left: 1px solid #dedbd5;
+  border-left: 1px solid #d8dfea;
 }
 
 .card::before {
@@ -102,7 +111,7 @@
   top: 40px;
   right: 40px;
   content: "01";
-  color: #c0b9c7;
+  color: #9aa6b8;
   font-size: 12px;
   letter-spacing: 1px;
 }
@@ -112,33 +121,44 @@
   content: "02";
 }
 
+/* Icon */
+
 .icon {
   display: flex;
   align-items: center;
-  height: 40px;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
   margin-bottom: 30px;
-  color: #71548f;
+  border-radius: 13px;
+  background: #fcf1d0;
+  color: #010736;
 }
 
 .icon svg {
-  stroke-width: 1.4;
+  stroke-width: 1.7;
 }
+
+/* Card Content */
 
 .card h2 {
   margin: 0;
+  color: #010736;
   font-size: 25px;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: -0.7px;
 }
 
 .card p {
   max-width: 410px;
   margin: 16px 0 34px;
-  color: #77717a;
+  color: #52627d;
   font-size: 14px;
   font-weight: 400;
   line-height: 1.85;
 }
+
+/* Buttons */
 
 .primaryButton,
 .disabledButton {
@@ -150,35 +170,44 @@
   margin-top: auto;
   padding: 12px 18px;
   border: 1px solid transparent;
-  border-radius: 5px;
+  border-radius: 999px;
   font: inherit;
   font-size: 13px;
-  font-weight: 400;
+  font-weight: 600;
   text-decoration: none;
 }
 
 .primaryButton {
-  background: #4f3172;
+  background: #010736;
   color: #ffffff;
-  transition: background 150ms ease;
+  transition:
+    background 150ms ease,
+    transform 150ms ease,
+    box-shadow 150ms ease;
 }
 
 .primaryButton:hover {
-  background: #3d235b;
+  background: #0d1c42;
+  transform: translateY(-1px);
+  box-shadow: 0 7px 18px rgba(1, 7, 54, 0.12);
 }
 
 .disabledButton {
-  border-color: #dedbd5;
-  background: transparent;
-  color: #aaa3ac;
+  border-color: #d8dfea;
+  background: #f1f4f8;
+  color: #8d98aa;
   cursor: not-allowed;
 }
 
+/* Focus */
+
 .primaryButton:focus-visible,
 .brand:focus-visible {
-  outline: 2px solid #71548f;
+  outline: 2px solid #22396f;
   outline-offset: 5px;
 }
+
+/* Responsive */
 
 @media (max-width: 700px) {
   .page {
@@ -200,7 +229,7 @@
   }
 
   .card + .card {
-    border-top: 1px solid #dedbd5;
+    border-top: 1px solid #d8dfea;
   }
 
   .card::before,

@@ -1,10 +1,15 @@
 // app/fasilitas/page.tsx
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+
 import Link from 'next/link';
+
 import { createClient } from '@/lib/supabase/client';
+
 import { Facility, FacilityStatus } from '@/types/facility';
+
 import styles from './fasilitas.module.css';
 
 export default function CatalogFacilitiesPage() {
@@ -41,6 +46,7 @@ export default function CatalogFacilitiesPage() {
       } else {
         setFacilities(data || []);
       }
+
       setLoading(false);
     }
 
@@ -49,12 +55,18 @@ export default function CatalogFacilitiesPage() {
 
   // Opsi unik untuk dropdown Tipe dan Lokasi
   const uniqueTypes = useMemo(() => {
-    const types = facilities.map((f) => f.type).filter((t): t is string => Boolean(t));
+    const types = facilities
+      .map((f) => f.type)
+      .filter((t): t is string => Boolean(t));
+
     return Array.from(new Set(types));
   }, [facilities]);
 
   const uniqueLocations = useMemo(() => {
-    const locations = facilities.map((f) => f.location).filter((l): l is string => Boolean(l));
+    const locations = facilities
+      .map((f) => f.location)
+      .filter((l): l is string => Boolean(l));
+
     return Array.from(new Set(locations));
   }, [facilities]);
 
@@ -63,33 +75,63 @@ export default function CatalogFacilitiesPage() {
     return facilities.filter((f) => {
       const matchesSearch =
         f.name.toLowerCase().includes(search.toLowerCase()) ||
-        (f.description && f.description.toLowerCase().includes(search.toLowerCase()));
+        (f.description &&
+          f.description.toLowerCase().includes(search.toLowerCase()));
 
-      const matchesType = selectedType === 'all' || f.type === selectedType;
-      const matchesLocation = selectedLocation === 'all' || f.location === selectedLocation;
+      const matchesType =
+        selectedType === 'all' || f.type === selectedType;
+
+      const matchesLocation =
+        selectedLocation === 'all' || f.location === selectedLocation;
+
       const matchesCapacity =
-        minCapacity === '' || (f.capacity !== null && f.capacity >= Number(minCapacity));
+        minCapacity === '' ||
+        (f.capacity !== null && f.capacity >= Number(minCapacity));
 
-      return matchesSearch && matchesType && matchesLocation && matchesCapacity;
+      return (
+        matchesSearch &&
+        matchesType &&
+        matchesLocation &&
+        matchesCapacity
+      );
     });
   }, [facilities, search, selectedType, selectedLocation, minCapacity]);
 
   // Helper Badge Status
   const renderStatusBadge = (status: FacilityStatus) => {
-    if (status === 'dalam_perbaikan' || status === 'under_maintenance') {
-      return <span className={styles.badgeMaintenance}>DALAM PERBAIKAN</span>;
+    if (
+      status === 'dalam_perbaikan' ||
+      status === 'under_maintenance'
+    ) {
+      return (
+        <span className={styles.badgeMaintenance}>
+          DALAM PERBAIKAN
+        </span>
+      );
     }
-    return <span className={styles.badgeActive}>TERSEDIA</span>;
+
+    return (
+      <span className={styles.badgeActive}>
+        TERSEDIA
+      </span>
+    );
   };
 
   return (
     <div className={styles.container}>
       {/* Header */}
       <div className={styles.header}>
-        <p className={styles.eyebrow}>KATALOG & JADWAL FASILITAS</p>
-        <h1 className={styles.title}>Fasilitas Kampus</h1>
+        <p className={styles.eyebrow}>
+          KATALOG & JADWAL FASILITAS
+        </p>
+
+        <h1 className={styles.title}>
+          Fasilitas Kampus
+        </h1>
+
         <p className={styles.subtitle}>
-          Cari dan cek ketersediaan ruang kelas, laboratorium, aula, alat, dan lapangan kampus.
+          Cari dan cek ketersediaan ruang kelas, laboratorium, aula, alat,
+          dan lapangan kampus.
         </p>
       </div>
 
@@ -98,7 +140,10 @@ export default function CatalogFacilitiesPage() {
         <div className={styles.filterGrid}>
           {/* Input Pencarian Nama */}
           <div className={styles.filterGroup}>
-            <label htmlFor="search">Cari Fasilitas</label>
+            <label htmlFor="search">
+              Cari Fasilitas
+            </label>
+
             <input
               type="text"
               id="search"
@@ -111,14 +156,20 @@ export default function CatalogFacilitiesPage() {
 
           {/* Filter Tipe */}
           <div className={styles.filterGroup}>
-            <label htmlFor="type">Tipe Fasilitas</label>
+            <label htmlFor="type">
+              Tipe Fasilitas
+            </label>
+
             <select
               id="type"
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
               className={styles.filterSelect}
             >
-              <option value="all">Semua Tipe</option>
+              <option value="all">
+                Semua Tipe
+              </option>
+
               {uniqueTypes.map((type) => (
                 <option key={type} value={type}>
                   {type}
@@ -129,14 +180,20 @@ export default function CatalogFacilitiesPage() {
 
           {/* Filter Lokasi */}
           <div className={styles.filterGroup}>
-            <label htmlFor="location">Lokasi</label>
+            <label htmlFor="location">
+              Lokasi
+            </label>
+
             <select
               id="location"
               value={selectedLocation}
               onChange={(e) => setSelectedLocation(e.target.value)}
               className={styles.filterSelect}
             >
-              <option value="all">Semua Lokasi</option>
+              <option value="all">
+                Semua Lokasi
+              </option>
+
               {uniqueLocations.map((loc) => (
                 <option key={loc} value={loc}>
                   {loc}
@@ -147,13 +204,22 @@ export default function CatalogFacilitiesPage() {
 
           {/* Filter Kapasitas */}
           <div className={styles.filterGroup}>
-            <label htmlFor="capacity">Kapasitas Minimal</label>
+            <label htmlFor="capacity">
+              Kapasitas Minimal
+            </label>
+
             <input
               type="number"
               id="capacity"
               min="0"
               value={minCapacity}
-              onChange={(e) => setMinCapacity(e.target.value === '' ? '' : Number(e.target.value))}
+              onChange={(e) =>
+                setMinCapacity(
+                  e.target.value === ''
+                    ? ''
+                    : Number(e.target.value)
+                )
+              }
               placeholder="Kapasitas minimum..."
               className={styles.filterInput}
             />
@@ -161,7 +227,10 @@ export default function CatalogFacilitiesPage() {
         </div>
 
         {/* Reset Filter Button */}
-        {(search || selectedType !== 'all' || selectedLocation !== 'all' || minCapacity !== '') && (
+        {(search ||
+          selectedType !== 'all' ||
+          selectedLocation !== 'all' ||
+          minCapacity !== '') && (
           <div className={styles.filterAction}>
             <button
               onClick={() => {
@@ -179,57 +248,97 @@ export default function CatalogFacilitiesPage() {
       </div>
 
       {/* State Loading */}
-      {loading && <div className={styles.loadingState}>Memuat data fasilitas...</div>}
+      {loading && (
+        <div className={styles.loadingState}>
+          Memuat data fasilitas...
+        </div>
+      )}
 
       {/* State Error */}
-      {error && <div className={styles.errorState}>{error}</div>}
+      {error && (
+        <div className={styles.errorState}>
+          {error}
+        </div>
+      )}
 
       {/* State Kosong */}
-      {!loading && !error && filteredFacilities.length === 0 && (
-        <div className={styles.emptyState}>
-          <h3>Fasilitas Tidak Ditemukan</h3>
-          <p>Coba ubah kata kunci pencarian atau pilihan filter Anda.</p>
-        </div>
-      )}
+      {!loading &&
+        !error &&
+        filteredFacilities.length === 0 && (
+          <div className={styles.emptyState}>
+            <h3>
+              Fasilitas Tidak Ditemukan
+            </h3>
+
+            <p>
+              Coba ubah kata kunci pencarian atau pilihan filter Anda.
+            </p>
+          </div>
+        )}
 
       {/* Grid Fasilitas */}
-      {!loading && !error && filteredFacilities.length > 0 && (
-        <div className={styles.facilityGrid}>
-          {filteredFacilities.map((facility) => (
-            <div key={facility.id} className={styles.facilityCard}>
-              <div>
-                <div className={styles.cardHeader}>
-                  <h2 className={styles.facilityName}>{facility.name}</h2>
-                  {renderStatusBadge(facility.status)}
+      {!loading &&
+        !error &&
+        filteredFacilities.length > 0 && (
+          <div className={styles.facilityGrid}>
+            {filteredFacilities.map((facility) => (
+              <div
+                key={facility.id}
+                className={styles.facilityCard}
+              >
+                <div>
+                  <div className={styles.cardHeader}>
+                    <h2 className={styles.facilityName}>
+                      {facility.name}
+                    </h2>
+
+                    {renderStatusBadge(facility.status)}
+                  </div>
+
+                  <div className={styles.cardDetails}>
+                    <p>
+                      Tipe:{' '}
+                      <strong>
+                        {facility.type || '-'}
+                      </strong>
+                    </p>
+
+                    <p>
+                      Lokasi:{' '}
+                      <strong>
+                        {facility.location || '-'}
+                      </strong>
+                    </p>
+
+                    <p>
+                      Kapasitas:{' '}
+                      <strong>
+                        {facility.capacity
+                          ? `${facility.capacity} Orang`
+                          : '-'}
+                      </strong>
+                    </p>
+                  </div>
+
+                  {facility.description && (
+                    <p className={styles.description}>
+                      {facility.description}
+                    </p>
+                  )}
                 </div>
 
-                <div className={styles.cardDetails}>
-                  <p>
-                    Tipe: <strong>{facility.type || '-'}</strong>
-                  </p>
-                  <p>
-                    Lokasi: <strong>{facility.location || '-'}</strong>
-                  </p>
-                  <p>
-                    Kapasitas:{' '}
-                    <strong>{facility.capacity ? `${facility.capacity} Orang` : '-'}</strong>
-                  </p>
+                <div className={styles.cardFooter}>
+                  <Link
+                    href={`/fasilitas/${facility.id}`}
+                    className={styles.actionButton}
+                  >
+                    Cek Jadwal & Ketersediaan
+                  </Link>
                 </div>
-
-                {facility.description && (
-                  <p className={styles.description}>{facility.description}</p>
-                )}
               </div>
-
-              <div className={styles.cardFooter}>
-                <Link href={`/fasilitas/${facility.id}`} className={styles.actionButton}>
-                  Cek Jadwal & Ketersediaan
-                </Link>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 .page {
   min-height: 100vh;
   padding: 48px 24px;
-  background: #f4f0ff;
+  background: #f7f9fc;
 }
 
 .card {
@@ -10,12 +10,12 @@
   padding: 40px;
   border-radius: 24px;
   background: #ffffff;
-  box-shadow: 0 20px 60px rgba(78, 53, 145, 0.12);
+  box-shadow: 0 20px 60px rgba(1, 7, 54, 0.08);
 }
 
 .eyebrow {
   margin: 0 0 8px;
-  color: #7448ef;
+  color: #22396f;
   font-size: 16px;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -23,14 +23,15 @@
 
 .card h1 {
   margin: 0;
-  color: #21164f;
+  color: #010736;
   font-size: 34px;
   line-height: 1.2;
+  font-weight: 600;
 }
 
 .description {
   margin: 10px 0 0;
-  color: #756c92;
+  color: #52627d;
   font-size: 15px;
   line-height: 1.6;
 }
@@ -64,7 +65,7 @@
 }
 
 .field > span {
-  color: #21164f;
+  color: #010736;
   font-size: 14px;
   font-weight: 700;
 }
@@ -74,13 +75,16 @@
 .field input {
   width: 100%;
   box-sizing: border-box;
-  border: 2px solid #ddd6f1;
+  border: 2px solid #d8dfea;
   border-radius: 13px;
   outline: none;
   background: #ffffff;
-  color: #241752;
+  color: #010736;
   font-family: inherit;
   font-size: 14px;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .field select,
@@ -97,18 +101,18 @@
 .field select:focus,
 .field textarea:focus,
 .field input:focus {
-  border-color: #7650e7;
-  box-shadow: 0 0 0 3px rgba(118, 80, 231, 0.1);
+  border-color: #22396f;
+  box-shadow: 0 0 0 3px rgba(34, 57, 111, 0.1);
 }
 
 .field small {
-  color: #756c92;
+  color: #718097;
   font-size: 12px;
 }
 
 .preview p {
   margin: 0 0 10px;
-  color: #21164f;
+  color: #010736;
   font-size: 14px;
   font-weight: 700;
 }
@@ -145,14 +149,32 @@
   height: 48px;
   border: none;
   border-radius: 12px;
-  background: #603ddb;
+  background: #010736;
   color: #ffffff;
   font-family: inherit;
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .submitButton:hover {
-  background: #5432c8;
+  background: #0d1c42;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(1, 7, 54, 0.1);
+}
+
+.submitButton:focus-visible {
+  outline: 2px solid #22396f;
+  outline-offset: 4px;
+}
+
+.submitButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }

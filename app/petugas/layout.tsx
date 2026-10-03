@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+
 import { Manrope } from 'next/font/google'
 
 const manrope = Manrope({
@@ -13,7 +14,7 @@ export default function PetugasLayout({
   children: ReactNode
 }) {
   return (
-    <div className={manrope.variable}>
+    <div className={`${manrope.variable} min-h-screen`}>
       {children}
     </div>
   )

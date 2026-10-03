@@ -1,139 +1,317 @@
-'use client';
+'use client'
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { createClient } from '@/lib/supabase/client';
-import { Facility, FacilityStatus } from '@/types/facility';
-import styles from './adminFasilitas.module.css';
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
+
+import { createClient } from '@/lib/supabase/client'
+
+import {
+  Facility,
+  FacilityStatus,
+} from '@/types/facility'
+
+import styles from './adminFasilitas.module.css'
 
 interface PendingReservation {
-  id: number;
-  user_name: string;
-  start_time: string;
-  end_time: string;
-  status: string;
+  id: number
+  user_name: string
+  reservation_date: string
+  start_time: string
+  end_time: string
+  status: string
+}
+
+const supabase = createClient()
+
+function getTodayLocal() {
+  const today = new Date()
+
+  const year = today.getFullYear()
+  const month = String(today.getMonth() + 1).padStart(2, '0')
+  const day = String(today.getDate()).padStart(2, '0')
+
+  return `${year}-${month}-${day}`
+}
+
+function getCurrentTimeLocal() {
+  const now = new Date()
+
+  const hours = String(now.getHours()).padStart(2, '0')
+  const minutes = String(now.getMinutes()).padStart(2, '0')
+  const seconds = String(now.getSeconds()).padStart(2, '0')
+
+  return `${hours}:${minutes}:${seconds}`
 }
 
 export default function AdminFacilitiesPage() {
-  const supabase = createClient();
+  const [facilities, setFacilities] = useState<Facility[]>([])
+  const [loading, setLoading] = useState<boolean>(true)
 
-  const [facilities, setFacilities] = useState<Facility[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  /* State Modal Penonaktifan */
+  const [selectedFacility, setSelectedFacility] =
+    useState<Facility | null>(null)
 
-  // State Modal Penonaktifan (Aturan 13)
-  const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
-  const [pendingReservations, setPendingReservations] = useState<PendingReservation[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [checkingReservations, setCheckingReservations] = useState<boolean>(false);
+  const [pendingReservations, setPendingReservations] =
+    useState<PendingReservation[]>([])
 
-  // Fetch Semua Fasilitas (Termasuk Nonaktif)
+  const [isModalOpen, setIsModalOpen] =
+    useState<boolean>(false)
+
+  const [checkingReservations, setCheckingReservations] =
+    useState<boolean>(false)
+
+  const [reservationCheckError, setReservationCheckError] =
+    useState<string>('')
+
+  /* Fetch Semua Fasilitas */
   const fetchFacilities = async () => {
-    setLoading(true);
+    setLoading(true)
+
     const { data, error } = await supabase
       .from('facilities')
       .select('*')
-      .order('id', { ascending: true });
+      .order('id', { ascending: true })
 
     if (error) {
-      console.error('Error fetching facilities:', error);
+      console.error(
+        'Error fetching facilities:',
+        error
+      )
     } else {
-      setFacilities(data || []);
+      setFacilities(data || [])
     }
-    setLoading(false);
-  };
+
+    setLoading(false)
+  }
 
   useEffect(() => {
-    fetchFacilities();
-  }, [supabase]);
+    fetchFacilities()
+  }, [])
 
-  // Handle Klik Menonaktifkan Fasilitas (Pengecekan Aturan 13)
-  const handleInitiateDeactivate = async (facility: Facility) => {
-    setSelectedFacility(facility);
-    setCheckingReservations(true);
-    setIsModalOpen(true);
+  /* Handle Klik Menonaktifkan Fasilitas */
+  const handleInitiateDeactivate = async (
+    facility: Facility
+  ) => {
+    setSelectedFacility(facility)
+    setPendingReservations([])
+    setReservationCheckError('')
+    setCheckingReservations(true)
+    setIsModalOpen(true)
 
-    const nowIso = new Date().toISOString();
+    const today = getTodayLocal()
+    const currentTime = getCurrentTimeLocal()
 
-    // Cek apakah ada reservasi mendatang yang masih 'menunggu' atau 'disetujui'
+    /*
+     * Ambil semua reservasi mulai hari ini ke depan.
+     *
+     * reservation_date = DATE
+     * start_time       = TIME
+     * end_time         = TIME
+     */
     const { data, error } = await supabase
       .from('reservations')
-      .select('id, user_name, start_time, end_time, status')
+      .select(
+        'id, user_name, reservation_date, start_time, end_time, status'
+      )
       .eq('facility_id', facility.id)
-      .in('status', ['menunggu', 'pending', 'disetujui', 'approved'])
-      .gte('end_time', nowIso);
+      .in('status', [
+        'menunggu',
+        'pending',
+        'disetujui',
+        'approved',
+      ])
+      .gte('reservation_date', today)
+      .order('reservation_date', {
+        ascending: true,
+      })
+      .order('start_time', {
+        ascending: true,
+      })
 
     if (error) {
-      console.error('Error checking reservations:', error);
-    } else {
-      setPendingReservations(data || []);
-    }
-    setCheckingReservations(false);
-  };
+      console.error(
+        'Error checking reservations:',
+        error
+      )
 
-  // Konfirmasi Eksekusi Menonaktifkan
+      setReservationCheckError(
+        'Gagal memeriksa reservasi mendatang. Silakan coba lagi.'
+      )
+    } else {
+      /*
+       * Untuk reservasi hari ini:
+       * hanya anggap masih mendatang bila end_time
+       * belum lewat waktu sekarang.
+       *
+       * Untuk tanggal setelah hari ini:
+       * semuanya masih mendatang.
+       */
+      const futureReservations = (data || []).filter(
+        (reservation) => {
+          if (
+            reservation.reservation_date > today
+          ) {
+            return true
+          }
+
+          return reservation.end_time >= currentTime
+        }
+      )
+
+      setPendingReservations(
+        futureReservations
+      )
+    }
+
+    setCheckingReservations(false)
+  }
+
+  /* Konfirmasi Eksekusi Menonaktifkan */
   const confirmDeactivate = async () => {
-    if (!selectedFacility) return;
+    if (!selectedFacility) {
+      return
+    }
+
+    if (
+      checkingReservations ||
+      reservationCheckError ||
+      pendingReservations.length > 0
+    ) {
+      return
+    }
 
     const { error } = await supabase
       .from('facilities')
-      .update({ status: 'nonaktif', updated_at: new Date().toISOString() })
-      .eq('id', selectedFacility.id);
+      .update({
+        status: 'nonaktif',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', selectedFacility.id)
 
     if (error) {
-      alert('Gagal menonaktifkan fasilitas: ' + error.message);
-    } else {
-      setIsModalOpen(false);
-      setSelectedFacility(null);
-      fetchFacilities();
+      alert(
+        'Gagal menonaktifkan fasilitas: ' +
+          error.message
+      )
+      return
     }
-  };
 
-  // Handle Mengaktifkan Kembali Fasilitas
+    setIsModalOpen(false)
+    setSelectedFacility(null)
+    setPendingReservations([])
+    setReservationCheckError('')
+
+    fetchFacilities()
+  }
+
+  /* Handle Mengaktifkan Kembali Fasilitas */
   const handleActivate = async (id: number) => {
     const { error } = await supabase
       .from('facilities')
-      .update({ status: 'aktif', updated_at: new Date().toISOString() })
-      .eq('id', id);
+      .update({
+        status: 'aktif',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id)
 
     if (error) {
-      alert('Gagal mengaktifkan fasilitas: ' + error.message);
-    } else {
-      fetchFacilities();
+      alert(
+        'Gagal mengaktifkan fasilitas: ' +
+          error.message
+      )
+      return
     }
-  };
 
-  // Render Helper Badge Status
-  const renderBadge = (status: FacilityStatus) => {
-    if (status === 'nonaktif' || status === 'inactive') {
-      return <span className={styles.badgeInactive}>NONAKTIF</span>;
+    fetchFacilities()
+  }
+
+  /* Tutup Modal */
+  const closeModal = () => {
+    if (checkingReservations) {
+      return
     }
-    if (status === 'dalam_perbaikan' || status === 'under_maintenance') {
-      return <span className={styles.badgeMaintenance}>DALAM PERBAIKAN</span>;
+
+    setIsModalOpen(false)
+    setSelectedFacility(null)
+    setPendingReservations([])
+    setReservationCheckError('')
+  }
+
+  /* Render Helper Badge Status */
+  const renderBadge = (
+    status: FacilityStatus
+  ) => {
+    if (
+      status === 'nonaktif' ||
+      status === 'inactive'
+    ) {
+      return (
+        <span
+          className={styles.badgeInactive}
+        >
+          NONAKTIF
+        </span>
+      )
     }
-    return <span className={styles.badgeActive}>AKTIF</span>;
-  };
+
+    if (
+      status === 'dalam_perbaikan' ||
+      status === 'under_maintenance'
+    ) {
+      return (
+        <span
+          className={styles.badgeMaintenance}
+        >
+          DALAM PERBAIKAN
+        </span>
+      )
+    }
+
+    return (
+      <span className={styles.badgeActive}>
+        AKTIF
+      </span>
+    )
+  }
 
   return (
     <div className={styles.container}>
       {/* Header */}
       <div className={styles.header}>
         <div>
-          <p className={styles.eyebrow}>MANAJEMEN DATA MASTER</p>
-          <h1 className={styles.title}>Kelola Fasilitas Kampus</h1>
+          <p className={styles.eyebrow}>
+            MANAJEMEN DATA MASTER
+          </p>
+
+          <h1 className={styles.title}>
+            Kelola Fasilitas Kampus
+          </h1>
+
           <p className={styles.subtitle}>
-            Tambah, ubah, atau nonaktifkan fasilitas. Pengaturan fasilitas memengaruhi akses pemesanan.
+            Tambah, ubah, atau nonaktifkan fasilitas.
+            Pengaturan fasilitas memengaruhi akses
+            pemesanan.
           </p>
         </div>
-        <Link href="/admin/fasilitas/tambah" className={styles.createButton}>
+
+        <Link
+          href="/admin/fasilitas/tambah"
+          className={styles.createButton}
+        >
           + Tambah Fasilitas Baru
         </Link>
       </div>
 
       {/* State Loading */}
       {loading ? (
-        <div className={styles.loadingState}>Memuat data fasilitas...</div>
+        <div className={styles.loadingState}>
+          Memuat data fasilitas...
+        </div>
       ) : facilities.length === 0 ? (
-        <div className={styles.emptyState}>Belum ada data fasilitas. Silakan tambah fasilitas baru.</div>
+        <div className={styles.emptyState}>
+          Belum ada data fasilitas. Silakan tambah
+          fasilitas baru.
+        </div>
       ) : (
         /* Tabel Fasilitas */
         <div className={styles.tableCard}>
@@ -150,37 +328,103 @@ export default function AdminFacilitiesPage() {
                   <th>Aksi</th>
                 </tr>
               </thead>
+
               <tbody>
-                {facilities.map((fac) => {
-                  const isInactive = fac.status === 'nonaktif' || fac.status === 'inactive';
+                {facilities.map((facility) => {
+                  const isInactive =
+                    facility.status ===
+                      'nonaktif' ||
+                    facility.status ===
+                      'inactive'
+
+                  const isMaintenance =
+                    facility.status ===
+                      'dalam_perbaikan' ||
+                    facility.status ===
+                      'under_maintenance'
+
                   return (
-                    <tr key={fac.id}>
-                      <td>#{fac.id}</td>
-                      <td className={styles.facilityName}>{fac.name}</td>
-                      <td>{fac.type || '-'}</td>
-                      <td>{fac.location || '-'}</td>
-                      <td>{fac.capacity ? `${fac.capacity} Orang` : '-'}</td>
-                      <td>{renderBadge(fac.status)}</td>
+                    <tr key={facility.id}>
                       <td>
-                        <div className={styles.actions}>
+                        #{facility.id}
+                      </td>
+
+                      <td
+                        className={
+                          styles.facilityName
+                        }
+                      >
+                        {facility.name}
+                      </td>
+
+                      <td>
+                        {facility.type || '-'}
+                      </td>
+
+                      <td>
+                        {facility.location || '-'}
+                      </td>
+
+                      <td>
+                        {facility.capacity
+                          ? `${facility.capacity} Orang`
+                          : '-'}
+                      </td>
+
+                      <td>
+                        {renderBadge(
+                          facility.status
+                        )}
+                      </td>
+
+                      <td>
+                        <div
+                          className={
+                            styles.actions
+                          }
+                        >
                           <Link
-                            href={`/admin/fasilitas/${fac.id}/edit`}
-                            className={styles.editButton}
+                            href={`/admin/fasilitas/${facility.id}/edit`}
+                            className={
+                              styles.editButton
+                            }
                           >
                             Edit
                           </Link>
 
                           {isInactive ? (
                             <button
-                              onClick={() => handleActivate(fac.id)}
-                              className={styles.activateButton}
+                              type="button"
+                              onClick={() =>
+                                handleActivate(
+                                  facility.id
+                                )
+                              }
+                              className={
+                                styles.activateButton
+                              }
                             >
                               Aktifkan
                             </button>
                           ) : (
                             <button
-                              onClick={() => handleInitiateDeactivate(fac)}
-                              className={styles.toggleButton}
+                              type="button"
+                              onClick={() =>
+                                handleInitiateDeactivate(
+                                  facility
+                                )
+                              }
+                              disabled={
+                                isMaintenance
+                              }
+                              className={
+                                styles.toggleButton
+                              }
+                              title={
+                                isMaintenance
+                                  ? 'Fasilitas dalam perbaikan'
+                                  : 'Nonaktifkan fasilitas'
+                              }
                             >
                               Nonaktifkan
                             </button>
@@ -188,7 +432,7 @@ export default function AdminFacilitiesPage() {
                         </div>
                       </td>
                     </tr>
-                  );
+                  )
                 })}
               </tbody>
             </table>
@@ -196,77 +440,245 @@ export default function AdminFacilitiesPage() {
         </div>
       )}
 
-      {/* Modal Konfirmasi Menonaktifkan Fasilitas (Aturan 13) */}
-      {isModalOpen && selectedFacility && (
-        <div className={styles.modalBackdrop}>
-          <div className={styles.modal}>
-            <div className={styles.modalHeader}>
-              <h2>Konfirmasi Nonaktifkan Fasilitas</h2>
-              <p>Fasilitas: <strong>{selectedFacility.name}</strong></p>
-            </div>
+      {/* Modal Konfirmasi Menonaktifkan */}
+      {isModalOpen &&
+        selectedFacility && (
+          <div
+            className={
+              styles.modalBackdrop
+            }
+            onMouseDown={(event) => {
+              if (
+                event.target ===
+                event.currentTarget
+              ) {
+                closeModal()
+              }
+            }}
+          >
+            <div className={styles.modal}>
+              {/* Header Modal */}
+              <div
+                className={
+                  styles.modalHeader
+                }
+              >
+                <div>
+                  <p
+                    className={
+                      styles.eyebrow
+                    }
+                  >
+                    KONFIRMASI TINDAKAN
+                  </p>
 
-            {checkingReservations ? (
-              <div className={styles.loadingState}>Memeriksa reservasi mendatang...</div>
-            ) : pendingReservations.length > 0 ? (
-              /* Warning jika masih ada reservasi mendatang yang aktif */
-              <div>
-                <div className={styles.warningBox}>
-                  <strong>Perhatian:</strong> Fasilitas ini masih memiliki{' '}
-                  {pendingReservations.length} reservasi mendatang yang belum diselesaikan oleh petugas.
+                  <h2>
+                    Nonaktifkan Fasilitas
+                  </h2>
+
+                  <p>
+                    Fasilitas:{' '}
+                    <strong>
+                      {
+                        selectedFacility.name
+                      }
+                    </strong>
+                  </p>
                 </div>
-                <div className={styles.reservationList}>
-                  {pendingReservations.map((res) => (
-                    <div key={res.id} className={styles.reservationItem}>
-                      <div>
-                        <strong>Pemesan:</strong> {res.user_name}
-                      </div>
-                      <div>
-                        <strong>Waktu:</strong>{' '}
-                        {new Date(res.start_time).toLocaleString('id-ID')}
-                      </div>
-                      <div>
-                        <strong>Status:</strong> {res.status}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <p style={{ fontSize: '11px', color: '#756c92', marginTop: '12px' }}>
-                  Petugas harus memproses atau membatalkan reservasi ini terlebih dahulu sebelum fasilitas dinonaktifkan.
-                </p>
+
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className={
+                    styles.closeModalButton
+                  }
+                  disabled={
+                    checkingReservations
+                  }
+                >
+                  ×
+                </button>
               </div>
-            ) : (
-              <p style={{ fontSize: '12px', color: '#756c92', marginTop: '14px' }}>
-                Apakah Anda yakin ingin menonaktifkan fasilitas ini? Fasilitas yang nonaktif tidak akan muncul pada pemesanan publik.
-              </p>
-            )}
 
-            <div className={styles.modalActions}>
-              <button
-                onClick={() => {
-                  setIsModalOpen(false);
-                  setSelectedFacility(null);
-                }}
-                className={styles.cancelModalButton}
-              >
-                Batal
-              </button>
+              {/* Isi Modal */}
+              {checkingReservations ? (
+                <div
+                  className={
+                    styles.loadingState
+                  }
+                >
+                  Memeriksa reservasi
+                  mendatang...
+                </div>
+              ) : reservationCheckError ? (
+                <div
+                  className={
+                    styles.errorBox
+                  }
+                >
+                  {reservationCheckError}
+                </div>
+              ) : pendingReservations.length >
+                0 ? (
+                <div>
+                  {/* Warning */}
+                  <div
+                    className={
+                      styles.warningBox
+                    }
+                  >
+                    <strong>
+                      Perhatian:
+                    </strong>{' '}
+                    Fasilitas ini masih memiliki{' '}
+                    {
+                      pendingReservations.length
+                    }{' '}
+                    reservasi mendatang yang
+                    belum diselesaikan oleh
+                    petugas.
+                  </div>
 
-              {/* Tombol eksekusi hanya aktif jika tidak ada reservasi terpending */}
-              <button
-                onClick={confirmDeactivate}
-                disabled={pendingReservations.length > 0}
-                className={styles.confirmDeactivateButton}
-                style={{
-                  opacity: pendingReservations.length > 0 ? 0.5 : 1,
-                  cursor: pendingReservations.length > 0 ? 'not-allowed' : 'pointer',
-                }}
+                  {/* Reservation List */}
+                  <div
+                    className={
+                      styles.reservationList
+                    }
+                  >
+                    {pendingReservations.map(
+                      (reservation) => (
+                        <div
+                          key={
+                            reservation.id
+                          }
+                          className={
+                            styles.reservationItem
+                          }
+                        >
+                          <div>
+                            <strong>
+                              Pemesan:
+                            </strong>{' '}
+                            {
+                              reservation.user_name
+                            }
+                          </div>
+
+                          <div>
+                            <strong>
+                              Tanggal:
+                            </strong>{' '}
+                            {new Intl.DateTimeFormat(
+                              'id-ID',
+                              {
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric',
+                              }
+                            ).format(
+                              new Date(
+                                `${reservation.reservation_date}T00:00:00`
+                              )
+                            )}
+                          </div>
+
+                          <div>
+                            <strong>
+                              Waktu:
+                            </strong>{' '}
+                            {reservation.start_time.slice(
+                              0,
+                              5
+                            )}{' '}
+                            -{' '}
+                            {reservation.end_time.slice(
+                              0,
+                              5
+                            )} WIB
+                          </div>
+
+                          <div>
+                            <strong>
+                              Status:
+                            </strong>{' '}
+                            {reservation.status}
+                          </div>
+                        </div>
+                      )
+                    )}
+                  </div>
+
+                  <p
+                    className={
+                      styles.modalHint
+                    }
+                  >
+                    Petugas harus memproses atau
+                    membatalkan reservasi ini
+                    terlebih dahulu sebelum
+                    fasilitas dapat dinonaktifkan.
+                  </p>
+                </div>
+              ) : (
+                <p
+                  className={
+                    styles.modalDescription
+                  }
+                >
+                  Tidak ada reservasi mendatang
+                  yang masih aktif. Apakah Anda
+                  yakin ingin menonaktifkan
+                  fasilitas ini?
+                  <br />
+                  <br />
+                  Fasilitas yang nonaktif tidak
+                  akan muncul pada pemesanan publik.
+                </p>
+              )}
+
+              {/* Modal Actions */}
+              <div
+                className={
+                  styles.modalActions
+                }
               >
-                Ya, Nonaktifkan
-              </button>
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className={
+                    styles.cancelModalButton
+                  }
+                  disabled={
+                    checkingReservations
+                  }
+                >
+                  Batal
+                </button>
+
+                <button
+                  type="button"
+                  onClick={
+                    confirmDeactivate
+                  }
+                  disabled={
+                    checkingReservations ||
+                    reservationCheckError !==
+                      '' ||
+                    pendingReservations.length >
+                      0
+                  }
+                  className={
+                    styles.confirmDeactivateButton
+                  }
+                >
+                  {checkingReservations
+                    ? 'Memeriksa...'
+                    : 'Ya, Nonaktifkan'}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
     </div>
-  );
+  )
 }

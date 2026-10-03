@@ -14,6 +14,7 @@ export function CancelReservationButton({
   reservationId,
 }: CancelReservationButtonProps) {
   const router = useRouter()
+
   const [isOpen, setIsOpen] = useState(false)
   const [reason, setReason] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -30,7 +31,9 @@ export function CancelReservationButton({
       )
 
       if (!res.success) {
-        setErrorMessage(res.error || 'Gagal membatalkan reservasi.')
+        setErrorMessage(
+          res.error || 'Gagal membatalkan reservasi.'
+        )
         setIsLoading(false)
         return
       }
@@ -38,7 +41,9 @@ export function CancelReservationButton({
       setIsOpen(false)
       router.refresh()
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err)
+      const msg =
+        err instanceof Error ? err.message : String(err)
+
       setErrorMessage(`Terjadi kesalahan: ${msg}`)
       setIsLoading(false)
     }
@@ -55,19 +60,22 @@ export function CancelReservationButton({
       </Button>
 
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl border border-border">
-            <div className="flex items-center gap-3 text-red-600 mb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#010736]/40 p-4">
+          <div className="w-full max-w-md rounded-2xl border border-[#D8DFEA] bg-white p-6 shadow-xl">
+            <div className="mb-3 flex items-center gap-3 text-red-600">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100">
                 <AlertTriangle className="h-5 w-5" />
               </div>
-              <h3 className="text-lg font-bold text-[#0c021c]">
+
+              <h3 className="text-lg font-bold text-[#010736]">
                 Batalkan Reservasi?
               </h3>
             </div>
 
-            <p className="text-sm text-[#4a454d]">
-              Apakah Anda yakin ingin membatalkan reservasi ini? Slot waktu akan dilepaskan dan pengajuan tidak dapat diaktifkan kembali.
+            <p className="text-sm text-[#52627D]">
+              Apakah Anda yakin ingin membatalkan reservasi ini?
+              Slot waktu akan dilepaskan dan pengajuan tidak dapat
+              diaktifkan kembali.
             </p>
 
             {errorMessage && (
@@ -77,16 +85,20 @@ export function CancelReservationButton({
             )}
 
             <div className="mt-4 space-y-1.5">
-              <label htmlFor="cancelReason" className="block text-xs font-semibold text-[#0c021c]">
+              <label
+                htmlFor="cancelReason"
+                className="block text-xs font-semibold text-[#010736]"
+              >
                 Alasan Pembatalan (Opsional)
               </label>
+
               <textarea
                 id="cancelReason"
                 rows={2}
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 placeholder="Contoh: Perubahan jadwal kegiatan, pembatalan agenda..."
-                className="w-full rounded-xl border border-border px-3 py-2 text-xs text-[#0c021c] focus:border-[#5318eb] focus:outline-none"
+                className="w-full rounded-xl border border-[#D8DFEA] bg-white px-3 py-2 text-xs text-[#010736] placeholder:text-[#718097] focus:border-[#22396F] focus:outline-none focus:ring-2 focus:ring-[#22396F]/20"
               />
             </div>
 
@@ -97,9 +109,11 @@ export function CancelReservationButton({
                 size="sm"
                 onClick={() => setIsOpen(false)}
                 disabled={isLoading}
+                className="border-[#D8DFEA] text-[#010736] hover:bg-[#F8FAFC]"
               >
                 Kembali
               </Button>
+
               <Button
                 type="button"
                 size="sm"

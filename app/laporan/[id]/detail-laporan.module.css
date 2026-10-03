@@ -1,7 +1,7 @@
 .page {
   min-height: 100vh;
   padding: 48px 24px;
-  background: #f4f0ff;
+  background: #f7f9fc;
 }
 
 .card {
@@ -10,7 +10,7 @@
   padding: 40px;
   border-radius: 24px;
   background: #ffffff;
-  box-shadow: 0 20px 60px rgba(78, 53, 145, 0.12);
+  box-shadow: 0 20px 60px rgba(1, 7, 54, 0.08);
 }
 
 .header {
@@ -19,12 +19,12 @@
   justify-content: space-between;
   gap: 24px;
   padding-bottom: 24px;
-  border-bottom: 1px solid #eee9f7;
+  border-bottom: 1px solid #d8dfea;
 }
 
 .eyebrow {
   margin: 0 0 8px;
-  color: #7448ef;
+  color: #22396f;
   font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -32,8 +32,9 @@
 
 .header h1 {
   margin: 0;
-  color: #21164f;
+  color: #010736;
   font-size: 32px;
+  font-weight: 600;
 }
 
 .status {
@@ -45,8 +46,8 @@
 }
 
 .statusBaru {
-  background: #eee9ff;
-  color: #603ddb;
+  background: #eef2f7;
+  color: #22396f;
 }
 
 .statusDiproses {
@@ -74,17 +75,18 @@
 .information div {
   padding: 18px;
   border-radius: 14px;
-  background: #f8f6ff;
+  background: #f8fafc;
+  border: 1px solid #d8dfea;
 }
 
 .information span {
-  color: #817996;
+  color: #718097;
   font-size: 13px;
 }
 
 .information p {
   margin: 6px 0 0;
-  color: #21164f;
+  color: #010736;
   font-weight: 700;
 }
 
@@ -94,13 +96,14 @@
 
 .section h2 {
   margin: 0 0 8px;
-  color: #21164f;
+  color: #010736;
   font-size: 17px;
+  font-weight: 600;
 }
 
 .section p {
   margin: 0;
-  color: #514968;
+  color: #52627d;
   line-height: 1.7;
 }
 
@@ -109,15 +112,43 @@
   margin-top: 34px;
   padding: 12px 20px;
   border-radius: 11px;
-  background: #603ddb;
+  background: #010736;
   color: #ffffff;
   font-size: 14px;
   font-weight: 700;
   text-decoration: none;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .backButton:hover {
-  background: #5432c8;
+  background: #0d1c42;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(1, 7, 54, 0.1);
+}
+
+.backButton:focus-visible {
+  outline: 2px solid #22396f;
+  outline-offset: 4px;
+}
+
+.photo {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 520px;
+  margin-top: 12px;
+  border: 1px solid #d8dfea;
+  border-radius: 14px;
+  background: #f8fafc;
+  object-fit: contain;
+}
+
+.multiline {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 @media (max-width: 600px) {
