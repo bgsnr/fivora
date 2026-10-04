@@ -150,7 +150,7 @@ export default async function StaffReservationsDashboardPage() {
                     </div>
                   </div>
 
-                  <Link href={`/dashboard/reservations/${item.id}`}>
+                  <Link href={`/petugas/reservations/${item.id}`}>
                     <Button
                       size="sm"
                       className="flex items-center gap-1.5 whitespace-nowrap bg-[#010736] text-xs text-white hover:bg-[#0D1C42]"

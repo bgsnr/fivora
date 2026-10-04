@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 type PendingUser = {
   id: number
@@ -19,6 +20,7 @@ export default function RegistrationList({
 }) {
   const [loadingId, setLoadingId] = useState<number | null>(null)
   const [errorMessage, setErrorMessage] = useState('')
+  const router = useRouter()
 
   async function updateStatus(
     id: number,
@@ -51,7 +53,7 @@ export default function RegistrationList({
         return
       }
 
-      window.location.reload()
+      router.refresh()
     } catch {
       setErrorMessage(
         'Terjadi kesalahan saat menghubungi server.'

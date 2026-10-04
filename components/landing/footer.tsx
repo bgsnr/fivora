@@ -100,7 +100,7 @@ export function Footer() {
 
                 <li>
                   <Link
-                    href="/reports"
+                    href="/laporan"
                     className="transition-colors hover:text-[#010736]"
                   >
                     Pusat Lapor Kerusakan

@@ -1,10 +1,10 @@
 // app/api/recap/export/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/supabase/server';
 import { calculateOccupancy, getDaysDifference } from '@/lib/occupancy';
 
 export async function GET(request: NextRequest) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { searchParams } = new URL(request.url);
 
   // Ambil parameter filter dari URL
@@ -34,10 +34,10 @@ export async function GET(request: NextRequest) {
     // 2. Fetch reservasi disetujui (Approved) pada periode
     const { data: reservations, error: resError } = await supabase
       .from('reservations')
-      .select('facility_id, start_time, end_time')
+      .select('facility_id, reservation_date, start_time, end_time')
       .in('status', ['disetujui', 'approved'])
-      .gte('start_time', `${startDate}T00:00:00`)
-      .lte('end_time', `${endDate}T23:59:59`);
+      .gte('reservation_date', startDate)
+      .lte('reservation_date', endDate);
 
     if (resError) throw resError;
 
@@ -46,8 +46,8 @@ export async function GET(request: NextRequest) {
       .from('reports')
       .select('facility_id')
       .in('status', ['diproses', 'selesai', 'in_progress', 'resolved'])
-      .gte('created_at', `${startDate}T00:00:00`)
-      .lte('created_at', `${endDate}T23:59:59`);
+      .gte('created_at', `${startDate}T00:00:00+07:00`)
+      .lte('created_at', `${endDate}T23:59:59+07:00`);
 
     if (repError) throw repError;
 
@@ -62,9 +62,15 @@ export async function GET(request: NextRequest) {
 
       let approvedSlotsCount = 0;
       facReservations.forEach((res) => {
-        const start = new Date(res.start_time).getTime();
-        const end = new Date(res.end_time).getTime();
-        const durationMinutes = Math.max((end - start) / (1000 * 60), 0);
+        // start_time/end_time bertipe TIME ("HH:MM:SS"), bukan timestamp
+        const toMinutes = (t: string) => {
+          const [h = 0, m = 0] = t.split(':').map(Number);
+          return h * 60 + m;
+        };
+        const durationMinutes = Math.max(
+          toMinutes(res.end_time) - toMinutes(res.start_time),
+          0
+        );
         approvedSlotsCount += Math.round(durationMinutes / 30);
       });
 

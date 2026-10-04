@@ -292,3 +292,20 @@
     padding: 14px 16px;
   }
 }
+
+@media print {
+  .container {
+    padding: 0;
+    background: #ffffff;
+  }
+
+  .exportButton,
+  .filterCard {
+    display: none !important;
+  }
+
+  .tableCard {
+    box-shadow: none;
+    border: 1px solid #000;
+  }
+}

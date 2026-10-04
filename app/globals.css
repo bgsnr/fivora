@@ -204,4 +204,8 @@
   h6 {
     font-family: "Outfit", sans-serif;
   }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-[#22396f];
+  }
 }

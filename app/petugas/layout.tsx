@@ -1,29 +1,24 @@
 import type { ReactNode } from 'react'
-import { DM_Sans, Outfit } from 'next/font/google'
+import { AppNavbar } from '@/components/layout/app-navbar'
+import { getCurrentUser } from '@/lib/auth'
 
-const bodyFont = DM_Sans({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-petugas',
-})
-
-const headingFont = Outfit({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-petugas-heading',
-})
-
-export default function PetugasLayout({
+export default async function PetugasLayout({
   children,
 }: {
   children: ReactNode
 }) {
+  const user = await getCurrentUser()
+
   return (
-    <div
-      className={`${bodyFont.variable} ${headingFont.variable}`}
-      style={{ fontFamily: bodyFont.style.fontFamily }}
-    >
+    <>
+      <AppNavbar
+        user={
+          user
+            ? { name: user.name, role: user.role }
+            : null
+        }
+      />
       {children}
-    </div>
+    </>
   )
 }

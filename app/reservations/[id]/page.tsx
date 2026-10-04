@@ -168,7 +168,13 @@ export default async function ReservationDetailPage({
 
   return (
     <div className="flex min-h-screen flex-col bg-[#F7F9FC] selection:bg-[#FCF1D0] selection:text-[#010736]">
-      <Navbar />
+      <Navbar
+        user={
+          user
+            ? { name: user.name, role: user.role }
+            : null
+        }
+      />
 
       <main className="container mx-auto max-w-3xl flex-1 px-4 py-8 sm:py-12">
         <div className="mb-6">

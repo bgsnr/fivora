@@ -10,6 +10,72 @@ import { createClient } from '@/lib/supabase/client'
 
 import styles from '../adminFasilitas.module.css'
 
+const formWrapperStyle: React.CSSProperties = {
+  width: '100%',
+  maxWidth: '680px',
+  margin: '0 auto',
+}
+
+const backLinkStyle: React.CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  marginBottom: '18px',
+}
+
+const formStyle: React.CSSProperties = {
+  marginTop: '24px',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '17px',
+}
+
+const fieldWrapperStyle: React.CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '6px',
+}
+
+const fieldLabelStyle: React.CSSProperties = {
+  fontSize: '12px',
+  fontWeight: 700,
+  color: '#010736',
+}
+
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  height: '42px',
+  padding: '0 14px',
+  borderRadius: '999px',
+  border: '1px solid #d8dfea',
+  outline: 'none',
+  fontSize: '12px',
+  background: '#ffffff',
+  color: '#010736',
+  fontFamily: 'inherit',
+  boxSizing: 'border-box',
+}
+
+const textareaStyle: React.CSSProperties = {
+  width: '100%',
+  padding: '11px 14px',
+  borderRadius: '16px',
+  border: '1px solid #d8dfea',
+  outline: 'none',
+  fontSize: '12px',
+  background: '#ffffff',
+  color: '#010736',
+  fontFamily: 'inherit',
+  boxSizing: 'border-box',
+  resize: 'vertical',
+  minHeight: '95px',
+}
+
+const submitRowStyle: React.CSSProperties = {
+  marginTop: '8px',
+  paddingTop: '18px',
+  borderTop: '1px solid #e7ebf1',
+}
+
 export default function CreateFacilityPage() {
   const router = useRouter()
   const supabase = createClient()
@@ -80,21 +146,13 @@ export default function CreateFacilityPage() {
     <div className={styles.container}>
       {/* Wrapper Form Tengah */}
       <div
-        style={{
-          width: '100%',
-          maxWidth: '680px',
-          margin: '0 auto',
-        }}
+        style={formWrapperStyle}
       >
         {/* Tombol Kembali */}
         <Link
           href="/admin/fasilitas"
           className={styles.editButton}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            marginBottom: '18px',
-          }}
+          style={backLinkStyle}
         >
           ← Kembali ke Kelola Fasilitas
         </Link>
@@ -134,27 +192,14 @@ export default function CreateFacilityPage() {
           {/* Form */}
           <form
             onSubmit={handleSubmit}
-            style={{
-              marginTop: '24px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '17px',
-            }}
+            style={formStyle}
           >
             {/* Nama Fasilitas */}
             <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '6px',
-              }}
+              style={fieldWrapperStyle}
             >
               <label
-                style={{
-                  fontSize: '12px',
-                  fontWeight: '700',
-                  color: '#010736',
-                }}
+                style={fieldLabelStyle}
               >
                 Nama Fasilitas{' '}
                 <span
@@ -172,36 +217,16 @@ export default function CreateFacilityPage() {
                   setName(e.target.value)
                 }
                 placeholder="Contoh: Ruang D201, Lapangan Basket"
-                style={{
-                  width: '100%',
-                  height: '42px',
-                  padding: '0 14px',
-                  borderRadius: '999px',
-                  border: '1px solid #d8dfea',
-                  outline: 'none',
-                  fontSize: '12px',
-                  background: '#ffffff',
-                  color: '#010736',
-                  fontFamily: 'inherit',
-                  boxSizing: 'border-box',
-                }}
+                style={inputStyle}
               />
             </div>
 
             {/* Tipe Fasilitas */}
             <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '6px',
-              }}
+              style={fieldWrapperStyle}
             >
               <label
-                style={{
-                  fontSize: '12px',
-                  fontWeight: '700',
-                  color: '#010736',
-                }}
+                style={fieldLabelStyle}
               >
                 Tipe Fasilitas
               </label>
@@ -211,19 +236,7 @@ export default function CreateFacilityPage() {
                 onChange={(e) =>
                   setType(e.target.value)
                 }
-                style={{
-                  width: '100%',
-                  height: '42px',
-                  padding: '0 14px',
-                  borderRadius: '999px',
-                  border: '1px solid #d8dfea',
-                  outline: 'none',
-                  fontSize: '12px',
-                  background: '#ffffff',
-                  color: '#010736',
-                  fontFamily: 'inherit',
-                  boxSizing: 'border-box',
-                }}
+                style={inputStyle}
               >
                 <option value="Ruang Kelas">
                   Ruang Kelas
@@ -249,18 +262,10 @@ export default function CreateFacilityPage() {
 
             {/* Lokasi */}
             <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '6px',
-              }}
+              style={fieldWrapperStyle}
             >
               <label
-                style={{
-                  fontSize: '12px',
-                  fontWeight: '700',
-                  color: '#010736',
-                }}
+                style={fieldLabelStyle}
               >
                 Lokasi
               </label>
@@ -272,36 +277,16 @@ export default function CreateFacilityPage() {
                   setLocation(e.target.value)
                 }
                 placeholder="Contoh: Gedung B Lantai 2"
-                style={{
-                  width: '100%',
-                  height: '42px',
-                  padding: '0 14px',
-                  borderRadius: '999px',
-                  border: '1px solid #d8dfea',
-                  outline: 'none',
-                  fontSize: '12px',
-                  background: '#ffffff',
-                  color: '#010736',
-                  fontFamily: 'inherit',
-                  boxSizing: 'border-box',
-                }}
+                style={inputStyle}
               />
             </div>
 
             {/* Kapasitas */}
             <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '6px',
-              }}
+              style={fieldWrapperStyle}
             >
               <label
-                style={{
-                  fontSize: '12px',
-                  fontWeight: '700',
-                  color: '#010736',
-                }}
+                style={fieldLabelStyle}
               >
                 Kapasitas (Orang)
               </label>
@@ -320,36 +305,16 @@ export default function CreateFacilityPage() {
                   )
                 }
                 placeholder="Contoh: 40"
-                style={{
-                  width: '100%',
-                  height: '42px',
-                  padding: '0 14px',
-                  borderRadius: '999px',
-                  border: '1px solid #d8dfea',
-                  outline: 'none',
-                  fontSize: '12px',
-                  background: '#ffffff',
-                  color: '#010736',
-                  fontFamily: 'inherit',
-                  boxSizing: 'border-box',
-                }}
+                style={inputStyle}
               />
             </div>
 
             {/* Deskripsi */}
             <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '6px',
-              }}
+              style={fieldWrapperStyle}
             >
               <label
-                style={{
-                  fontSize: '12px',
-                  fontWeight: '700',
-                  color: '#010736',
-                }}
+                style={fieldLabelStyle}
               >
                 Deskripsi / Fasilitas Pendukung
               </label>
@@ -363,37 +328,16 @@ export default function CreateFacilityPage() {
                   )
                 }
                 placeholder="Contoh: Dilengkapi dengan Proyektor, AC, dan Sound System."
-                style={{
-                  width: '100%',
-                  padding: '11px 14px',
-                  borderRadius: '16px',
-                  border: '1px solid #d8dfea',
-                  outline: 'none',
-                  fontSize: '12px',
-                  background: '#ffffff',
-                  color: '#010736',
-                  fontFamily: 'inherit',
-                  boxSizing: 'border-box',
-                  resize: 'vertical',
-                  minHeight: '95px',
-                }}
+                style={textareaStyle}
               />
             </div>
 
             {/* Status Awal */}
             <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '6px',
-              }}
+              style={fieldWrapperStyle}
             >
               <label
-                style={{
-                  fontSize: '12px',
-                  fontWeight: '700',
-                  color: '#010736',
-                }}
+                style={fieldLabelStyle}
               >
                 Status Fasilitas
               </label>
@@ -403,19 +347,7 @@ export default function CreateFacilityPage() {
                 onChange={(e) =>
                   setStatus(e.target.value)
                 }
-                style={{
-                  width: '100%',
-                  height: '42px',
-                  padding: '0 14px',
-                  borderRadius: '999px',
-                  border: '1px solid #d8dfea',
-                  outline: 'none',
-                  fontSize: '12px',
-                  background: '#ffffff',
-                  color: '#010736',
-                  fontFamily: 'inherit',
-                  boxSizing: 'border-box',
-                }}
+                style={inputStyle}
               >
                 <option value="aktif">
                   Aktif
@@ -430,12 +362,7 @@ export default function CreateFacilityPage() {
             {/* Submit Button */}
             <div
               className={styles.modalActions}
-              style={{
-                marginTop: '8px',
-                paddingTop: '18px',
-                borderTop:
-                  '1px solid #e7ebf1',
-              }}
+              style={submitRowStyle}
             >
               <button
                 type="button"
@@ -457,11 +384,7 @@ export default function CreateFacilityPage() {
                 className={
                   styles.createButton
                 }
-                style={{
-                  opacity: submitting
-                    ? 0.7
-                    : 1,
-                }}
+                style={{ opacity: submitting ? 0.7 : 1 }}
               >
                 {submitting
                   ? 'Menyimpan...'

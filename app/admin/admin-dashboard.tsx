@@ -1032,7 +1032,12 @@ export default function AdminDashboard({
             }
           }}
         >
-          <div className={styles.modal}>
+          <div
+            className={styles.modal}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Tambah Akun"
+          >
             <div className={styles.modalHeader}>
               <div>
                 <p

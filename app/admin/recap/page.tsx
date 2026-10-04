@@ -161,11 +161,11 @@ export default function AdminRecapPage() {
         ])
         .gte(
           'created_at',
-          `${startDate}T00:00:00`
+          `${startDate}T00:00:00+07:00`
         )
         .lte(
           'created_at',
-          `${endDate}T23:59:59`
+          `${endDate}T23:59:59+07:00`
         )
 
       if (resError || repError) {
@@ -324,6 +324,25 @@ export default function AdminRecapPage() {
     document.body.removeChild(link)
   }
 
+  /* Ekspor Excel via API Route */
+  const handleExportExcel = () => {
+    if (filteredRecap.length === 0) return
+    const params = new URLSearchParams({
+      format: 'excel',
+      startDate,
+      endDate,
+      location: selectedLocation,
+      facilityId: selectedFacilityId,
+    })
+    window.location.href = `/api/recap/export?${params.toString()}`
+  }
+
+  /* Cetak / Simpan ke PDF via Browser Print */
+  const handlePrintPDF = () => {
+    if (filteredRecap.length === 0) return
+    window.print()
+  }
+
   return (
     <div className={styles.container}>
       {/* Header */}
@@ -343,15 +362,33 @@ export default function AdminRecapPage() {
           </p>
         </div>
 
-        <button
-          onClick={handleExportCSV}
-          disabled={
-            loading || filteredRecap.length === 0
-          }
-          className={styles.exportButton}
-        >
-          📄 Ekspor CSV
-        </button>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <button
+            onClick={handleExportCSV}
+            disabled={loading || filteredRecap.length === 0}
+            className={styles.exportButton}
+          >
+            📄 Ekspor CSV
+          </button>
+
+          <button
+            onClick={handleExportExcel}
+            disabled={loading || filteredRecap.length === 0}
+            className={styles.exportButton}
+            style={{ background: '#167d52' }}
+          >
+            📊 Ekspor Excel
+          </button>
+
+          <button
+            onClick={handlePrintPDF}
+            disabled={loading || filteredRecap.length === 0}
+            className={styles.exportButton}
+            style={{ background: '#22396f' }}
+          >
+            🖨️ Cetak / PDF
+          </button>
+        </div>
       </div>
 
       {/* Filter Card */}

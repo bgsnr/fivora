@@ -51,8 +51,8 @@ function refreshMaintenancePages() {
     revalidatePath('/fasilitas/[id]', 'page')
     revalidatePath('/reservations')
     revalidatePath('/reservations/[id]', 'page')
-    revalidatePath('/dashboard/reservations')
-    revalidatePath('/dashboard/reservations/[id]', 'page')
+    revalidatePath('/petugas/reservations')
+    revalidatePath('/petugas/reservations/[id]', 'page')
   } catch (error) {
     console.error('Gagal menyegarkan halaman perbaikan:', error)
   }

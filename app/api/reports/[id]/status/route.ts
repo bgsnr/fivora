@@ -73,6 +73,7 @@ export async function PATCH(request: Request, { params }: Context) {
     const status = input.status
     const note = input.note
     const expectedUpdatedAt = input.expectedUpdatedAt
+    const laporanUtamaId = input.laporanUtamaId
 
     if (
       typeof status !== 'string' ||
@@ -99,6 +100,16 @@ export async function PATCH(request: Request, { params }: Context) {
         'Isi catatan sebelum menyelesaikan atau menolak laporan.',
         400
       )
+    }
+
+    let parsedLaporanUtamaId: string | null = null
+
+    if (status === 'ditolak' && laporanUtamaId !== undefined && laporanUtamaId !== null && laporanUtamaId !== '') {
+      const mainIdStr = String(laporanUtamaId).trim()
+      if (!/^[1-9]\d{0,18}$/.test(mainIdStr)) {
+        return fail('ID laporan utama tidak valid.', 400)
+      }
+      parsedLaporanUtamaId = mainIdStr
     }
 
     if (
@@ -146,15 +157,21 @@ export async function PATCH(request: Request, { params }: Context) {
 
     const now = new Date().toISOString()
 
+    const updatePayload: Record<string, unknown> = {
+      status: nextStatus,
+      officer_note: cleanNote,
+      processed_by: currentUser.id,
+      processed_at: now,
+      updated_at: now,
+    }
+
+    if (parsedLaporanUtamaId !== null) {
+      updatePayload.laporan_utama_id = parsedLaporanUtamaId
+    }
+
     const { data: updatedReport, error: updateError } = await supabaseAdmin
       .from('reports')
-      .update({
-        status: nextStatus,
-        officer_note: cleanNote,
-        processed_by: currentUser.id,
-        processed_at: now,
-        updated_at: now,
-      })
+      .update(updatePayload)
       .eq('id', id)
       .eq('status', report.status)
       .eq('updated_at', report.updated_at)

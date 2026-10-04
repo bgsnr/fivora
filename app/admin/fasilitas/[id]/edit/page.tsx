@@ -18,6 +18,84 @@ interface EditPageProps {
 
 const supabase = createClient()
 
+const formWrapperStyle: React.CSSProperties = {
+  width: '100%',
+  maxWidth: '680px',
+  margin: '0 auto',
+}
+
+const backLinkStyle: React.CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  marginBottom: '18px',
+}
+
+const formStyle: React.CSSProperties = {
+  marginTop: '24px',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '17px',
+}
+
+const fieldWrapperStyle: React.CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '6px',
+}
+
+const fieldLabelStyle: React.CSSProperties = {
+  fontSize: '12px',
+  fontWeight: 700,
+  color: '#010736',
+}
+
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  height: '42px',
+  padding: '0 14px',
+  borderRadius: '999px',
+  border: '1px solid #d8dfea',
+  outline: 'none',
+  fontSize: '12px',
+  background: '#ffffff',
+  color: '#010736',
+  fontFamily: 'inherit',
+  boxSizing: 'border-box',
+}
+
+const textareaStyle: React.CSSProperties = {
+  width: '100%',
+  padding: '11px 14px',
+  borderRadius: '16px',
+  border: '1px solid #d8dfea',
+  outline: 'none',
+  fontSize: '12px',
+  background: '#ffffff',
+  color: '#010736',
+  fontFamily: 'inherit',
+  boxSizing: 'border-box',
+  resize: 'vertical',
+  minHeight: '95px',
+}
+
+const submitRowStyle: React.CSSProperties = {
+  marginTop: '8px',
+  paddingTop: '18px',
+  borderTop: '1px solid #e7ebf1',
+}
+
+/* Normalisasi status lama (versi Inggris) ke nilai kanonik */
+function normalizeFacilityStatus(
+  status: string | null | undefined
+): string {
+  if (status === 'active') return 'aktif'
+  if (status === 'inactive') return 'nonaktif'
+  if (status === 'under_maintenance')
+    return 'dalam_perbaikan'
+
+  return status || 'aktif'
+}
+
 export default function EditFacilityPage({
   params,
 }: EditPageProps) {
@@ -69,7 +147,9 @@ export default function EditFacilityPage({
             : ''
         )
         setDescription(data.description || '')
-        setStatus(data.status || 'aktif')
+        setStatus(
+          normalizeFacilityStatus(data.status)
+        )
       }
 
       setLoading(false)
@@ -132,11 +212,7 @@ export default function EditFacilityPage({
     return (
       <div className={styles.container}>
         <div
-          style={{
-            width: '100%',
-            maxWidth: '680px',
-            margin: '0 auto',
-          }}
+          style={formWrapperStyle}
         >
           <div className={styles.loadingState}>
             Memuat data fasilitas...
@@ -150,21 +226,13 @@ export default function EditFacilityPage({
     <div className={styles.container}>
       {/* Wrapper Form Tengah */}
       <div
-        style={{
-          width: '100%',
-          maxWidth: '680px',
-          margin: '0 auto',
-        }}
+        style={formWrapperStyle}
       >
         {/* Tombol Kembali */}
         <Link
           href="/admin/fasilitas"
           className={styles.editButton}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            marginBottom: '18px',
-          }}
+          style={backLinkStyle}
         >
           ← Kembali ke Kelola Fasilitas
         </Link>
@@ -204,27 +272,14 @@ export default function EditFacilityPage({
           {/* Form */}
           <form
             onSubmit={handleSubmit}
-            style={{
-              marginTop: '24px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '17px',
-            }}
+            style={formStyle}
           >
             {/* Nama Fasilitas */}
             <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '6px',
-              }}
+              style={fieldWrapperStyle}
             >
               <label
-                style={{
-                  fontSize: '12px',
-                  fontWeight: '700',
-                  color: '#010736',
-                }}
+                style={fieldLabelStyle}
               >
                 Nama Fasilitas{' '}
                 <span
@@ -244,36 +299,16 @@ export default function EditFacilityPage({
                   setName(e.target.value)
                 }
                 placeholder="Contoh: Ruang D201, Lapangan Basket"
-                style={{
-                  width: '100%',
-                  height: '42px',
-                  padding: '0 14px',
-                  borderRadius: '999px',
-                  border: '1px solid #d8dfea',
-                  outline: 'none',
-                  fontSize: '12px',
-                  background: '#ffffff',
-                  color: '#010736',
-                  fontFamily: 'inherit',
-                  boxSizing: 'border-box',
-                }}
+                style={inputStyle}
               />
             </div>
 
             {/* Tipe Fasilitas */}
             <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '6px',
-              }}
+              style={fieldWrapperStyle}
             >
               <label
-                style={{
-                  fontSize: '12px',
-                  fontWeight: '700',
-                  color: '#010736',
-                }}
+                style={fieldLabelStyle}
               >
                 Tipe Fasilitas
               </label>
@@ -283,19 +318,7 @@ export default function EditFacilityPage({
                 onChange={(e) =>
                   setType(e.target.value)
                 }
-                style={{
-                  width: '100%',
-                  height: '42px',
-                  padding: '0 14px',
-                  borderRadius: '999px',
-                  border: '1px solid #d8dfea',
-                  outline: 'none',
-                  fontSize: '12px',
-                  background: '#ffffff',
-                  color: '#010736',
-                  fontFamily: 'inherit',
-                  boxSizing: 'border-box',
-                }}
+                style={inputStyle}
               >
                 <option value="Ruang Kelas">
                   Ruang Kelas
@@ -321,18 +344,10 @@ export default function EditFacilityPage({
 
             {/* Lokasi */}
             <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '6px',
-              }}
+              style={fieldWrapperStyle}
             >
               <label
-                style={{
-                  fontSize: '12px',
-                  fontWeight: '700',
-                  color: '#010736',
-                }}
+                style={fieldLabelStyle}
               >
                 Lokasi
               </label>
@@ -344,36 +359,16 @@ export default function EditFacilityPage({
                   setLocation(e.target.value)
                 }
                 placeholder="Contoh: Gedung B Lantai 2"
-                style={{
-                  width: '100%',
-                  height: '42px',
-                  padding: '0 14px',
-                  borderRadius: '999px',
-                  border: '1px solid #d8dfea',
-                  outline: 'none',
-                  fontSize: '12px',
-                  background: '#ffffff',
-                  color: '#010736',
-                  fontFamily: 'inherit',
-                  boxSizing: 'border-box',
-                }}
+                style={inputStyle}
               />
             </div>
 
             {/* Kapasitas */}
             <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '6px',
-              }}
+              style={fieldWrapperStyle}
             >
               <label
-                style={{
-                  fontSize: '12px',
-                  fontWeight: '700',
-                  color: '#010736',
-                }}
+                style={fieldLabelStyle}
               >
                 Kapasitas (Orang)
               </label>
@@ -392,36 +387,16 @@ export default function EditFacilityPage({
                   )
                 }
                 placeholder="Contoh: 40"
-                style={{
-                  width: '100%',
-                  height: '42px',
-                  padding: '0 14px',
-                  borderRadius: '999px',
-                  border: '1px solid #d8dfea',
-                  outline: 'none',
-                  fontSize: '12px',
-                  background: '#ffffff',
-                  color: '#010736',
-                  fontFamily: 'inherit',
-                  boxSizing: 'border-box',
-                }}
+                style={inputStyle}
               />
             </div>
 
             {/* Deskripsi */}
             <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '6px',
-              }}
+              style={fieldWrapperStyle}
             >
               <label
-                style={{
-                  fontSize: '12px',
-                  fontWeight: '700',
-                  color: '#010736',
-                }}
+                style={fieldLabelStyle}
               >
                 Deskripsi / Fasilitas Pendukung
               </label>
@@ -435,37 +410,16 @@ export default function EditFacilityPage({
                   )
                 }
                 placeholder="Contoh: Dilengkapi dengan Proyektor, AC, dan Sound System."
-                style={{
-                  width: '100%',
-                  padding: '11px 14px',
-                  borderRadius: '16px',
-                  border: '1px solid #d8dfea',
-                  outline: 'none',
-                  fontSize: '12px',
-                  background: '#ffffff',
-                  color: '#010736',
-                  fontFamily: 'inherit',
-                  boxSizing: 'border-box',
-                  resize: 'vertical',
-                  minHeight: '95px',
-                }}
+                style={textareaStyle}
               />
             </div>
 
             {/* Status */}
             <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '6px',
-              }}
+              style={fieldWrapperStyle}
             >
               <label
-                style={{
-                  fontSize: '12px',
-                  fontWeight: '700',
-                  color: '#010736',
-                }}
+                style={fieldLabelStyle}
               >
                 Status Fasilitas
               </label>
@@ -475,19 +429,10 @@ export default function EditFacilityPage({
                 onChange={(e) =>
                   setStatus(e.target.value)
                 }
-                style={{
-                  width: '100%',
-                  height: '42px',
-                  padding: '0 14px',
-                  borderRadius: '999px',
-                  border: '1px solid #d8dfea',
-                  outline: 'none',
-                  fontSize: '12px',
-                  background: '#ffffff',
-                  color: '#010736',
-                  fontFamily: 'inherit',
-                  boxSizing: 'border-box',
-                }}
+                disabled={
+                  status === 'dalam_perbaikan'
+                }
+                style={inputStyle}
               >
                 <option value="aktif">
                   Aktif
@@ -497,21 +442,31 @@ export default function EditFacilityPage({
                   Nonaktif
                 </option>
 
-                <option value="dalam_perbaikan">
-                  Dalam Perbaikan
-                </option>
+                {status === 'dalam_perbaikan' && (
+                  <option value="dalam_perbaikan" disabled>
+                    Dalam Perbaikan (Dikelola oleh Petugas)
+                  </option>
+                )}
               </select>
+
+              {status === 'dalam_perbaikan' && (
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: '11px',
+                    color: '#b45309',
+                  }}
+                >
+                  Status perbaikan hanya dapat diubah
+                  oleh petugas melalui modul laporan.
+                </p>
+              )}
             </div>
 
             {/* Submit Button */}
             <div
               className={styles.modalActions}
-              style={{
-                marginTop: '8px',
-                paddingTop: '18px',
-                borderTop:
-                  '1px solid #e7ebf1',
-              }}
+              style={submitRowStyle}
             >
               <button
                 type="button"
@@ -533,11 +488,7 @@ export default function EditFacilityPage({
                 className={
                   styles.createButton
                 }
-                style={{
-                  opacity: submitting
-                    ? 0.7
-                    : 1,
-                }}
+                style={{ opacity: submitting ? 0.7 : 1 }}
               >
                 {submitting
                   ? 'Memperbarui...'

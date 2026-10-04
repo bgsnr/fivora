@@ -134,7 +134,7 @@ function LoginForm() {
     ? '/admin'
     : userData.role === 'petugas'
       ? '/petugas'
-      : '/reservasi'
+      : '/catalog'
 
     const redirectTarget =
   redirectParam &&

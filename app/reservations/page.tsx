@@ -1,207 +1,221 @@
-import Link from 'next/link'
+'use client'
 
-import { Navbar } from '@/components/landing/navbar'
-import { Footer } from '@/components/landing/footer'
-import { getCurrentUser } from '@/lib/auth'
-import { getReservationsByUser } from '@/lib/actions/reservations'
-import { getDisplayStatusLabel } from '@/lib/validations/reservation-time'
-import { Button } from '@/components/ui/button'
-
+import { useMemo, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import {
-  Calendar,
-  Clock,
+  CalendarDays,
+  CheckCircle2,
+  Clock3,
   MapPin,
-  Plus,
-  ArrowRight,
-  AlertCircle,
-  FileText,
+  Users,
 } from 'lucide-react'
 
-export const metadata = {
-  title: 'Riwayat Reservasi Saya - FIVORA',
-  description:
-    'Daftar pengajuan dan riwayat reservasi fasilitas kampus Anda.',
+import { AppLayout } from '@/components/layout/app-layout'
+import { createReservationAction } from '@/lib/actions/reservations'
+import { useCurrentUserName } from '@/lib/use-current-user-name'
+
+type SelectedRoom = {
+  id: string | number
+  name: string
+  description?: string
+  location: string
+  capacity: number
+  date?: string
+  time?: string
 }
 
-export default async function ReservationsPage() {
-  const user = await getCurrentUser()
+function addMinutesToTime(time: string, minutes: number) {
+  const [hours, mins] = time.split(':').map(Number)
+  const total = hours * 60 + mins + minutes
+  const nextHours = Math.floor(total / 60) % 24
+  const nextMinutes = total % 60
+  return `${String(nextHours).padStart(2, '0')}:${String(nextMinutes).padStart(2, '0')}`
+}
 
-  if (!user) {
+export default function ReservationsPage() {
+  const router = useRouter()
+  const params = useSearchParams()
+  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const userName = useCurrentUserName()
+
+  const selectedRoom = useMemo<SelectedRoom | null>(() => {
+    const rawRoom = params.get('room')
+
+    if (rawRoom) {
+      try {
+        const parsed = JSON.parse(decodeURIComponent(rawRoom)) as SelectedRoom
+        return {
+          ...parsed,
+          date: params.get('date') || parsed.date || '',
+          time: params.get('time') || parsed.time || '',
+        }
+      } catch {
+        return null
+      }
+    }
+
+    if (typeof window === 'undefined') {
+      return null
+    }
+
+    const fallback = window.sessionStorage.getItem('fivora-selected-room')
+    if (!fallback) return null
+
+    try {
+      const parsed = JSON.parse(fallback) as SelectedRoom
+      return parsed
+    } catch {
+      return null
+    }
+  }, [params])
+
+  const handleConfirm = async () => {
+    if (!selectedRoom) {
+      router.push('/catalog')
+      return
+    }
+
+    const date = selectedRoom.date || ''
+    const startTime = selectedRoom.time || '09:00'
+    const endTime = addMinutesToTime(startTime, 30)
+
+    setIsSubmitting(true)
+    setErrorMessage(null)
+
+    const result = await createReservationAction({
+      facility_id: Number(selectedRoom.id),
+      reservation_date: date,
+      start_time: startTime,
+      end_time: endTime,
+      purpose: `Reservasi ${selectedRoom.name}`,
+    })
+
+    setIsSubmitting(false)
+
+    if (!result.success) {
+      setErrorMessage(result.error || 'Reservasi gagal dibuat.')
+      return
+    }
+
+    setIsSubmitted(true)
+  }
+
+  if (!selectedRoom) {
     return (
-      <div className="flex min-h-screen flex-col bg-[#F7F9FC]">
-        <Navbar />
-
-        <main className="container mx-auto flex max-w-4xl flex-1 items-center justify-center px-4 py-16 text-center">
-          <div className="mx-auto max-w-md rounded-2xl border border-[#D8DFEA] bg-white p-8 shadow-sm">
-            <AlertCircle className="mx-auto mb-3 h-10 w-10 text-amber-600" />
-
-            <h1 className="text-xl font-bold text-[#010736]">
-              Perlu Masuk Akun
-            </h1>
-
-            <p className="mt-2 text-sm text-[#52627D]">
-              Silakan masuk dengan akun mahasiswa, dosen, atau staf
-              Anda untuk melihat riwayat reservasi.
+      <AppLayout userName={userName}>
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <div className="w-full max-w-lg rounded-2xl border border-dashed border-[var(--border)] bg-[var(--card)] p-8 text-center shadow-sm">
+            <h1 className="text-2xl font-bold text-[var(--foreground)]">Reservasi tidak tersedia</h1>
+            <p className="mt-3 text-sm text-[var(--muted-foreground)]">
+              Silakan pilih ruang dari katalog terlebih dahulu.
             </p>
-
-            <div className="mt-6 flex justify-center gap-3">
-              <Link href="/login">
-                <Button className="bg-[#010736] text-white hover:bg-[#0D1C42]">
-                  Masuk Sekarang
-                </Button>
-              </Link>
-            </div>
+            <button
+              type="button"
+              onClick={() => router.push('/catalog')}
+              className="mt-6 rounded-xl bg-[var(--primary)] px-5 py-3 text-sm font-semibold text-[var(--primary-foreground)] hover:opacity-90"
+            >
+              Kembali ke Katalog
+            </button>
           </div>
-        </main>
-
-        <Footer />
-      </div>
+        </div>
+      </AppLayout>
     )
   }
 
-  const reservations = await getReservationsByUser(String(user.id))
-  const now = new Date()
-
   return (
-    <div className="flex min-h-screen flex-col bg-[#F7F9FC] selection:bg-[#FCF1D0] selection:text-[#010736]">
-      <Navbar />
-
-      <main className="container mx-auto max-w-5xl flex-1 px-4 py-8 sm:py-12">
-        <div className="mb-8 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-[#010736] sm:text-3xl">
-              Riwayat Reservasi Fasilitas
-            </h1>
-
-            <p className="mt-1 text-sm text-[#52627D]">
-              Pantau status pengajuan, jadwal penggunaan, dan riwayat
-              peminjaman Anda.
-            </p>
-          </div>
-
-          <Link href="/reservations/new">
-            <Button className="flex items-center gap-2 bg-[#010736] text-white hover:bg-[#0D1C42]">
-              <Plus className="h-4 w-4" />
-              Ajukan Reservasi Baru
-            </Button>
-          </Link>
+    <AppLayout userName={userName}>
+      <div className="mx-auto max-w-3xl">
+        <div className="mb-6 text-left">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted-foreground)]">
+            DETAIL RESERVASI
+          </p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-[var(--foreground)]">Konfirmasi Reservasi</h1>
         </div>
 
-        {reservations.length === 0 ? (
-          <div className="mx-auto max-w-lg rounded-2xl border border-dashed border-[#D8DFEA] bg-white p-12 text-center">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#FCF1D0] text-[#010736]">
-              <FileText className="h-7 w-7" />
+        {!isSubmitted ? (
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm sm:p-8">
+            <div className="space-y-5">
+              <div>
+                <p className="text-sm text-[var(--muted-foreground)]">Ruangan</p>
+                <h2 className="mt-1 text-2xl font-bold text-[var(--foreground)]">{selectedRoom.name}</h2>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-xl border border-[var(--border)] bg-[var(--background)] p-4">
+                  <div className="flex items-center gap-2 text-sm text-[var(--muted-foreground)]">
+                    <MapPin className="h-4 w-4 text-[var(--primary)]" />
+                    Lokasi
+                  </div>
+                  <p className="mt-2 font-medium text-[var(--foreground)]">{selectedRoom.location}</p>
+                </div>
+
+                <div className="rounded-xl border border-[var(--border)] bg-[var(--background)] p-4">
+                  <div className="flex items-center gap-2 text-sm text-[var(--muted-foreground)]">
+                    <Users className="h-4 w-4 text-[var(--primary)]" />
+                    Kapasitas
+                  </div>
+                  <p className="mt-2 font-medium text-[var(--foreground)]">{selectedRoom.capacity} orang</p>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-[var(--border)] bg-[var(--background)] p-4">
+                <div className="flex items-center gap-2 text-sm text-[var(--muted-foreground)]">
+                  <CalendarDays className="h-4 w-4 text-[var(--primary)]" />
+                  Tanggal & Waktu
+                </div>
+                <p className="mt-2 font-medium text-[var(--foreground)]">
+                  {selectedRoom.date} • {selectedRoom.time}
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+                <div className="flex items-center gap-2 font-medium">
+                  <Clock3 className="h-4 w-4" />
+                  Informasi penting
+                </div>
+                <p className="mt-2">
+                  Reservasi membutuhkan persetujuan manual oleh petugas. Setelah dikonfirmasi,
+                  status akan berubah menjadi menunggu approval.
+                </p>
+              </div>
+
+              {errorMessage && (
+                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {errorMessage}
+                </div>
+              )}
             </div>
 
-            <h3 className="text-lg font-semibold text-[#010736]">
-              Belum Ada Reservasi
-            </h3>
-
-            <p className="mt-1 text-sm text-[#52627D]">
-              Anda belum memiliki riwayat pengajuan peminjaman
-              fasilitas kampus.
-            </p>
-
-            <div className="mt-6">
-              <Link href="/reservations/new">
-                <Button className="bg-[#010736] text-white hover:bg-[#0D1C42]">
-                  Buat Pengajuan Pertama
-                </Button>
-              </Link>
-            </div>
+            <button
+              type="button"
+              disabled={isSubmitting}
+              onClick={handleConfirm}
+              className="mt-8 inline-flex w-full items-center justify-center rounded-xl bg-[var(--primary)] px-5 py-3 text-base font-semibold text-[var(--primary-foreground)] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isSubmitting ? 'Memproses...' : 'Konfirmasi Reservasi'}
+            </button>
           </div>
         ) : (
-          <div className="space-y-4">
-            {reservations.map((r) => {
-              const displayInfo = getDisplayStatusLabel(
-                {
-                  status: r.status,
-                  reservation_date: r.reservation_date,
-                  end_time: r.end_time,
-                },
-                now
-              )
-
-              return (
-                <div
-                  key={r.id}
-                  className="rounded-2xl border border-[#D8DFEA] bg-white p-5 transition-all hover:border-[#22396F] hover:shadow-sm sm:p-6"
-                >
-                  <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
-                    <div>
-                      <div className="flex flex-wrap items-center gap-2.5">
-                        <span className="font-mono text-xs font-semibold text-[#718097]">
-                          #{r.id}
-                        </span>
-
-                        <h2 className="text-lg font-bold text-[#010736]">
-                          {r.facilities?.name ||
-                            'Fasilitas Kampus'}
-                        </h2>
-
-                        <span
-                          className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${
-                            r.status === 'disetujui'
-                              ? displayInfo.isPast
-                                ? 'border-slate-200 bg-slate-100 text-slate-700'
-                                : 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                              : r.status === 'menunggu'
-                                ? 'border-amber-200 bg-amber-50 text-amber-700'
-                                : r.status === 'ditolak'
-                                  ? 'border-red-200 bg-red-50 text-red-700'
-                                  : 'border-slate-200 bg-slate-100 text-slate-600'
-                          }`}
-                        >
-                          {displayInfo.label}
-                        </span>
-                      </div>
-
-                      {r.facilities?.location && (
-                        <p className="mt-1 flex items-center gap-1.5 text-xs text-[#52627D]">
-                          <MapPin className="h-3.5 w-3.5 text-[#22396F]" />
-                          {r.facilities.location}
-                        </p>
-                      )}
-                    </div>
-
-                    <Link href={`/reservations/${r.id}`}>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex items-center gap-1.5 border-[#D8DFEA] text-xs font-medium text-[#010736] hover:bg-[#F8FAFC]"
-                      >
-                        Lihat Detail
-                        <ArrowRight className="h-3.5 w-3.5" />
-                      </Button>
-                    </Link>
-                  </div>
-
-                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[#D8DFEA] pt-3.5 text-xs text-[#52627D]">
-                    <div className="flex flex-wrap items-center gap-4">
-                      <span className="flex items-center gap-1.5 font-medium text-[#010736]">
-                        <Calendar className="h-3.5 w-3.5 text-[#718097]" />
-                        {r.reservation_date}
-                      </span>
-
-                      <span className="flex items-center gap-1.5">
-                        <Clock className="h-3.5 w-3.5 text-[#718097]" />
-                        {r.start_time.slice(0, 5)} -{' '}
-                        {r.end_time.slice(0, 5)} WIB
-                      </span>
-                    </div>
-
-                    <div className="max-w-md truncate italic text-[#718097]">
-                      &ldquo;{r.purpose}&rdquo;
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-8 text-center shadow-sm">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+              <CheckCircle2 className="h-8 w-8" />
+            </div>
+            <h2 className="text-2xl font-bold text-[#010736]">Reservasi berhasil</h2>
+            <p className="mt-3 text-base text-emerald-900">
+              Reservasi berhasil, silahkan menunggu approval oleh petugas
+            </p>
+            <button
+              type="button"
+              onClick={() => router.push('/history')}
+              className="mt-6 rounded-xl bg-[#010736] px-5 py-3 text-sm font-semibold text-white hover:bg-[#0D1C42]"
+            >
+              Lihat Riwayat Reservasi
+            </button>
           </div>
         )}
-      </main>
-
-      <Footer />
-    </div>
+      </div>
+    </AppLayout>
   )
 }

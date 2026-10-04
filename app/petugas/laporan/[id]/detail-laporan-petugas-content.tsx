@@ -183,8 +183,10 @@ function HandlingForm({
   onSaved: () => void
   onStart: () => void
 }) {
+  const router = useRouter()
   const [selectedStatus, setSelectedStatus] = useState('')
   const [note, setNote] = useState(report.officerNote)
+  const [laporanUtamaId, setLaporanUtamaId] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [needsReload, setNeedsReload] = useState(false)
@@ -253,6 +255,7 @@ function HandlingForm({
           body: JSON.stringify({
             status: selectedStatus,
             note: cleanNote,
+            laporanUtamaId: laporanUtamaId.trim() || undefined,
             expectedUpdatedAt: report.updatedAt,
           }),
         }
@@ -316,6 +319,20 @@ function HandlingForm({
         </select>
       </label>
 
+      {selectedStatus === 'ditolak' && (
+        <label className={styles.field}>
+          <span>ID Laporan Utama (Opsional — untuk duplikat)</span>
+
+          <input
+            type="number"
+            value={laporanUtamaId}
+            onChange={(event) => setLaporanUtamaId(event.target.value)}
+            placeholder="Contoh: 12 (ID Laporan utama yang diproses)"
+            disabled={disabled}
+          />
+        </label>
+      )}
+
       <label className={styles.field}>
         <span>Catatan Petugas</span>
 
@@ -331,7 +348,7 @@ function HandlingForm({
 
       <p className={styles.help}>
         Catatan wajib diisi untuk status Selesai atau Ditolak.
-        Untuk laporan duplikat, cantumkan nomor laporan utama.
+        Untuk laporan duplikat, isi ID Laporan Utama di atas.
       </p>
 
       {error && (
@@ -344,7 +361,7 @@ function HandlingForm({
         <button
           type="button"
           className={styles.primaryButton}
-          onClick={() => window.location.reload()}
+          onClick={() => router.refresh()}
         >
           Muat ulang halaman
         </button>

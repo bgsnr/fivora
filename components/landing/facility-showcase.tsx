@@ -433,7 +433,7 @@ export function FacilityShowcase({
                     {/* Tersedia */}
                     {isAvailable && (
                       <Link
-                        href="/login?redirect=/reservasi/buat"
+                        href="/login?redirect=/reservations/new"
                         className="block w-full"
                       >
                         <Button
@@ -449,7 +449,7 @@ export function FacilityShowcase({
                     {/* Tidak Tersedia */}
                     {isInUse && (
                       <Link
-                        href="/login?redirect=/reservasi"
+                        href="/login?redirect=/reservations"
                         className="block w-full"
                       >
                         <Button

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import { ToastProvider } from "@/components/ui/toast";
 
 export const metadata: Metadata = {
   title: "FIVORA - Sistem Reservasi & Pelaporan Fasilitas Kampus",
@@ -22,8 +23,8 @@ export default function RootLayout({
         "font-sans"
       )}
     >
-      <body className="min-h-full flex flex-col bg-background text-foreground selection:bg-[#5318eb]/15 selection:text-[#0c021c]">
-        {children}
+      <body className="min-h-full flex flex-col bg-background text-foreground selection:bg-[#FCF1D0] selection:text-[#010736]">
+        <ToastProvider>{children}</ToastProvider>
       </body>
     </html>
   );

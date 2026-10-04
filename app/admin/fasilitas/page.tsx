@@ -3,47 +3,26 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
-import { createClient } from '@/lib/supabase/client'
+import {
+  getAllFacilitiesAdmin,
+  getUpcomingReservationsForFacility,
+  setFacilityStatusAction,
+  type PendingReservationInfo,
+} from '@/lib/actions/admin-facilities'
 
 import {
   Facility,
   FacilityStatus,
 } from '@/types/facility'
 
+import { useToast } from '@/components/ui/toast'
+
 import styles from './adminFasilitas.module.css'
 
-interface PendingReservation {
-  id: number
-  user_name: string
-  reservation_date: string
-  start_time: string
-  end_time: string
-  status: string
-}
-
-const supabase = createClient()
-
-function getTodayLocal() {
-  const today = new Date()
-
-  const year = today.getFullYear()
-  const month = String(today.getMonth() + 1).padStart(2, '0')
-  const day = String(today.getDate()).padStart(2, '0')
-
-  return `${year}-${month}-${day}`
-}
-
-function getCurrentTimeLocal() {
-  const now = new Date()
-
-  const hours = String(now.getHours()).padStart(2, '0')
-  const minutes = String(now.getMinutes()).padStart(2, '0')
-  const seconds = String(now.getSeconds()).padStart(2, '0')
-
-  return `${hours}:${minutes}:${seconds}`
-}
+type PendingReservation = PendingReservationInfo
 
 export default function AdminFacilitiesPage() {
+  const toast = useToast()
   const [facilities, setFacilities] = useState<Facility[]>([])
   const [loading, setLoading] = useState<boolean>(true)
 
@@ -67,18 +46,14 @@ export default function AdminFacilitiesPage() {
   const fetchFacilities = async () => {
     setLoading(true)
 
-    const { data, error } = await supabase
-      .from('facilities')
-      .select('*')
-      .order('id', { ascending: true })
-
-    if (error) {
+    try {
+      const data = await getAllFacilitiesAdmin()
+      setFacilities(data)
+    } catch (error) {
       console.error(
         'Error fetching facilities:',
         error
       )
-    } else {
-      setFacilities(data || [])
     }
 
     setLoading(false)
@@ -87,6 +62,26 @@ export default function AdminFacilitiesPage() {
   useEffect(() => {
     fetchFacilities()
   }, [])
+
+  /* Tutup modal dengan tombol Escape */
+  useEffect(() => {
+    if (!isModalOpen) return
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        closeModal()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+
+    return () =>
+      window.removeEventListener(
+        'keydown',
+        handleKeyDown
+      )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isModalOpen, checkingReservations])
 
   /* Handle Klik Menonaktifkan Fasilitas */
   const handleInitiateDeactivate = async (
@@ -98,37 +93,14 @@ export default function AdminFacilitiesPage() {
     setCheckingReservations(true)
     setIsModalOpen(true)
 
-    const today = getTodayLocal()
-    const currentTime = getCurrentTimeLocal()
+    try {
+      const futureReservations =
+        await getUpcomingReservationsForFacility(
+          facility.id
+        )
 
-    /*
-     * Ambil semua reservasi mulai hari ini ke depan.
-     *
-     * reservation_date = DATE
-     * start_time       = TIME
-     * end_time         = TIME
-     */
-    const { data, error } = await supabase
-      .from('reservations')
-      .select(
-        'id, user_name, reservation_date, start_time, end_time, status'
-      )
-      .eq('facility_id', facility.id)
-      .in('status', [
-        'menunggu',
-        'pending',
-        'disetujui',
-        'approved',
-      ])
-      .gte('reservation_date', today)
-      .order('reservation_date', {
-        ascending: true,
-      })
-      .order('start_time', {
-        ascending: true,
-      })
-
-    if (error) {
+      setPendingReservations(futureReservations)
+    } catch (error) {
       console.error(
         'Error checking reservations:',
         error
@@ -136,30 +108,6 @@ export default function AdminFacilitiesPage() {
 
       setReservationCheckError(
         'Gagal memeriksa reservasi mendatang. Silakan coba lagi.'
-      )
-    } else {
-      /*
-       * Untuk reservasi hari ini:
-       * hanya anggap masih mendatang bila end_time
-       * belum lewat waktu sekarang.
-       *
-       * Untuk tanggal setelah hari ini:
-       * semuanya masih mendatang.
-       */
-      const futureReservations = (data || []).filter(
-        (reservation) => {
-          if (
-            reservation.reservation_date > today
-          ) {
-            return true
-          }
-
-          return reservation.end_time >= currentTime
-        }
-      )
-
-      setPendingReservations(
-        futureReservations
       )
     }
 
@@ -180,21 +128,22 @@ export default function AdminFacilitiesPage() {
       return
     }
 
-    const { error } = await supabase
-      .from('facilities')
-      .update({
-        status: 'nonaktif',
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', selectedFacility.id)
+    const result = await setFacilityStatusAction(
+      selectedFacility.id,
+      'nonaktif'
+    )
 
-    if (error) {
-      alert(
-        'Gagal menonaktifkan fasilitas: ' +
-          error.message
+    if (!result.success) {
+      toast.error(
+        result.error ||
+          'Gagal menonaktifkan fasilitas.'
       )
       return
     }
+
+    toast.success(
+      `Fasilitas "${selectedFacility.name}" berhasil dinonaktifkan.`
+    )
 
     setIsModalOpen(false)
     setSelectedFacility(null)
@@ -206,21 +155,22 @@ export default function AdminFacilitiesPage() {
 
   /* Handle Mengaktifkan Kembali Fasilitas */
   const handleActivate = async (id: number) => {
-    const { error } = await supabase
-      .from('facilities')
-      .update({
-        status: 'aktif',
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', id)
+    const result = await setFacilityStatusAction(
+      id,
+      'aktif'
+    )
 
-    if (error) {
-      alert(
-        'Gagal mengaktifkan fasilitas: ' +
-          error.message
+    if (!result.success) {
+      toast.error(
+        result.error ||
+          'Gagal mengaktifkan fasilitas.'
       )
       return
     }
+
+    toast.success(
+      'Fasilitas berhasil diaktifkan.'
+    )
 
     fetchFacilities()
   }
@@ -456,7 +406,12 @@ export default function AdminFacilitiesPage() {
               }
             }}
           >
-            <div className={styles.modal}>
+            <div
+              className={styles.modal}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="deactivate-modal-title"
+            >
               {/* Header Modal */}
               <div
                 className={
@@ -472,7 +427,7 @@ export default function AdminFacilitiesPage() {
                     KONFIRMASI TINDAKAN
                   </p>
 
-                  <h2>
+                  <h2 id="deactivate-modal-title">
                     Nonaktifkan Fasilitas
                   </h2>
 
@@ -492,6 +447,7 @@ export default function AdminFacilitiesPage() {
                   className={
                     styles.closeModalButton
                   }
+                  aria-label="Tutup modal"
                   disabled={
                     checkingReservations
                   }

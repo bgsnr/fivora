@@ -125,7 +125,7 @@ export default async function StaffReservationDetailPage({
       <main className="flex-1 container mx-auto max-w-3xl px-4 py-8 sm:py-12">
         <div className="mb-6">
           <Link
-            href="/dashboard/reservations"
+            href="/petugas/reservations"
             className="mb-2 inline-flex items-center gap-1.5 text-xs font-semibold text-[#010736] hover:text-[#22396F] hover:underline"
           >
             <ArrowLeft className="h-3.5 w-3.5" />

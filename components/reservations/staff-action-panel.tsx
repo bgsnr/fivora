@@ -198,16 +198,21 @@ export function StaffActionPanel({
       {/* Modal Tolak Pengajuan */}
       {showRejectModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl border border-border">
-            <h3 className="text-lg font-bold text-[#0c021c]">
+          <div
+            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl border border-border"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Tolak Pengajuan Reservasi"
+          >
+            <h3 className="text-lg font-bold text-[#010736]">
               Tolak Pengajuan Reservasi
             </h3>
-            <p className="text-xs text-[#4a454d] mt-1">
+            <p className="text-xs text-[#52627D] mt-1">
               Alasan penolakan wajib dicantumkan agar pemohon mengetahui alasan jadwal tidak dapat disetujui.
             </p>
 
             <div className="mt-4 space-y-1.5">
-              <label htmlFor="rejectReason" className="block text-xs font-semibold text-[#0c021c]">
+              <label htmlFor="rejectReason" className="block text-xs font-semibold text-[#010736]">
                 Alasan Penolakan (Wajib)
               </label>
               <textarea
@@ -216,7 +221,7 @@ export function StaffActionPanel({
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
                 placeholder="Contoh: Jadwal bertabrakan dengan kegiatan universitas, ruangan dialihkan untuk ujian..."
-                className="w-full rounded-xl border border-border px-3 py-2 text-xs text-[#0c021c] focus:border-[#5318eb] focus:outline-none"
+                className="w-full rounded-xl border border-border px-3 py-2 text-xs text-[#010736] focus:border-[#22396F] focus:outline-none"
                 required
               />
             </div>
@@ -248,19 +253,24 @@ export function StaffActionPanel({
       {/* Modal Cancel Darurat Petugas */}
       {showCancelModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl border border-border">
+          <div
+            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl border border-border"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Pembatalan Darurat Fasilitas"
+          >
             <div className="flex items-center gap-2.5 text-red-600 mb-2">
               <AlertTriangle className="h-5 w-5" />
-              <h3 className="text-lg font-bold text-[#0c021c]">
+              <h3 className="text-lg font-bold text-[#010736]">
                 Pembatalan Darurat Fasilitas
               </h3>
             </div>
-            <p className="text-xs text-[#4a454d]">
+            <p className="text-xs text-[#52627D]">
               Gunakan fitur ini jika fasilitas mendadak mengalami kerusakan atau kendala operasional tak terduga. Alasan pembatalan wajib dicatat.
             </p>
 
             <div className="mt-4 space-y-1.5">
-              <label htmlFor="cancelEmergencyReason" className="block text-xs font-semibold text-[#0c021c]">
+              <label htmlFor="cancelEmergencyReason" className="block text-xs font-semibold text-[#010736]">
                 Alasan Pembatalan Darurat (Wajib)
               </label>
               <textarea
@@ -269,7 +279,7 @@ export function StaffActionPanel({
                 value={cancelReason}
                 onChange={(e) => setCancelReason(e.target.value)}
                 placeholder="Contoh: Terjadi kebocoran atap ruang kelas, AC laboratorium mati total..."
-                className="w-full rounded-xl border border-border px-3 py-2 text-xs text-[#0c021c] focus:border-[#5318eb] focus:outline-none"
+                className="w-full rounded-xl border border-border px-3 py-2 text-xs text-[#010736] focus:border-[#22396F] focus:outline-none"
                 required
               />
             </div>

@@ -48,7 +48,14 @@ export function ReservationForm({
   )
 
   const [reservationDate, setReservationDate] =
-    useState<string>('')
+    useState<string>(() =>
+      new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Jakarta',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      }).format(new Date())
+    )
 
   const [startTime, setStartTime] =
     useState<string>('08:00')
@@ -79,6 +86,31 @@ export function ReservationForm({
   const selectedFacility = facilities.find(
     (f) => String(f.id) === facilityId
   )
+
+  // Validasi inline real-time sebelum submit
+  const inlineErrors: string[] = []
+
+  if (!facilityId) {
+    inlineErrors.push('Pilih fasilitas terlebih dahulu.')
+  }
+
+  if (!reservationDate) {
+    inlineErrors.push('Tanggal penggunaan wajib diisi.')
+  }
+
+  if (startTime >= endTime) {
+    inlineErrors.push(
+      'Waktu selesai harus lebih besar dari waktu mulai.'
+    )
+  }
+
+  if (!purpose.trim()) {
+    inlineErrors.push(
+      'Tujuan penggunaan wajib diisi.'
+    )
+  }
+
+  const isFormInvalid = inlineErrors.length > 0
 
   async function handleSubmit(
     e: React.FormEvent<HTMLFormElement>
@@ -168,7 +200,7 @@ export function ReservationForm({
 
         <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <a
-            href={`/reservasi/${successReservationId}`}
+            href={`/reservations/${successReservationId}`}
             className="w-full sm:w-auto"
           >
             <Button className="w-full bg-[#010736] text-white hover:bg-[#0D1C42] sm:w-auto">
@@ -177,7 +209,7 @@ export function ReservationForm({
           </a>
 
           <a
-            href="/reservasi"
+            href="/reservations"
             className="w-full sm:w-auto"
           >
             <Button
@@ -375,6 +407,15 @@ export function ReservationForm({
         />
       </div>
 
+      {/* Validasi Inline */}
+      {isFormInvalid && (
+        <ul className="list-disc space-y-1 rounded-xl border border-red-200 bg-red-50/70 p-4 pl-8 text-xs text-red-700">
+          {inlineErrors.map((msg) => (
+            <li key={msg}>{msg}</li>
+          ))}
+        </ul>
+      )}
+
       {/* Informasi Ketentuan Pembatalan */}
       <div className="flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50/70 p-4 text-xs text-amber-900">
         <Info className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
@@ -405,8 +446,8 @@ export function ReservationForm({
 
         <Button
           type="submit"
-          disabled={isLoading}
-          className="min-w-[140px] bg-[#010736] text-white hover:bg-[#0D1C42]"
+          disabled={isLoading || isFormInvalid}
+          className="min-w-[140px] bg-[#010736] text-white hover:bg-[#0D1C42] disabled:opacity-60"
         >
           {isLoading
             ? 'Memproses...'

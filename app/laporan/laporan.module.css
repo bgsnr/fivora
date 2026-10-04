@@ -3,7 +3,7 @@
   padding: 0 40px 64px;
   background: #f7f8fa;
   color: #010736;
-  font-family: var(--font-laporan-body), sans-serif;
+  font-family: inherit;
 }
 
 .container {
@@ -22,7 +22,7 @@
 
 .brand {
   color: #010736;
-  font-family: var(--font-laporan-heading), sans-serif;
+  font-family: inherit;
   font-size: 29px;
   font-weight: 700;
   letter-spacing: -0.8px;
@@ -68,7 +68,7 @@
 
 .heading h1 {
   margin: 0;
-  font-family: var(--font-laporan-heading), sans-serif;
+  font-family: inherit;
   font-size: clamp(38px, 4.5vw, 54px);
   font-weight: 600;
   line-height: 1.1;
@@ -212,7 +212,7 @@
 
 .reportContent h3 {
   margin: 0;
-  font-family: var(--font-laporan-heading), sans-serif;
+  font-family: inherit;
   font-size: 23px;
   font-weight: 500;
   line-height: 1.3;
@@ -393,7 +393,7 @@
 .empty h2,
 .error h2 {
   margin: 0;
-  font-family: var(--font-laporan-heading), sans-serif;
+  font-family: inherit;
   font-size: 26px;
   font-weight: 500;
   letter-spacing: -0.5px;

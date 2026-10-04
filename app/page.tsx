@@ -10,6 +10,7 @@ import { Workflow } from "@/components/landing/workflow"
 import { OperatingHours } from "@/components/landing/operating-hours"
 import { Footer } from "@/components/landing/footer"
 import { getActiveFacilities } from "@/lib/actions/reservations"
+import { getCurrentUser } from "@/lib/auth"
 import { getFacilitySlotAvailability } from "@/lib/integration"
 import { getWIBDateTime } from "@/lib/validations/reservation-time"
 
@@ -113,11 +114,18 @@ async function buildPublicFacilities(): Promise<FacilityItem[]> {
 
 export default async function Home() {
   const facilities = await buildPublicFacilities()
+  const user = await getCurrentUser()
 
   return (
     <div className="flex min-h-screen flex-col bg-background selection:bg-primary/20 selection:text-foreground">
       {/* Top Navigation */}
-      <Navbar />
+      <Navbar
+        user={
+          user
+            ? { name: user.name, role: user.role }
+            : null
+        }
+      />
 
       {/* Main Content Sections */}
       <main className="flex-1">
