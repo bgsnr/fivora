@@ -3,6 +3,12 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useTransition } from 'react'
+import {
+  ArrowLeft,
+  ArrowRight,
+  ArrowUpRight,
+  RefreshCw,
+} from 'lucide-react'
 
 import styles from './laporan-petugas.module.css'
 
@@ -59,6 +65,14 @@ const categoryLabels: Record<string, string> = {
   lainnya: 'Lainnya',
 }
 
+const summaryItems = [
+  { key: 'total', label: 'Total laporan' },
+  { key: 'baru', label: 'Laporan baru' },
+  { key: 'diproses', label: 'Sedang diproses' },
+  { key: 'selesai', label: 'Selesai' },
+  { key: 'ditolak', label: 'Ditolak' },
+] as const
+
 export default function LaporanPetugasContent({
   reports,
   summary,
@@ -86,73 +100,76 @@ export default function LaporanPetugasContent({
 
   return (
     <main className={styles.page}>
-      <section className={styles.container}>
-        <Link href="/petugas" className={styles.backLink}>
-          ← Dashboard petugas
-        </Link>
+      <div className={styles.container}>
+        <header className={styles.navigation}>
+          <Link href="/" className={styles.brand}>
+            FIVORA<span className={styles.brandDot}>.</span>
+          </Link>
 
-        <div className={styles.heading}>
+          <Link href="/petugas" className={styles.backLink}>
+            <ArrowLeft size={16} aria-hidden="true" />
+            Dashboard petugas
+          </Link>
+        </header>
+
+        <section
+          className={styles.heading}
+          aria-labelledby="queue-title"
+        >
           <div>
-            <p className={styles.eyebrow}>PETUGAS</p>
+            <p className={styles.eyebrow}>PELAPORAN & PERBAIKAN</p>
 
-            <h1>Antrean Laporan</h1>
+            <h1 id="queue-title">
+              Antrean <span>laporan.</span>
+            </h1>
 
-            <p>
-              Periksa laporan kerusakan dan perbarui status penanganannya.
+            <p className={styles.introduction}>
+              Periksa laporan kerusakan dan perbarui status
+              penanganannya.
             </p>
           </div>
 
           <button
             type="button"
-            className={styles.filterButton}
+            className={styles.refreshButton}
             onClick={refreshReports}
             disabled={isPending}
           >
-            {isPending ? 'Memuat...' : 'Muat ulang'}
+            <RefreshCw size={16} aria-hidden="true" />
+            {isPending ? 'Memuat...' : 'Perbarui daftar'}
           </button>
-        </div>
-
-        <section className={styles.summary}>
-          <article className={styles.summaryCard}>
-            <span>Total laporan</span>
-            <strong>{summary?.total ?? '—'}</strong>
-          </article>
-
-          <article className={styles.summaryCard}>
-            <span>Laporan baru</span>
-            <strong>{summary?.baru ?? '—'}</strong>
-          </article>
-
-          <article className={styles.summaryCard}>
-            <span>Sedang diproses</span>
-            <strong>{summary?.diproses ?? '—'}</strong>
-          </article>
-
-          <article className={styles.summaryCard}>
-            <span>Selesai</span>
-            <strong>{summary?.selesai ?? '—'}</strong>
-          </article>
-
-          <article className={styles.summaryCard}>
-            <span>Ditolak</span>
-            <strong>{summary?.ditolak ?? '—'}</strong>
-          </article>
         </section>
 
-        {!summary && (
-          <p role="alert">
-            Ringkasan laporan gagal dimuat. Klik Muat ulang untuk mencoba lagi.
-          </p>
-        )}
+        <dl
+          className={styles.summary}
+          aria-label="Ringkasan seluruh laporan"
+        >
+          {summaryItems.map((item) => (
+            <div
+              key={item.key}
+              className={`${styles.summaryItem} ${
+                item.key === 'total' ? styles.summaryTotal : ''
+              }`}
+            >
+              <dt>{item.label}</dt>
+              <dd>{summary?.[item.key] ?? '—'}</dd>
+            </div>
+          ))}
+        </dl>
 
         <section
           className={styles.reportSection}
+          aria-labelledby="report-list-title"
           aria-busy={isPending}
         >
           <div className={styles.toolbar}>
-            <h2>Daftar Laporan</h2>
+            <h2 id="report-list-title">Daftar laporan</h2>
 
-            <div className={styles.filters}>
+            <div
+              className={styles.filters}
+              role="group"
+              aria-label="Filter status laporan"
+            >
               {statusOptions.map((status) => (
                 <button
                   key={status}
@@ -162,9 +179,9 @@ export default function LaporanPetugasContent({
                       ? styles.activeFilter
                       : styles.filterButton
                   }
+                  aria-pressed={selectedStatus === status}
                   onClick={() => changeStatus(status)}
                   disabled={isPending}
-                  aria-pressed={selectedStatus === status}
                 >
                   {statusLabels[status]}
                 </button>
@@ -174,82 +191,125 @@ export default function LaporanPetugasContent({
 
           <div className={styles.reportList}>
             {errorMessage ? (
-              <div className={styles.empty} role="alert">
-                {errorMessage}
+              <div className={styles.error} role="alert">
+                <h3>Daftar belum dapat ditampilkan</h3>
+                <p>{errorMessage}</p>
               </div>
-            ) : reports.length > 0 ? (
+            ) : reports.length === 0 ? (
+              <div className={styles.empty}>
+                <h3>
+                  {selectedStatus === 'semua'
+                    ? 'Belum ada laporan masuk'
+                    : `Tidak ada laporan berstatus ${statusLabels[selectedStatus]}`}
+                </h3>
+
+                <p>
+                  {selectedStatus === 'semua'
+                    ? 'Laporan yang dikirim pengguna akan muncul di sini.'
+                    : 'Pilih status lain untuk melihat laporan yang tersedia.'}
+                </p>
+              </div>
+            ) : (
               reports.map((report) => (
-                <article key={report.id} className={styles.reportCard}>
+                <article className={styles.reportRow} key={report.id}>
                   <div className={styles.reportContent}>
-                    <div className={styles.reportTop}>
-                      <span
-                        className={`${styles.status} ${styles[report.status]}`}
-                      >
-                        {statusLabels[report.status]}
+                    <div className={styles.reportMeta}>
+                      <span className={styles.category}>
+                        {categoryLabels[report.category] ?? report.category}
                       </span>
 
-                      <span className={styles.date}>
-                        {report.date}
+                      <span className={styles.reportId}>
+                        #{report.id}
                       </span>
                     </div>
 
-                    <h3>{report.facility}</h3>
-
-                    <p className={styles.category}>
-                      {categoryLabels[report.category] ?? report.category}
-                    </p>
+                    <h3>
+                      <Link href={`/petugas/laporan/${report.id}`}>
+                        {report.facility}
+                      </Link>
+                    </h3>
 
                     <p className={styles.description}>
                       {report.description}
                     </p>
+
+                    <p className={styles.date}>
+                      <span>Dikirim</span>
+                      <time>{report.date}</time>
+                    </p>
                   </div>
 
-                  <Link
-                    href={`/petugas/laporan/${report.id}`}
-                    className={styles.detailButton}
-                  >
-                    Periksa laporan
-                  </Link>
+                  <div className={styles.reportActions}>
+                    <span
+                      className={`${styles.status} ${
+                        styles[report.status]
+                      }`}
+                    >
+                      <span
+                        className={styles.statusDot}
+                        aria-hidden="true"
+                      />
+                      {statusLabels[report.status]}
+                    </span>
+
+                    <Link
+                      href={`/petugas/laporan/${report.id}`}
+                      className={styles.detailButton}
+                      aria-label={`Periksa laporan ${report.facility}, nomor ${report.id}`}
+                    >
+                      Periksa laporan
+                      <ArrowUpRight size={18} aria-hidden="true" />
+                    </Link>
+                  </div>
                 </article>
               ))
-            ) : (
-              <div className={styles.empty}>
-                {selectedStatus === 'semua'
-                  ? 'Belum ada laporan masuk.'
-                  : 'Tidak ada laporan dengan status tersebut.'}
-              </div>
             )}
           </div>
 
-          {!errorMessage && totalPages > 1 && (
+          {!errorMessage && reports.length > 0 && totalPages > 1 && (
             <nav
+              className={styles.pagination}
               aria-label="Halaman antrean laporan"
-              className={styles.toolbar}
-              style={{ marginTop: '24px' }}
             >
-              {page > 1 && (
+              {page > 1 ? (
                 <Link
                   href={`/petugas/laporan?status=${selectedStatus}&page=${page - 1}`}
+                  className={styles.pageLink}
+                  rel="prev"
                 >
+                  <ArrowLeft size={16} aria-hidden="true" />
                   Sebelumnya
                 </Link>
+              ) : (
+                <span className={styles.pageDisabled}>
+                  <ArrowLeft size={16} aria-hidden="true" />
+                  Sebelumnya
+                </span>
               )}
 
-              <span>
+              <span className={styles.pageInformation}>
                 Halaman {page} dari {totalPages}
               </span>
 
-              {page < totalPages && (
+              {page < totalPages ? (
                 <Link
                   href={`/petugas/laporan?status=${selectedStatus}&page=${page + 1}`}
+                  className={styles.pageLink}
+                  rel="next"
                 >
                   Berikutnya
+                  <ArrowRight size={16} aria-hidden="true" />
                 </Link>
+              ) : (
+                <span className={styles.pageDisabled}>
+                  Berikutnya
+                  <ArrowRight size={16} aria-hidden="true" />
+                </span>
               )}
             </nav>
           )}
         </section>
-      </section>
+      </div>
     </main>
   )
 }

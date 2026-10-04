@@ -170,10 +170,7 @@ export default function ReportMaintenance({
     ['aktif', 'nonaktif'].includes(data.facilityStatus)
 
   return (
-    <section
-      className={styles.card}
-      style={{ gridColumn: '1 / -1' }}
-    >
+    <section className={`${styles.card} ${styles.maintenanceCard}`}>
       <div className={styles.cardHeading}>
         <h2>Perbaikan Fasilitas</h2>
 

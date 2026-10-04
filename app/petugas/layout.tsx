@@ -1,10 +1,16 @@
 import type { ReactNode } from 'react'
-import { Manrope } from 'next/font/google'
+import { DM_Sans, Outfit } from 'next/font/google'
 
-const manrope = Manrope({
+const bodyFont = DM_Sans({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-petugas',
+})
+
+const headingFont = Outfit({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-petugas-heading',
 })
 
 export default function PetugasLayout({
@@ -13,7 +19,10 @@ export default function PetugasLayout({
   children: ReactNode
 }) {
   return (
-    <div className={manrope.variable}>
+    <div
+      className={`${bodyFont.variable} ${headingFont.variable}`}
+      style={{ fontFamily: bodyFont.style.fontFamily }}
+    >
       {children}
     </div>
   )

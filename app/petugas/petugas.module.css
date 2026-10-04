@@ -1,143 +1,197 @@
 .page {
   min-height: 100vh;
-  padding: 28px 40px 80px;
-  background: #faf9f6;
-  color: #242126;
+  padding: 0 40px 64px;
+  background: #f7f8fa;
+  color: #010736;
   font-family: var(--font-petugas), sans-serif;
-  -webkit-font-smoothing: antialiased;
 }
 
 .container {
-  width: min(1120px, 100%);
+  width: min(1180px, 100%);
   margin: 0 auto;
 }
 
-.header {
+.navigation {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 0 26px;
-  border-bottom: 1px solid #dedbd5;
+  gap: 24px;
+  min-height: 88px;
+  border-bottom: 1px solid #d8dfea;
 }
 
 .brand {
-  color: #35205c;
-  font-size: 23px;
+  color: #010736;
+  font-family: var(--font-petugas-heading), sans-serif;
+  font-size: 29px;
   font-weight: 700;
   letter-spacing: -0.8px;
   text-decoration: none;
 }
 
-.role {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  color: #68636c;
-  font-size: 13px;
-  font-weight: 400;
+.brandDot {
+  color: #667b9f;
 }
 
-.role::before {
-  content: "";
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #78977b;
+.role {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 13px;
+  border: 1px solid #d4dce8;
+  border-radius: 999px;
+  color: #52627d;
+  font-size: 13px;
 }
 
 .welcome {
-  max-width: 780px;
-  margin: 72px 0 52px;
+  padding: 48px 0 40px;
 }
 
 .eyebrow {
   margin: 0 0 18px;
-  color: #827b88;
+  color: #52627d;
   font-size: 11px;
   font-weight: 500;
-  letter-spacing: 2px;
+  letter-spacing: 0.14em;
 }
 
 .welcome h1 {
   margin: 0;
-  font-size: clamp(32px, 4.5vw, 52px);
-  font-weight: 500;
-  line-height: 1.15;
-  letter-spacing: -1.8px;
+  font-family: var(--font-petugas-heading), sans-serif;
+  font-size: clamp(38px, 4.5vw, 54px);
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -1.6px;
+}
+
+.welcome h1 > span {
+  color: #22396f;
   overflow-wrap: anywhere;
 }
 
-.welcome > p:last-child {
-  max-width: 580px;
+.introduction {
+  max-width: 550px;
   margin: 20px 0 0;
-  color: #77717a;
+  color: #52627d;
+  font-size: 16px;
+  line-height: 1.75;
+  letter-spacing: -0.15px;
+}
+
+.menu {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: 24px;
+}
+
+.reportCard,
+.reservationCard {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 30px;
+}
+
+.reportCard {
+  border: 1px solid #010736;
+  border-radius: 16px 16px 40px 16px;
+  background: #010736;
+  color: #ffffff;
+}
+
+.reservationCard {
+  border: 1px solid #e5dcc1;
+  border-radius: 16px;
+  background: #fcf1d0;
+  color: #010736;
+}
+
+.cardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.cardLabel {
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.6;
+  letter-spacing: 0.12em;
+}
+
+.reportCard .cardLabel {
+  color: #bcc9df;
+}
+
+.reservationCard .cardLabel {
+  color: #68654e;
+}
+
+.reportIcon,
+.reservationIcon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 50px;
+  height: 50px;
+  border: 1px solid;
+  border-radius: 12px;
+}
+
+.reportIcon {
+  border-color: #344263;
+  color: #fcf1d0;
+}
+
+.reservationIcon {
+  border-color: #ded4af;
+  color: #22396f;
+}
+
+.cardContent {
+  padding: 34px 0 28px;
+}
+
+.cardContent h2 {
+  margin: 0;
+  font-family: var(--font-petugas-heading), sans-serif;
+  font-size: 32px;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.7px;
+}
+
+.cardContent p {
+  max-width: 430px;
+  margin: 16px 0 0;
   font-size: 15px;
   font-weight: 400;
   line-height: 1.8;
 }
 
-.menu {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  border-top: 1px solid #dedbd5;
-  border-bottom: 1px solid #dedbd5;
+.reportCard .cardContent p {
+  color: #c7d2e5;
 }
 
-.card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: 40px 40px 40px 0;
+.reservationCard .cardContent p {
+  color: #62614f;
 }
 
-.card + .card {
-  padding-left: 40px;
-  padding-right: 0;
-  border-left: 1px solid #dedbd5;
+.reportFooter,
+.reservationFooter {
+  margin-top: auto;
+  padding-top: 24px;
+  border-top: 1px solid;
 }
 
-.card::before {
-  position: absolute;
-  top: 40px;
-  right: 40px;
-  content: "01";
-  color: #c0b9c7;
-  font-size: 12px;
-  letter-spacing: 1px;
+.reportFooter {
+  border-color: #344263;
 }
 
-.card + .card::before {
-  right: 0;
-  content: "02";
-}
-
-.icon {
-  display: flex;
-  align-items: center;
-  height: 40px;
-  margin-bottom: 30px;
-  color: #71548f;
-}
-
-.icon svg {
-  stroke-width: 1.4;
-}
-
-.card h2 {
-  margin: 0;
-  font-size: 25px;
-  font-weight: 500;
-  letter-spacing: -0.7px;
-}
-
-.card p {
-  max-width: 410px;
-  margin: 16px 0 34px;
-  color: #77717a;
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1.85;
+.reservationFooter {
+  border-color: #ded4af;
 }
 
 .primaryButton,
@@ -145,67 +199,128 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 20px;
+  gap: 18px;
   min-height: 46px;
-  margin-top: auto;
-  padding: 12px 18px;
+  padding: 11px 20px;
   border: 1px solid transparent;
-  border-radius: 5px;
-  font: inherit;
-  font-size: 13px;
-  font-weight: 400;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
   text-decoration: none;
 }
 
 .primaryButton {
-  background: #4f3172;
-  color: #ffffff;
-  transition: background 150ms ease;
+  border-color: #fcf1d0;
+  background: #fcf1d0;
+  color: #010736;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .primaryButton:hover {
-  background: #3d235b;
+  border-color: #ffffff;
+  background: #ffffff;
 }
 
 .disabledButton {
-  border-color: #dedbd5;
+  border-color: #cfc6a6;
   background: transparent;
-  color: #aaa3ac;
+  color: #827d67;
   cursor: not-allowed;
 }
 
-.primaryButton:focus-visible,
-.brand:focus-visible {
-  outline: 2px solid #71548f;
+.primaryButton svg,
+.disabledButton svg {
+  flex-shrink: 0;
+}
+
+.primaryButton:focus-visible {
+  outline: 2px solid #fcf1d0;
   outline-offset: 5px;
 }
 
-@media (max-width: 700px) {
+.brand:focus-visible {
+  outline: 2px solid #22396f;
+  outline-offset: 5px;
+}
+
+@media (max-width: 1000px) {
+  .menu {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .reportCard,
+  .reservationCard {
+    padding: 24px;
+  }
+
+  .cardContent h2 {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 760px) {
   .page {
-    padding: 20px 24px 48px;
+    padding: 0 24px 48px;
   }
 
   .welcome {
-    margin: 48px 0 36px;
+    padding: 36px 0 32px;
   }
 
   .menu {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 540px) {
+  .page {
+    padding: 0 16px 32px;
   }
 
-  .card,
-  .card + .card {
-    padding: 30px 0;
-    border-left: none;
+  .navigation {
+    min-height: 72px;
   }
 
-  .card + .card {
-    border-top: 1px solid #dedbd5;
+  .brand {
+    font-size: 25px;
   }
 
-  .card::before,
-  .card + .card::before {
-    top: 32px;
-    right: 0;
+  .role {
+    font-size: 12px;
+  }
+
+  .welcome h1 {
+    font-size: 39px;
+    letter-spacing: -1.2px;
+  }
+
+  .introduction {
+    font-size: 15px;
+  }
+
+  .reportCard,
+  .reservationCard {
+    padding: 24px 20px;
+  }
+
+  .cardContent {
+    padding-top: 28px;
+  }
+
+  .cardContent h2 {
+    font-size: 29px;
+  }
+
+  .primaryButton,
+  .disabledButton {
+    justify-content: space-between;
+    width: 100%;
+    padding-right: 18px;
+    padding-left: 18px;
   }
 }

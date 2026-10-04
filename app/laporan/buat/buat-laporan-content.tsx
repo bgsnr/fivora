@@ -1,8 +1,20 @@
 'use client'
 
 import Image from 'next/image'
+import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
+import {
+  FileText,
+  ArrowUpRight,
+  Building2,
+  Check,
+  Droplets,
+  Ellipsis,
+  ImagePlus,
+  Wrench,
+  Zap,
+} from 'lucide-react'
 
 import styles from './buat-laporan.module.css'
 
@@ -18,11 +30,11 @@ type Props = {
 }
 
 const categories = [
-  { value: 'peralatan', label: 'Peralatan' },
-  { value: 'listrik', label: 'Listrik' },
-  { value: 'kebersihan', label: 'Kebersihan' },
-  { value: 'bangunan', label: 'Bangunan' },
-  { value: 'lainnya', label: 'Lainnya' },
+  { value: 'peralatan', label: 'Peralatan', icon: Wrench },
+  { value: 'listrik', label: 'Listrik', icon: Zap },
+  { value: 'kebersihan', label: 'Kebersihan', icon: Droplets },
+  { value: 'bangunan', label: 'Bangunan', icon: Building2 },
+  { value: 'lainnya', label: 'Lainnya', icon: Ellipsis },
 ]
 
 export default function BuatLaporanContent({
@@ -41,7 +53,7 @@ export default function BuatLaporanContent({
   const fileInputRef = useRef<HTMLInputElement>(null)
   const submittingRef = useRef(false)
 
-    useEffect(() => {
+  useEffect(() => {
     return () => {
       if (preview) {
         URL.revokeObjectURL(preview)
@@ -110,7 +122,7 @@ export default function BuatLaporanContent({
       cleanDescription.length > 5000
     ) {
       setErrorMessage(
-        'Deskripsi kerusakan harus berisi 10–5000 karakter.'
+        'Deskripsi kerusakan harus berisi 10 sampai 5000 karakter.'
       )
       return
     }
@@ -166,133 +178,242 @@ export default function BuatLaporanContent({
     }
   }
 
-  const formUnavailable = Boolean(facilitiesError) || facilities.length === 0
+  const formUnavailable =
+    Boolean(facilitiesError) || facilities.length === 0
 
   return (
     <main className={styles.page}>
-      <section className={styles.card}>
-        <p className={styles.eyebrow}>FIVORA</p>
+      <div className={styles.container}>
+        <header className={styles.navigation}>
+          <Link href="/" className={styles.brand}>
+            FIVORA<span className={styles.brandDot}>.</span>
+          </Link>
 
-        <h1>Laporkan Kerusakan Fasilitas</h1>
+          <Link href="/laporan" className={styles.historyButton}>
+  <         FileText size={18} strokeWidth={1.5} aria-hidden="true" />
+            <span>Riwayat laporan</span>
+            <ArrowUpRight size={17} aria-hidden="true" />
+          </Link>
+        </header>
 
-        <p className={styles.description}>
-          Isi informasi kerusakan agar dapat segera diperiksa oleh petugas.
-        </p>
+        <div className={styles.workspace}>
+          <section className={styles.introduction}>
+            <p className={styles.eyebrow}>
+              LAYANAN FASILITAS KAMPUS
+            </p>
 
-        {facilitiesError && (
-          <div className={styles.error} role="alert">
-            {facilitiesError}
-          </div>
-        )}
+            <h1>
+              Ada yang perlu
+              <br />
+              <span>diperbaiki?</span>
+            </h1>
 
-        {!facilitiesError && facilities.length === 0 && (
-          <p>Belum ada fasilitas yang dapat dipilih.</p>
-        )}
+            <p className={styles.introText}>
+              Beri tahu kami kondisi fasilitas yang kamu temukan.
+              Laporanmu membantu petugas menentukan penanganannya.
+            </p>
 
-        <form className={styles.form} onSubmit={handleSubmit}>
-          <label className={styles.field}>
-            <span>Fasilitas</span>
-
-            <select
-              value={facility}
-              onChange={(event) => setFacility(event.target.value)}
-              disabled={loading || formUnavailable}
-            >
-              <option value="">Pilih fasilitas</option>
-
-              {facilities.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.name}
-                  {item.location ? ` — ${item.location}` : ''}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className={styles.field}>
-            <span>Kategori Kerusakan</span>
-
-            <select
-              value={category}
-              onChange={(event) => setCategory(event.target.value)}
-              disabled={loading}
-            >
-              <option value="">Pilih kategori</option>
-
-              {categories.map((item) => (
-                <option key={item.value} value={item.value}>
-                  {item.label}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className={styles.field}>
-            <span>Deskripsi Kerusakan</span>
-
-            <textarea
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-              placeholder="Jelaskan kondisi kerusakan yang ditemukan"
-              rows={5}
-              maxLength={5000}
-              disabled={loading}
-            />
-
-            <small>
-              {description.trim().length}/5000 karakter. Minimal 10 karakter.
-            </small>
-          </label>
-
-          <label className={styles.field}>
-            <span>Foto Kerusakan</span>
-
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".jpg,.jpeg,.png,image/jpeg,image/png"
-              onChange={handlePhotoChange}
-              disabled={loading}
-            />
-
-            <small>Format JPG, JPEG, atau PNG. Maksimal 2 MB.</small>
-          </label>
-
-          {photo && preview && (
-            <div className={styles.preview}>
-              <p>Pratinjau foto</p>
-
+            <div className={styles.campus}>
               <Image
-                src={preview}
-                alt="Pratinjau kerusakan"
-                width={800}
-                height={500}
-                unoptimized
+                src="/wp.png"
+                alt="Kawasan kampus"
+                fill
+                sizes="(max-width: 900px) 100vw, 460px"
+                className={styles.campusImage}
               />
-            </div>
-          )}
 
-          {errorMessage && (
-            <div className={styles.error} role="alert">
-              {errorMessage}
+              <div className={styles.campusCaption}>
+                <span>
+                  Perkembangan penanganan dapat dilihat melalui riwayat laporan.
+                </span>
+              </div>
             </div>
-          )}
+          </section>
 
-          {successMessage && (
-            <div className={styles.success} role="status">
-              {successMessage}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            className={styles.submitButton}
-            disabled={loading || formUnavailable}
+          <section
+            className={styles.formPanel}
+            aria-labelledby="report-form-title"
           >
-            {loading ? 'Mengirim...' : 'Kirim Laporan'}
-          </button>
-        </form>
-      </section>
+            <div className={styles.formHeading}>
+              <div>
+                <p className={styles.formEyebrow}>FORM PENGAJUAN</p>
+                <h2 id="report-form-title">Laporan kerusakan</h2>
+              </div>
+
+              <span className={styles.formMark} aria-hidden="true">
+                <Wrench size={22} strokeWidth={1.5} />
+              </span>
+            </div>
+
+            {facilitiesError && (
+              <div className={styles.error} role="alert">
+                {facilitiesError}
+              </div>
+            )}
+
+            {!facilitiesError && facilities.length === 0 && (
+              <p className={styles.empty}>
+                Belum ada fasilitas yang dapat dipilih.
+              </p>
+            )}
+
+            <form className={styles.form} onSubmit={handleSubmit}>
+              <label className={styles.field}>
+                <span>Fasilitas yang dilaporkan</span>
+
+                <select
+                  value={facility}
+                  onChange={(event) => setFacility(event.target.value)}
+                  disabled={loading || formUnavailable}
+                >
+                  <option value="">Pilih fasilitas</option>
+
+                  {facilities.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.name}
+                      {item.location ? ` / ${item.location}` : ''}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <fieldset className={styles.categoryField}>
+                <legend>Kategori kerusakan</legend>
+
+                <div className={styles.categoryOptions}>
+                  {categories.map((item) => {
+                    const Icon = item.icon
+
+                    return (
+                      <label
+                        key={item.value}
+                        className={styles.categoryOption}
+                      >
+                        <input
+                          type="radio"
+                          name="category"
+                          value={item.value}
+                          checked={category === item.value}
+                          onChange={() => setCategory(item.value)}
+                          disabled={loading || formUnavailable}
+                        />
+
+                        <span className={styles.categoryTile}>
+                          <Icon
+                            size={19}
+                            strokeWidth={1.5}
+                            aria-hidden="true"
+                          />
+                          <span>{item.label}</span>
+                        </span>
+                      </label>
+                    )
+                  })}
+                </div>
+              </fieldset>
+
+              <label className={styles.field}>
+                <span>Bagaimana kondisi kerusakannya?</span>
+
+                <textarea
+                  value={description}
+                  onChange={(event) => setDescription(event.target.value)}
+                  placeholder="Contoh: Lampu di bagian belakang ruang A101 berkedip sejak pagi."
+                  rows={4}
+                  maxLength={5000}
+                  disabled={loading || formUnavailable}
+                  aria-describedby="description-help"
+                />
+
+                <span className={styles.fieldHelp} id="description-help">
+                  <span>Minimal 10 karakter</span>
+                  <span>{description.trim().length} / 5000</span>
+                </span>
+              </label>
+
+              <div className={styles.photoField}>
+                <p className={styles.fieldTitle}>Foto kondisi fasilitas</p>
+
+                <label
+                  className={`${styles.uploadArea} ${
+                    photo ? styles.uploadFilled : ''
+                  }`}
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+                    onChange={handlePhotoChange}
+                    disabled={loading || formUnavailable}
+                    aria-label="Pilih atau ganti foto kerusakan"
+                    aria-describedby="photo-help"
+                  />
+
+                  {photo && preview ? (
+                    <Image
+                      src={preview}
+                      alt="Pratinjau foto kerusakan yang dipilih"
+                      width={76}
+                      height={76}
+                      unoptimized
+                      className={styles.photoThumbnail}
+                    />
+                  ) : (
+                    <span className={styles.uploadIcon}>
+                      <ImagePlus
+                        size={24}
+                        strokeWidth={1.5}
+                        aria-hidden="true"
+                      />
+                    </span>
+                  )}
+
+                  <span className={styles.uploadText}>
+                    <span className={styles.uploadTitle}>
+                      {photo ? photo.name : 'Pilih foto kerusakan'}
+                    </span>
+                    <span id="photo-help">
+                      {photo
+                        ? 'Klik untuk mengganti foto'
+                        : 'JPG atau PNG, maksimal 2 MB'}
+                    </span>
+                  </span>
+
+                  <span className={styles.uploadAction} aria-hidden="true">
+                    {photo ? <Check size={18} /> : <ArrowUpRight size={18} />}
+                  </span>
+                </label>
+              </div>
+
+              {errorMessage && (
+                <div className={styles.error} role="alert">
+                  {errorMessage}
+                </div>
+              )}
+
+              {successMessage && (
+                <div className={styles.success} role="status">
+                  <span>{successMessage}</span>
+                  <Link href="/laporan">Lihat riwayat →</Link>
+                </div>
+              )}
+
+              <div className={styles.formFooter}>
+                <p>Semua kolom wajib diisi.</p>
+
+                <button
+                  type="submit"
+                  className={styles.submitButton}
+                  disabled={loading || formUnavailable}
+                >
+                  {loading ? 'Mengirim...' : 'Kirim laporan'}
+                  <ArrowUpRight size={19} aria-hidden="true" />
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+      </div>
     </main>
   )
 }
