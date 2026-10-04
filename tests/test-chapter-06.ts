@@ -1,4 +1,17 @@
 import { submitReservation } from '../lib/reservation-service'
+import { createReservation } from '../lib/actions/reservations'
+import { supabaseAdmin } from '../lib/supabase/admin'
+
+/**
+ * Tanggal N hari ke depan dalam WIB, format YYYY-MM-DD.
+ * Menghindarkan ketergantungan pada tanggal seed yang bisa sudah lewat
+ * ketika test dijalankan ulang.
+ */
+function futureWIBDate(daysAhead: number): string {
+  const now = new Date(Date.now() + 8 * 60 * 60 * 1000) // UTC -> WIB
+  now.setUTCDate(now.getUTCDate() + daysAhead)
+  return now.toISOString().slice(0, 10)
+}
 
 async function runChapter6Tests() {
   console.log('=== RUNNING CHAPTER 6 TESTS: AJUKAN RESERVASI ===\n')
@@ -19,13 +32,19 @@ async function runChapter6Tests() {
   }
 
   // 1. Pengajuan Sukses (Valid)
-  const randomDay = Math.floor(Math.random() * 20) + 10
-  const dynamicDate = `2026-11-${String(randomDay).padStart(2, '0')}`
+  // Tanggal tetap di masa depan + dibersihkan dulu supaya test idempotent:
+  // pengajuan yang sama tidak akan menabrak data run sebelumnya.
+  const validDate = futureWIBDate(40)
+  await supabaseAdmin
+    .from('reservations')
+    .delete()
+    .in('facility_id', [1, 3])
+    .eq('reservation_date', validDate)
 
   const validRes = await submitReservation(
     {
       facility_id: 1,
-      reservation_date: dynamicDate,
+      reservation_date: validDate,
       start_time: '08:00',
       end_time: '10:00',
       purpose: 'Kuliah Pengganti Sistem Operasi Semester Gasal',
@@ -89,16 +108,38 @@ async function runChapter6Tests() {
     repairFacility.error
   )
 
-  // 5. Pengajuan Ditolak: Jadwal bentrok dengan reservasi disetujui (Fasilitas 2 tgl 2026-10-02 ada jadwal disetujui 10:00-12:00)
+  // 5. Pengajuan Ditolak: Jadwal bentrok dengan reservasi disetujui
+  // Blocker dibuat sendiri di tanggal mendatang agar test tidak bergantung
+  // pada tanggal seed yang bisa sudah lewat.
+  const conflictDate = futureWIBDate(45)
+  await supabaseAdmin
+    .from('reservations')
+    .delete()
+    .in('facility_id', [2, 3])
+    .eq('reservation_date', conflictDate)
+
+  const blocker = await createReservation({
+    user_id: 5,
+    facility_id: 2,
+    reservation_date: conflictDate,
+    start_time: '10:00:00',
+    end_time: '12:00:00',
+    purpose: 'Jadwal disetujui pemblokir (setup test)',
+  })
+  await supabaseAdmin
+    .from('reservations')
+    .update({ status: 'disetujui', processed_by: 8 })
+    .eq('id', blocker.id)
+
   const conflictFacility = await submitReservation(
     {
       facility_id: 2,
-      reservation_date: '2026-10-02',
+      reservation_date: conflictDate,
       start_time: '10:30',
       end_time: '12:30',
       purpose: 'Praktikum Komputer Tambahan',
     },
-    5 // user arini
+    6
   )
   assert(
     conflictFacility.success === false && conflictFacility.error?.includes('telah terisi oleh reservasi lain'),
@@ -106,22 +147,29 @@ async function runChapter6Tests() {
     conflictFacility.error
   )
 
-  // 6. Pengajuan Ditolak: Double-booking pengguna lintas fasilitas (User 6 sudah ada jadwal disetujui 10:00-12:00 di Fasilitas 2)
+  // 6. Pengajuan Ditolak: Double-booking pengguna lintas fasilitas
+  // User yang sama (5) sudah punya jadwal disetujui 10:00-12:00 di Fasilitas 2.
   const doubleBooking = await submitReservation(
     {
       facility_id: 3, // coba pesan Aula di jam yang sama
-      reservation_date: '2026-10-02',
+      reservation_date: conflictDate,
       start_time: '11:00',
       end_time: '13:00',
       purpose: 'Persiapan Acara Seminar',
     },
-    6
+    5
   )
   assert(
     doubleBooking.success === false && doubleBooking.error?.includes('Anda sudah memiliki reservasi aktif'),
     'AC 2: Pengajuan double-booking pengguna lintas fasilitas ditolak server',
     doubleBooking.error
   )
+
+  await supabaseAdmin
+    .from('reservations')
+    .delete()
+    .in('facility_id', [2, 3])
+    .eq('reservation_date', conflictDate)
 
   console.log(`\n=== HASIL: ${passed}/${total} TESTS CHAPTER 6 BERHASIL ===`)
 }

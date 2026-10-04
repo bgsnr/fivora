@@ -3,15 +3,22 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { cancelReservationByUserAction } from '@/lib/actions/reservations'
+import { formatMinutesRemaining } from '@/lib/validations/reservation-time'
 import { Button } from '@/components/ui/button'
 import { AlertTriangle } from 'lucide-react'
 
 interface CancelReservationButtonProps {
   reservationId: number
+  /** Alasan pembatalan tidak diperbolehkan; tombol dinonaktifkan bila diisi. */
+  disabledReason?: string | null
+  /** Sisa waktu (menit) sebelum waktu mulai reservasi. */
+  minutesUntilStart?: number | null
 }
 
 export function CancelReservationButton({
   reservationId,
+  disabledReason = null,
+  minutesUntilStart = null,
 }: CancelReservationButtonProps) {
   const router = useRouter()
 
@@ -19,6 +26,8 @@ export function CancelReservationButton({
   const [reason, setReason] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+
+  const isBlocked = Boolean(disabledReason)
 
   async function handleConfirmCancel() {
     setIsLoading(true)
@@ -51,13 +60,25 @@ export function CancelReservationButton({
 
   return (
     <>
-      <Button
-        variant="outline"
-        onClick={() => setIsOpen(true)}
-        className="border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800"
-      >
-        Batalkan Reservasi
-      </Button>
+      {isBlocked && (
+        <p
+          className="max-w-xs text-xs text-amber-800"
+          title={disabledReason ?? undefined}
+        >
+          {disabledReason}
+        </p>
+      )}
+
+      <span title={disabledReason ?? undefined}>
+        <Button
+          variant="outline"
+          onClick={() => setIsOpen(true)}
+          disabled={isBlocked}
+          className="border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800"
+        >
+          Batalkan Reservasi
+        </Button>
+      </span>
 
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#010736]/40 p-4">
@@ -77,6 +98,18 @@ export function CancelReservationButton({
               Slot waktu akan dilepaskan dan pengajuan tidak dapat
               diaktifkan kembali.
             </p>
+
+            {typeof minutesUntilStart === 'number' &&
+              minutesUntilStart > 0 && (
+                <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
+                  Sisa waktu untuk membatalkan:{' '}
+                  <strong>
+                    {formatMinutesRemaining(minutesUntilStart)}
+                  </strong>{' '}
+                  sebelum waktu mulai. Batas pembatalan paling
+                  lambat 3 jam sebelum waktu mulai.
+                </div>
+              )}
 
             {errorMessage && (
               <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800">

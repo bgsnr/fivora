@@ -3,11 +3,23 @@ import {
   approveReservation,
   rejectReservation,
   emergencyCancelByStaff,
+  sweepExpiredPendingReservations,
 } from '../lib/reservation-service'
 import {
   getPendingReservationsQueueSortedByCreatedAt,
   getReservationById,
 } from '../lib/actions/reservations'
+
+/**
+ * Tanggal N hari ke depan dalam WIB, format YYYY-MM-DD.
+ * Dipakai agar skenario bentrok tidak bergantung pada tanggal seed yang
+ * bisa sudah lewat ketika test dijalankan ulang.
+ */
+function futureWIBDate(daysAhead: number): string {
+  const now = new Date(Date.now() + 8 * 60 * 60 * 1000) // UTC -> WIB
+  now.setUTCDate(now.getUTCDate() + daysAhead)
+  return now.toISOString().slice(0, 10)
+}
 
 async function runChapter91011Tests() {
   console.log('=== RUNNING CHAPTER 9, 10, 11 TESTS: PETUGAS WORKFLOW ===\n')
@@ -75,34 +87,48 @@ async function runChapter91011Tests() {
   )
 
   // 3. Chapter 10: Re-check bentrok saat approve (Percobaan approve reservasi yang bentrok dengan reservasi 'disetujui' lain ditolak)
-  // Fasilitas 2 pada 2026-10-02 sudah ada jadwal disetujui 10:00-12:00
-  const conflictingPending = await submitReservation(
-    {
-      facility_id: 2,
-      reservation_date: '2026-10-02',
-      start_time: '11:00',
-      end_time: '13:00',
-      purpose: 'Uji Coba Konflik saat Approve',
-    },
-    5
-  )
-  // Update paksa status ke 'menunggu' jika lolos atau buat via DB
-  let conflictId = conflictingPending.data?.id
-  if (!conflictId) {
-    // Buat langsung di model untuk menyimulasikan pending yang masuk sebelum reservasi lain diapprove
-    const { createReservation } = await import('../lib/actions/reservations')
-    const manualPending = await createReservation({
-      user_id: 5,
-      facility_id: 2,
-      reservation_date: '2026-10-02',
-      start_time: '11:00:00',
-      end_time: '13:00:00',
-      purpose: 'Simulasi race condition pending',
-    })
-    conflictId = manualPending.id
-  }
+  // Tanggal dihitung relatif terhadap hari ini (WIB) agar pengujian tidak ikut
+  // gagal ketikadata seed sudah lewat.
+  const { createReservation } = await import('../lib/actions/reservations')
+  const { supabaseAdmin: _admin } = await import('../lib/supabase/admin')
 
-  const approveConflicted = await approveReservation(conflictId, 8)
+  const conflictDate = futureWIBDate(30)
+
+  // Bersihkan sisa pengujian run sebelumnya pada tanggal & fasilitas yang sama
+  await _admin
+    .from('reservations')
+    .delete()
+    .eq('facility_id', 2)
+    .eq('reservation_date', conflictDate)
+
+  // Jadwal 'disetujui' yang akan menjadi bentrok
+  const blocker = await createReservation({
+    user_id: 5,
+    facility_id: 2,
+    reservation_date: conflictDate,
+    start_time: '10:00:00',
+    end_time: '12:00:00',
+    purpose: 'Jadwal disetujui yang akan jadi blocker',
+  })
+  await _admin
+    .from('reservations')
+    .update({ status: 'disetujui', processed_by: 8 })
+    .eq('id', blocker.id)
+
+  // Pengajuan 'menunggu' yang bertabrakan dengan jadwal di atas
+  const conflictingPending = await createReservation({
+    user_id: 6,
+    facility_id: 2,
+    reservation_date: conflictDate,
+    start_time: '11:00:00',
+    end_time: '13:00:00',
+    purpose: 'Uji Coba Konflik saat Approve',
+  })
+
+  const approveConflicted = await approveReservation(
+    conflictingPending.id,
+    8
+  )
   assert(
     approveConflicted.success === false &&
       approveConflicted.error?.includes('telah terisi oleh reservasi lain'),
@@ -110,9 +136,20 @@ async function runChapter91011Tests() {
     approveConflicted.error
   )
 
+  await _admin
+    .from('reservations')
+    .delete()
+    .eq('facility_id', 2)
+    .eq('reservation_date', conflictDate)
+
   // 4. Chapter 10: Approve valid & Auto-reject reservasi pending lain yang bentrok
-  const testDate = '2026-12-20'
-  const { createReservation } = await import('../lib/actions/reservations')
+  const testDate = futureWIBDate(60)
+  await _admin
+    .from('reservations')
+    .delete()
+    .eq('facility_id', 1)
+    .eq('reservation_date', testDate)
+
   const pending1 = await createReservation({
     user_id: 6,
     facility_id: 1,
@@ -181,6 +218,80 @@ async function runChapter91011Tests() {
       cancelStaffSuccess.data?.rejection_reason === 'Plafon ruangan mengalami kerusakan dan bocor mendadak',
     'Chapter 11 AC 1 & 4: Petugas berhasil melakukan cancel darurat, status menjadi dibatalkan dan riwayat tetap tersimpan'
   )
+
+  // 6. Chapter 9/10: Sweep pengajuan 'menunggu' yang waktu mulainya sudah lewat
+  // Pengajuan dibuat dengan tanggal tomorrow lalu dimundurkan ke_slot lewat
+  // supaya kondisi 'kedaluwarsa' terbentuk tanpa menunggu waktu nyata.
+  const sweepDate = futureWIBDate(1)
+  await _admin
+    .from('reservations')
+    .delete()
+    .eq('facility_id', 5)
+    .eq('reservation_date', sweepDate)
+
+  const expiredCandidate = await createReservation({
+    user_id: 6,
+    facility_id: 5,
+    reservation_date: sweepDate,
+    start_time: '07:00:00',
+    end_time: '07:30:00',
+    purpose: 'Kandidat sweep kedaluwarsa',
+  })
+
+  // Paksa conditions 'kedaluwarsa': tanggal lampau + start_time 07:00
+  const yesterday = futureWIBDate(-1)
+  await _admin
+    .from('reservations')
+    .update({ reservation_date: yesterday })
+    .eq('id', expiredCandidate.id)
+
+  const sweepResult = await sweepExpiredPendingReservations()
+  const sweptRow = await getReservationById(expiredCandidate.id)
+  assert(
+    sweepResult.success === true &&
+      sweepResult.sweptCount >= 1 &&
+      sweptRow?.status === 'ditolak' &&
+      sweptRow?.rejection_reason ===
+        'waktu mulai reservasi telah terlewati',
+    'Chapter 9/10: Sweep otomatis menolak pengajuan menunggu yang waktu mulainya sudah lewat',
+    JSON.stringify({ sweepResult, sweptRow })
+  )
+
+  // Sweep bersifat idempotent: jalankan sekali lagi, tidak boleh mengubah apa pun
+  const sweepSecondRun = await sweepExpiredPendingReservations()
+  assert(
+    sweepSecondRun.success === true && sweepSecondRun.sweptCount === 0,
+    'Chapter 9/10: Sweep idempotent (tidak ada perubahan pada run kedua)',
+    JSON.stringify(sweepSecondRun)
+  )
+
+  // Reservasi 'disetujui' yang sudah lewat TIDAK boleh diubah statusnya
+  const pastApproved = await createReservation({
+    user_id: 5,
+    facility_id: 5,
+    reservation_date: yesterday,
+    start_time: '09:00:00',
+    end_time: '10:00:00',
+    purpose: 'Reservasi disetujui yang sudah lewat',
+  })
+  await _admin
+    .from('reservations')
+    .update({ status: 'disetujui', processed_by: 8 })
+    .eq('id', pastApproved.id)
+
+  await sweepExpiredPendingReservations()
+  const pastApprovedAfterSweep = await getReservationById(pastApproved.id)
+  assert(
+    pastApprovedAfterSweep?.status === 'disetujui',
+    'Chapter 9/10: Sweep tidak mengubah status reservasi disetujui yang sudah lewat (tetap "sudah berlalu")',
+    JSON.stringify(pastApprovedAfterSweep)
+  )
+
+  await _admin
+    .from('reservations')
+    .delete()
+    .eq('facility_id', 5)
+    .in('reservation_date', [sweepDate, yesterday])
 
   console.log(`\n=== HASIL: ${passed}/${total} TESTS CHAPTER 9, 10, 11 BERHASIL ===`)
 }

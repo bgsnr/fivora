@@ -6,6 +6,7 @@ import { CalendarDays, Clock3, MapPin, Plus } from 'lucide-react'
 
 import { AppLayout } from '@/components/layout/app-layout'
 import { createClient } from '@/lib/supabase/client'
+import { sweepExpiredPendingReservationsAction } from '@/lib/actions/reservations'
 
 type ReservationHistoryItem = {
   id: number
@@ -50,6 +51,10 @@ export default function ReservationHistoryPage() {
         }
 
         setUserName(profile.name || 'Pengguna')
+
+        // Sweep kedaluwarsa di server agar status riwayat akurat tanpa
+        // menunggu petugas menyentuh antrean.
+        await sweepExpiredPendingReservationsAction().catch(() => null)
 
         const { data, error } = await supabase
           .from('reservations')

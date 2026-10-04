@@ -5,6 +5,17 @@ import {
   isFacilityBookable,
 } from '../lib/conflict-engine'
 import { createReservation, getReservationById, updateReservationStatus } from '../lib/actions/reservations'
+import { supabaseAdmin } from '../lib/supabase/admin'
+
+/**
+ * Tanggal N hari ke depan dalam WIB, format YYYY-MM-DD.
+ * Test cleans up tanggal tersebut sehingga aman dijalankan berulang.
+ */
+function futureWIBDate(daysAhead: number): string {
+  const now = new Date(Date.now() + 8 * 60 * 60 * 1000) // UTC -> WIB
+  now.setUTCDate(now.getUTCDate() + daysAhead)
+  return now.toISOString().slice(0, 10)
+}
 
 async function runChapter5Tests() {
   console.log('=== RUNNING CHAPTER 5 TESTS: CONFLICT ENGINE ===\n')
@@ -30,9 +41,15 @@ async function runChapter5Tests() {
   assert(isFacilityBookable('nonaktif') === false, 'isFacilityBookable(nonaktif) bernilai false')
 
   // 2. Acceptance Criteria 1: Dua reservasi 'menunggu' untuk slot sama/beririsan bisa ada di DB
-  // Gunakan tanggal acak untuk idempotensi pengujian
-  const randomDay = Math.floor(Math.random() * 20) + 10
-  const testDate = `2026-11-${String(randomDay).padStart(2, '0')}`
+  // Tanggal dihitung relatif terhadap hari ini + dibersihkan dulu agar test
+  // idempotent (run sebelumnya tidak meninggalkan jadwal 'disetujui' yang
+  // bentrok dan memicu constraint EXCLUDE).
+  const testDate = futureWIBDate(35)
+  await supabaseAdmin
+    .from('reservations')
+    .delete()
+    .in('facility_id', [1, 2])
+    .eq('reservation_date', testDate)
 
   const pendingA = await createReservation({
     user_id: 6,
@@ -134,6 +151,13 @@ async function runChapter5Tests() {
     noCrossDoubleBooking.length === 0,
     'AC 4: Bersinggungan tepat di batas jam (10:00) tidak dianggap bentrok double-booking'
   )
+
+  // 8. Bersihkan data pengujian
+  await supabaseAdmin
+    .from('reservations')
+    .delete()
+    .in('facility_id', [1, 2])
+    .eq('reservation_date', testDate)
 
   console.log(`\n=== HASIL: ${passed}/${total} TESTS CONFLICT ENGINE BERHASIL ===`)
 }

@@ -9,6 +9,7 @@ import {
   approveReservation,
   rejectReservation,
   emergencyCancelByStaff,
+  sweepExpiredPendingReservations,
   type FacilityOption as FacilityOptionFromService,
   type CreateReservationState as CreateReservationStateFromService,
   type CreateReservationParams as CreateReservationParamsFromService,
@@ -260,6 +261,36 @@ export async function cancelReservationByUserAction(
     return {
       success: false,
       error: `Gagal membatalkan reservasi: ${errorMsg}`,
+    }
+  }
+}
+
+/**
+ * Server Action: Sweep Reservasi Kedaluwarsa (Aturan 9)
+ *
+ * Pengajuan 'menunggu' yang waktu mulainya sudah lewat otomatis ditolak dengan
+ * alasan "waktu mulai reservasi telah terlewati". Dipanggil saat memuat antrean
+ * petugas dan riwayat pengguna. Tidak memerlukan parameter — tidak mengubah
+ * data di luar status 'menunggu' yang sudah kedaluwarsa.
+ */
+export async function sweepExpiredPendingReservationsAction(): Promise<{
+  success: boolean
+  error?: string
+  sweptCount: number
+}> {
+  try {
+    const result = await sweepExpiredPendingReservations()
+    return {
+      success: result.success,
+      error: result.error,
+      sweptCount: result.sweptCount,
+    }
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : String(err)
+    return {
+      success: false,
+      error: `Gagal menjalankan sweep reservasi kedaluwarsa: ${errorMsg}`,
+      sweptCount: 0,
     }
   }
 }

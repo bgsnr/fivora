@@ -2,7 +2,10 @@ import Link from 'next/link'
 import { Navbar } from '@/components/landing/navbar'
 import { Footer } from '@/components/landing/footer'
 import { getCurrentUser } from '@/lib/auth'
-import { getPendingReservationsQueue } from '@/lib/actions/reservations'
+import {
+  getPendingReservationsQueue,
+  sweepExpiredPendingReservationsAction,
+} from '@/lib/actions/reservations'
 import { Button } from '@/components/ui/button'
 
 import {
@@ -57,6 +60,10 @@ export default async function StaffReservationsDashboardPage() {
       </div>
     )
   }
+
+  // Sweep pengajuan 'menunggu' yang waktu mulainya sudah lewat sebelum membaca
+  // antrean, agar petugas tidak melihat antrean yang sudah tidak bisa diproses.
+  await sweepExpiredPendingReservationsAction()
 
   // Mengambil antrean reservasi 'menunggu', diurutkan created_at ASC (FIFO)
   const queue = await getPendingReservationsQueue()

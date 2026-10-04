@@ -426,9 +426,10 @@ export function ReservationForm({
           </span>{' '}
           Reservasi hanya dapat dibatalkan oleh pemesan
           paling lambat <strong>3 jam sebelum</strong>{' '}
-          waktu mulai reservasi. Perubahan jadwal dilakukan
-          dengan membatalkan pengajuan lama dan membuat
-          pengajuan baru.
+          waktu mulai reservasi (tepat 3 jam masih diperbolehkan).
+          Setelah batas tersebut, reservasi hanya bisa dibatalkan
+          oleh petugas. Perubahan jadwal dilakukan dengan
+          membatalkan pengajuan lama dan membuat pengajuan baru.
         </div>
       </div>
 

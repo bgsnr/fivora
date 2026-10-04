@@ -3,6 +3,7 @@ import {
   validateReservationTimeRules,
   isReservationExpiredForApproval,
   canUserCancelReservation,
+  getWIBDateTime,
 } from '@/lib/validations/reservation-time'
 import {
   checkFacilityConflict,
@@ -62,6 +63,99 @@ export interface CreateReservationState {
   success: boolean
   error?: string
   data?: Reservation
+}
+
+export interface SweepExpiredResult {
+  success: boolean
+  error?: string
+  sweptCount: number
+  sweptIds: (string | number)[]
+}
+
+/**
+ * Sweep Reservasi Kedaluwarsa (Aturan 9)
+ *
+ * Semua pengajuan berstatus 'menunggu' yang waktu mulainya sudah terlewati
+ * otomatis berubah menjadi 'ditolak' dengan alasan
+ * "waktu mulai reservasi telah terlewati".
+ *
+ * Pemanggilan ini bersifat idempotent dan aman dipanggil berulang: query hanya
+ * mengambil status 'menunggu', sehingga reservasi yang sudah pernah di-sweep
+ * tidak akan tersentuh lagi.
+ *
+ * Reservasi 'disetujui' yang waktunya sudah lewat SENGAJA tidak disentuh —
+ * statusnya tetap 'disetujui' dan hanya menampilkan label "sudah berlalu".
+ */
+export async function sweepExpiredPendingReservations(): Promise<SweepExpiredResult> {
+  try {
+    const supabase = supabaseAdmin
+    const now = new Date()
+    const wibNow = getWIBDateTime(now)
+
+    const { data: expiredPending, error: fetchError } = await supabase
+      .from('reservations')
+      .select('id, reservation_date, start_time')
+      .eq('status', 'menunggu')
+      .lte('reservation_date', wibNow.dateStr)
+
+    if (fetchError) {
+      return {
+        success: false,
+        error: `Gagal mencari reservasi kedaluwarsa: ${fetchError.message}`,
+        sweptCount: 0,
+        sweptIds: [],
+      }
+    }
+
+    if (!expiredPending || expiredPending.length === 0) {
+      return { success: true, sweptCount: 0, sweptIds: [] }
+    }
+
+    // Untuk tanggal yang sama dengan hari ini, hanya yang start_time-nya sudah tercapai.
+    const targetIds = (expiredPending as Pick<Reservation, 'id' | 'reservation_date' | 'start_time'>[])
+      .filter((row) => isReservationExpiredForApproval(row, now))
+      .map((row) => row.id)
+
+    if (targetIds.length === 0) {
+      return { success: true, sweptCount: 0, sweptIds: [] }
+    }
+
+    const { data: rejected, error: updateError } = await supabase
+      .from('reservations')
+      .update({
+        status: 'ditolak',
+        rejection_reason: 'waktu mulai reservasi telah terlewati',
+        processed_at: now.toISOString(),
+      })
+      .in('id', targetIds)
+      .eq('status', 'menunggu')
+      .select('id')
+
+    if (updateError) {
+      return {
+        success: false,
+        error: `Gagal menandai reservasi kedaluwarsa: ${updateError.message}`,
+        sweptCount: 0,
+        sweptIds: [],
+      }
+    }
+
+    const sweptIds = ((rejected as Pick<Reservation, 'id'>[] | null) || []).map((row) => row.id)
+
+    return {
+      success: true,
+      sweptCount: sweptIds.length,
+      sweptIds,
+    }
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : String(err)
+    return {
+      success: false,
+      error: `Gagal menjalankan sweep reservasi kedaluwarsa: ${errorMsg}`,
+      sweptCount: 0,
+      sweptIds: [],
+    }
+  }
 }
 
 export interface CreateReservationParams {

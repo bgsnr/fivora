@@ -239,6 +239,50 @@ export function getDisplayStatusLabel(
 }
 
 /**
+ * Menghitung sisa waktu (menit) sebelum waktu mulai reservasi.
+ * Dipakai di UI untuk memberi tahu pengguna berapa lama lagi
+ * pembatalan masih diperbolehkan (aturan 3 jam).
+ */
+export function getMinutesUntilStart(
+  reservation: { reservation_date: string; start_time: string },
+  now: Date = new Date()
+): number {
+  const timeFormatted =
+    reservation.start_time.length === 5
+      ? `${reservation.start_time}:00`
+      : reservation.start_time
+
+  const startTimeMs = new Date(
+    `${reservation.reservation_date}T${timeFormatted}+07:00`
+  ).getTime()
+
+  return Math.round((startTimeMs - now.getTime()) / 60000)
+}
+
+/**
+ * Format sisa waktu menjadi teks yang mudah dibaca,
+ * contoh: "2 jam 30 menit" atau "kurang dari 1 menit".
+ */
+export function formatMinutesRemaining(minutes: number): string {
+  if (minutes <= 0) {
+    return 'sudah terlewati'
+  }
+
+  const hours = Math.floor(minutes / 60)
+  const remaining = minutes % 60
+
+  if (hours === 0) {
+    return `${remaining} menit`
+  }
+
+  if (remaining === 0) {
+    return `${hours} jam`
+  }
+
+  return `${hours} jam ${remaining} menit`
+}
+
+/**
  * Aturan Pembatalan oleh Pengguna (Chapter 8)
  * 1. Hanya reservasi milik sendiri
  * 2. Hanya status 'menunggu' atau 'disetujui'

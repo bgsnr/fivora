@@ -9,6 +9,8 @@ import {
   getDisplayStatusLabel,
   parseTimeToMinutes,
   canUserCancelReservation,
+  getMinutesUntilStart,
+  formatMinutesRemaining,
 } from '@/lib/validations/reservation-time'
 import { CancelReservationButton } from '@/components/reservations/cancel-button'
 import { Button } from '@/components/ui/button'
@@ -142,6 +144,14 @@ export default async function ReservationDetailPage({
       start_time: reservation.start_time,
     },
     Number(user.id),
+    now
+  )
+
+  const minutesUntilStart = getMinutesUntilStart(
+    {
+      reservation_date: reservation.reservation_date,
+      start_time: reservation.start_time,
+    },
     now
   )
 
@@ -362,7 +372,12 @@ export default async function ReservationDetailPage({
               {cancelEligibility.allowed ? (
                 <span className="font-medium text-emerald-700">
                   Pengajuan masih memenuhi syarat untuk
-                  dibatalkan jika diperlukan.
+                  dibatalkan jika diperlukan (sisa waktu{' '}
+                  {formatMinutesRemaining(
+                    minutesUntilStart
+                  )}
+                  , batas paling lambat 3 jam sebelum
+                  waktu mulai).
                 </span>
               ) : reservation.status === 'menunggu' ||
                 reservation.status === 'disetujui' ? (
@@ -374,11 +389,22 @@ export default async function ReservationDetailPage({
 
             <div className="flex items-center gap-3">
               {isOwner &&
-                cancelEligibility.allowed && (
+                (reservation.status === 'menunggu' ||
+                  reservation.status ===
+                    'disetujui') && (
                   <CancelReservationButton
                     reservationId={Number(
                       reservation.id
                     )}
+                    disabledReason={
+                      cancelEligibility.allowed
+                        ? null
+                        : (cancelEligibility.reason ??
+                          'Reservasi tidak dapat dibatalkan')
+                    }
+                    minutesUntilStart={
+                      minutesUntilStart
+                    }
                   />
                 )}
             </div>
