@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useRef, useState, useTransition } from 'react'
 import type { FormEvent } from 'react'
 import ReportMaintenance from '@/components/petugas/report-maintenance'
-
+import { ArrowLeft } from 'lucide-react'
 import styles from './detail-laporan-petugas.module.css'
 
 type ReportStatus = 'baru' | 'diproses' | 'selesai' | 'ditolak'
@@ -60,9 +60,16 @@ export default function DetailLaporanPetugasContent({
   return (
     <main className={styles.page}>
       <div className={styles.container}>
-        <Link href="/petugas/laporan" className={styles.backLink}>
-          Kembali ke antrean laporan
-        </Link>
+        <header className={styles.navigation}>
+          <Link href="/" className={styles.brand}>
+            FIVORA<span className={styles.brandDot}>.</span>
+          </Link>
+
+          <Link href="/petugas/laporan" className={styles.backLink}>
+            <ArrowLeft size={16} aria-hidden="true" />
+            Antrean laporan
+          </Link>
+        </header>
 
         <div className={styles.heading}>
           <p className={styles.eyebrow}>PETUGAS</p>
@@ -134,29 +141,31 @@ export default function DetailLaporanPetugasContent({
             </p>
           </section>
 
-          <section className={styles.card}>
-            <h2>Penanganan Laporan</h2>
+          <div className={styles.actionColumn}>
+            <section className={`${styles.card} ${styles.handlingCard}`}>
+              <h2>Penanganan Laporan</h2>
 
-            {message && (
-              <div className={styles.success} role="status">
-                {message}
-              </div>
-            )}
+              {message && (
+                <div className={styles.success} role="status">
+                  {message}
+                </div>
+              )}
 
-                        <HandlingForm
-              key={`${report.id}-${report.updatedAt}`}
-              report={report}
-              refreshing={refreshing}
-              onSaved={handleSaved}
-              onStart={() => setMessage('')}
+              <HandlingForm
+                key={`${report.id}-${report.updatedAt}`}
+                report={report}
+                refreshing={refreshing}
+                onSaved={handleSaved}
+                onStart={() => setMessage('')}
+              />
+            </section>
+
+            <ReportMaintenance
+              key={report.id}
+              reportId={report.id}
+              reportStatus={report.status}
             />
-          </section>
-
-          <ReportMaintenance
-            key={report.id}
-            reportId={report.id}
-            reportStatus={report.status}
-          />
+          </div>
         </div>
       </div>
     </main>
