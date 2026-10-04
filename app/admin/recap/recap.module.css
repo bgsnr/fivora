@@ -2,11 +2,12 @@
   min-height: 100vh;
   box-sizing: border-box;
   padding: 36px 42px 60px;
-  background: #f6f2ff;
-  color: #21164f;
+  background: #f7f9fc;
+  color: #010736;
 }
 
 /* Header Section */
+
 .header {
   display: flex;
   align-items: flex-end;
@@ -17,7 +18,7 @@
 
 .eyebrow {
   margin: 0 0 7px;
-  color: #7448ef;
+  color: #22396f;
   font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.16em;
@@ -26,7 +27,7 @@
 
 .title {
   margin: 0;
-  color: #21164f;
+  color: #010736;
   font-size: 32px;
   font-weight: 800;
   line-height: 1.1;
@@ -35,7 +36,8 @@
 
 .subtitle {
   margin: 8px 0 0;
-  color: #756c92;
+  max-width: 720px;
+  color: #52627d;
   font-size: 13px;
   line-height: 1.5;
 }
@@ -47,34 +49,39 @@
   box-sizing: border-box;
   padding: 10px 18px;
   border: 0;
-  border-radius: 10px;
-  background: #167d52;
+  border-radius: 999px;
+  background: #010736;
   color: #ffffff;
   font: inherit;
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
-  transition: background 0.2s ease, opacity 0.2s ease;
+  transition:
+    background 0.2s ease,
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
 
 .exportButton:hover:not(:disabled) {
-  background: #126341;
+  background: #0d1c42;
+  transform: translateY(-1px);
 }
 
 .exportButton:disabled {
-  opacity: 0.6;
+  opacity: 0.55;
   cursor: not-allowed;
 }
 
 /* Filter Card */
+
 .filterCard {
   box-sizing: border-box;
   padding: 22px;
   margin-bottom: 28px;
-  border: 1px solid #e3daf6;
-  border-radius: 17px;
+  border: 1px solid #d8dfea;
+  border-radius: 20px;
   background: #ffffff;
-  box-shadow: 0 4px 20px rgba(96, 61, 219, 0.03);
+  box-shadow: 0 4px 20px rgba(1, 7, 54, 0.04);
 }
 
 .filterGrid {
@@ -90,7 +97,7 @@
 }
 
 .filterGroup label {
-  color: #21164f;
+  color: #010736;
   font-size: 11px;
   font-weight: 700;
 }
@@ -101,35 +108,49 @@
   height: 42px;
   box-sizing: border-box;
   padding: 0 12px;
-  border: 1px solid #ddd6f1;
+  border: 1px solid #d8dfea;
   border-radius: 10px;
   outline: none;
   background: #ffffff;
-  color: #21164f;
+  color: #010736;
   font: inherit;
   font-size: 12px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.filterInput:hover,
+.filterSelect:hover {
+  border-color: #22396f;
 }
 
 .filterInput:focus,
 .filterSelect:focus {
-  border-color: #7650e7;
-  box-shadow: 0 0 0 3px rgba(118, 80, 231, 0.1);
+  border-color: #22396f;
+  box-shadow: 0 0 0 3px rgba(34, 57, 111, 0.1);
 }
 
 .noteText {
   margin: 14px 0 0;
-  color: #857b99;
+  color: #718097;
   font-size: 11px;
+  line-height: 1.5;
+}
+
+.noteText strong {
+  color: #22396f;
 }
 
 /* Table Card */
+
 .tableCard {
   overflow: hidden;
-  border: 1px solid #e3daf6;
-  border-radius: 17px;
+  border: 1px solid #d8dfea;
+  border-radius: 20px;
   background: #ffffff;
-  box-shadow: 0 4px 20px rgba(96, 61, 219, 0.03);
+  box-shadow: 0 4px 20px rgba(1, 7, 54, 0.04);
 }
 
 .tableWrapper {
@@ -145,19 +166,20 @@
 
 .table th {
   padding: 16px 20px;
-  background: #fbf9ff;
-  border-bottom: 1px solid #e3daf6;
-  color: #756c92;
+  background: #f8fafc;
+  border-bottom: 1px solid #d8dfea;
+  color: #52627d;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 
 .table td {
   padding: 18px 20px;
-  border-bottom: 1px solid #eee8f7;
-  color: #21164f;
+  border-bottom: 1px solid #e7ebf1;
+  color: #52627d;
   font-size: 12px;
 }
 
@@ -166,57 +188,85 @@
 }
 
 .table tr:hover td {
-  background: #fcfaff;
+  background: #f8fafc;
 }
 
 .facilityName {
   font-weight: 700;
-  color: #21164f;
+  color: #010736 !important;
 }
 
 /* Badges Status */
+
 .badgeActive {
-  padding: 4px 8px;
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 9px;
+  border: 1px solid #b8e3cd;
   border-radius: 999px;
   background: #effbf5;
   color: #167d52;
   font-size: 9px;
   font-weight: 800;
+  white-space: nowrap;
 }
 
 .badgeInactive {
-  padding: 4px 8px;
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 9px;
+  border: 1px solid #efb7bf;
   border-radius: 999px;
   background: #fff1f3;
   color: #c53c50;
   font-size: 9px;
   font-weight: 800;
+  white-space: nowrap;
 }
 
 .reportHigh {
-  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 9px;
+  border: 1px solid #efb7bf;
+  border-radius: 999px;
+  background: #fff1f3;
   color: #b33d50;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .reportNormal {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #eef2f7;
+  color: #52627d;
   font-weight: 700;
-  color: #21164f;
+  white-space: nowrap;
 }
 
 /* Loading & Empty States */
+
 .loadingState {
   padding: 50px;
   text-align: center;
-  color: #756c92;
+  color: #52627d;
   font-size: 13px;
 }
 
 .emptyState {
   padding: 50px;
   text-align: center;
-  color: #857b99;
+  border: 1px solid #d8dfea;
+  border-radius: 20px;
+  background: #ffffff;
+  color: #718097;
   font-size: 13px;
 }
+
+/* Responsive */
 
 @media (max-width: 768px) {
   .container {
@@ -226,5 +276,19 @@
   .header {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .exportButton {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .filterCard {
+    padding: 18px;
+  }
+
+  .table th,
+  .table td {
+    padding: 14px 16px;
   }
 }
