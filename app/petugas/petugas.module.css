@@ -324,3 +324,84 @@
     padding-left: 18px;
   }
 }
+
+.accountActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logoutWrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.logoutButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 9px 16px;
+  border: 1px solid #010736;
+  border-radius: 999px;
+  background: #010736;
+  color: #fcf1d0;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+.logoutButton:hover:not(:disabled) {
+  border-color: #22396f;
+  background: #22396f;
+}
+
+.logoutButton:focus-visible {
+  outline: 2px solid #22396f;
+  outline-offset: 4px;
+}
+
+.logoutButton:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.logoutError {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 10;
+  width: 220px;
+  padding: 10px 12px;
+  border: 1px solid #efc7cd;
+  border-radius: 8px;
+  background: #fff4f5;
+  color: #9c3044;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+@media (max-width: 540px) {
+  .navigation {
+    gap: 12px;
+  }
+
+  .accountActions {
+    gap: 8px;
+  }
+
+  .role {
+    padding: 7px 9px;
+  }
+
+  .logoutButton {
+    min-height: 38px;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+}

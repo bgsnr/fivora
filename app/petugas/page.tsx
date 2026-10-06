@@ -5,7 +5,10 @@ import {
   ClipboardList,
   UserRound,
 } from 'lucide-react'
+
+import LogoutButton from '@/components/petugas/logout-button'
 import { requireReportRole } from '@/lib/report-access'
+
 import styles from './petugas.module.css'
 
 export default async function PetugasPage() {
@@ -19,10 +22,18 @@ export default async function PetugasPage() {
             FIVORA<span className={styles.brandDot}>.</span>
           </Link>
 
-          <span className={styles.role}>
-            <UserRound size={16} strokeWidth={1.5} aria-hidden="true" />
-            Petugas
-          </span>
+          <div className={styles.accountActions}>
+            <span className={styles.role}>
+              <UserRound
+                size={16}
+                strokeWidth={1.5}
+                aria-hidden="true"
+              />
+              Petugas
+            </span>
+
+            <LogoutButton />
+          </div>
         </header>
 
         <section
