@@ -4,7 +4,29 @@ import { revalidatePath } from 'next/cache'
 import { getCurrentUser } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 
+export type MaintenanceNote = {
+  id: string
+  maintenanceId: string
+  note: string
+  createdAt: string
+}
+
+export type MaintenanceReadState = {
+  reportId: string
+  checking: boolean
+  ownOpen: boolean
+  error: string
+}
+
 export type MaintenanceData = {
+  history: {
+    id: string
+    reason: string
+    startedAt: string
+    completedAt: string
+    completionNote: string
+  }[]
+  notes: MaintenanceNote[]
   facilityStatus: string
   reportStatus: string
   openMaintenance: {
@@ -43,6 +65,8 @@ async function getStaffClient() {
 
 function refreshMaintenancePages() {
   try {
+    revalidatePath('/laporan')
+    revalidatePath('/laporan/[id]', 'page')
     revalidatePath('/petugas/laporan')
     revalidatePath('/petugas/laporan/[id]', 'page')
     revalidatePath('/petugas/fasilitas')
@@ -90,7 +114,7 @@ export async function getReportMaintenance(
       return { success: false, error: 'Laporan tidak ditemukan.' }
     }
 
-    const [facilityResult, maintenanceResult] = await Promise.all([
+    const [facilityResult, maintenanceResult, historyResult] = await Promise.all([
       supabase
         .from('facilities')
         .select('status')
@@ -103,11 +127,18 @@ export async function getReportMaintenance(
         .eq('facility_id', report.facility_id)
         .is('completed_at', null)
         .maybeSingle(),
+      supabase.from('facility_maintenance')
+        .select('id, reason, started_at, completed_at, completion_note')
+        .eq('report_id', reportId)
+        .not('completed_at', 'is', null)
+        .order('started_at', { ascending: false })
+        .order('id', { ascending: false }),
     ])
 
     if (
       facilityResult.error ||
       maintenanceResult.error ||
+      historyResult.error ||
       !facilityResult.data
     ) {
       console.error(
@@ -123,10 +154,36 @@ export async function getReportMaintenance(
     }
 
     const maintenance = maintenanceResult.data
+    const maintenanceIds = [...new Set([
+      ...(historyResult.data ?? []).map((item) => String(item.id)),
+      ...(maintenance ? [String(maintenance.id)] : []),
+    ])]
+    const notes: MaintenanceNote[] = []
+    if (maintenanceIds.length > 0) {
+      const result = await supabase.from('maintenance_notes')
+        .select('id, maintenance_id, note, created_at')
+        .in('maintenance_id', maintenanceIds)
+        .order('created_at', { ascending: true }).order('id', { ascending: true })
+      if (result.error) {
+        return { success: false, error: 'Catatan pemeriksaan gagal dimuat. Muat ulang data.' }
+      }
+      for (const item of result.data ?? []) {
+        notes.push({ id: String(item.id), maintenanceId: String(item.maintenance_id),
+          note: item.note, createdAt: item.created_at })
+      }
+    }
 
     return {
       success: true,
       data: {
+        history: (historyResult.data ?? []).map((item) => ({
+          id: String(item.id),
+          reason: item.reason,
+          startedAt: item.started_at,
+          completedAt: item.completed_at,
+          completionNote: item.completion_note,
+        })),
+        notes,
         facilityStatus: facilityResult.data.status ?? '',
         reportStatus: report.status,
         openMaintenance: maintenance
@@ -200,7 +257,10 @@ export async function startReportMaintenance(
       return {
         success: false,
         error:
-          error.code === 'P0001'
+          error.code === 'P0001' || (
+            error.code === '23514' &&
+            error.message.startsWith('Perbaikan melalui laporan ini sudah selesai.')
+          )
             ? error.message
             : 'Perbaikan gagal dimulai. Muat ulang data sebelum mencoba lagi.',
       }
@@ -301,5 +361,29 @@ export async function finishReportMaintenance(
       error:
         'Hasil penyimpanan belum dapat dipastikan. Muat ulang data sebelum mencoba lagi.',
     }
+  }
+}
+
+export async function addReportMaintenanceNote(
+  maintenanceId: string, note: string, requestId: string
+): Promise<ActionResult> {
+  if (!validId(maintenanceId) || typeof requestId !== 'string' ||
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(requestId)) {
+    return { success: false, error: 'ID penyimpanan tidak valid. Muat ulang data.' }
+  }
+  if (typeof note !== 'string' || !note.trim() || note.trim().length > 5000) {
+    return { success: false, error: 'Catatan pemeriksaan wajib diisi, maksimal 5000 karakter.' }
+  }
+  try {
+    const supabase = await getStaffClient()
+    if (!supabase) return { success: false, error: 'Hanya petugas aktif yang dapat menambah catatan pemeriksaan.' }
+    const { error } = await supabase.rpc('add_maintenance_note', {
+      p_maintenance_id: maintenanceId, p_note: note.trim(), p_request_id: requestId,
+    })
+    if (error) return { success: false, error: error.code === 'P0001' ? error.message : 'Catatan gagal disimpan. Muat ulang data untuk memeriksa hasilnya.' }
+    refreshMaintenancePages()
+    return { success: true, message: 'Catatan pemeriksaan tersimpan.' }
+  } catch {
+    return { success: false, error: 'Koneksi terputus. Muat ulang data untuk memeriksa hasil penyimpanan.' }
   }
 }

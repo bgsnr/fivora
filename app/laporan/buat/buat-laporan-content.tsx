@@ -95,6 +95,16 @@ export default function BuatLaporanContent({
     setPreview(URL.createObjectURL(selectedPhoto))
   }
 
+  function removePhoto() {
+    setPhoto(null)
+    setPreview('')
+    setErrorMessage('')
+    setSuccessMessage('')
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
@@ -190,7 +200,7 @@ export default function BuatLaporanContent({
           </Link>
 
           <Link href="/laporan" className={styles.historyButton}>
-  <         FileText size={18} strokeWidth={1.5} aria-hidden="true" />
+  <FileText size={18} strokeWidth={1.5} aria-hidden="true" />
             <span>Riwayat laporan</span>
             <ArrowUpRight size={17} aria-hidden="true" />
           </Link>
@@ -383,6 +393,32 @@ export default function BuatLaporanContent({
                     {photo ? <Check size={18} /> : <ArrowUpRight size={18} />}
                   </span>
                 </label>
+
+                {photo && preview && (
+                  <figure className={styles.photoPreview}>
+                    <figcaption className={styles.previewHeading}>
+                      <span>Pratinjau foto</span>
+                      <button
+                        type="button"
+                        className={styles.removePhoto}
+                        onClick={removePhoto}
+                        disabled={loading || formUnavailable}
+                      >
+                        Hapus foto
+                      </button>
+                    </figcaption>
+                    <div className={styles.previewFrame}>
+                      <Image
+                        src={preview}
+                        alt="Foto yang akan dikirim bersama laporan"
+                        width={800}
+                        height={600}
+                        unoptimized
+                        className={styles.previewPhoto}
+                      />
+                    </div>
+                  </figure>
+                )}
               </div>
 
               {errorMessage && (

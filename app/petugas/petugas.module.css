@@ -225,6 +225,21 @@
   background: #ffffff;
 }
 
+.reservationButton {
+  border-color: #010736;
+  background: #010736;
+  color: #fcf1d0;
+}
+
+.reservationButton:hover {
+  border-color: #22396f;
+  background: #22396f;
+}
+
+.primaryButton.reservationButton:focus-visible {
+  outline-color: #010736;
+}
+
 .disabledButton {
   border-color: #cfc6a6;
   background: transparent;

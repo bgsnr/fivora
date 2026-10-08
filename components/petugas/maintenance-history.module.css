@@ -1,0 +1,40 @@
+.history {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid #ccd6e5;
+  color: #010736;
+}
+
+.history > h3 {
+  margin: 0 0 18px;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.entry {
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid #d8dfea;
+  border-radius: 12px;
+  background: #f7f8fa;
+}
+
+.entry + .entry { margin-top: 16px; }
+.heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.entry h4 { margin: 20px 0 8px; font-size: 14px; line-height: 1.6; font-weight: 600; }
+.heading h4 { margin: 0; font-size: 16px; }
+.heading span { padding: 5px 10px; border-radius: 999px; background: #e9f5ee; color: #256044; font-size: 12px; }
+.entry p { margin: 0; font-size: 15px; line-height: 1.75; color: #344766; white-space: pre-wrap; overflow-wrap: anywhere; }
+.dates { display: grid; gap: 12px; margin: 20px 0 0; padding-bottom: 20px; border-bottom: 1px solid #d8dfea; }
+.dates dt { color: #52627d; font-size: 13px; line-height: 1.6; }
+.dates dd { margin: 4px 0 0; font-size: 14px; line-height: 1.6; }
+.notes { padding: 0; margin: 12px 0 0; list-style: none; }
+.notes li { padding-left: 14px; border-left: 2px solid #667b9f; }
+.notes li + li { margin-top: 16px; }
+.notes time { display: block; margin-top: 6px; color: #52627d; font-size: 13px; line-height: 1.6; }
+.entry .empty { color: #52627d; font-size: 14px; }
+
+@media (max-width: 540px) {
+  .entry { padding: 18px 16px; }
+}

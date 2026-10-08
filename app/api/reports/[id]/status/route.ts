@@ -180,6 +180,10 @@ export async function PATCH(request: Request, { params }: Context) {
 
     if (updateError) {
       console.error('Gagal memperbarui laporan:', updateError)
+      if (updateError.code === '23514' &&
+          updateError.message.includes('perbaikan yang terkait')) {
+        return fail('Selesaikan perbaikan yang terkait dengan laporan ini sebelum menutup laporan.', 409)
+      }
       return fail('Perubahan gagal disimpan. Silakan coba lagi.', 500)
     }
 

@@ -11,6 +11,16 @@
   margin: 0 auto;
 }
 
+.errorPanel {
+  padding: 32px 0;
+}
+
+.errorPanel p {
+  margin: 0 0 24px;
+  color: #a23f4b;
+  line-height: 1.75;
+}
+
 .navigation {
   display: flex;
   align-items: center;
@@ -332,6 +342,70 @@
   overflow-wrap: anywhere;
 }
 
+.notePaper h3,
+.notePaper h4 {
+  margin: 0 0 10px;
+  color: #52627d;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.notePaper .completionTitle {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #ded4af;
+}
+
+.maintenanceEntry {
+  margin-top: 24px;
+  padding-top: 22px;
+  border-top: 1px solid #344263;
+}
+
+.maintenanceHeading {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.maintenanceHeading h3 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.maintenanceHeading > span {
+  padding: 5px 9px;
+  border: 1px solid #657795;
+  border-radius: 999px;
+  color: #fcf1d0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.maintenanceDate {
+  margin: 12px 0;
+  color: #bcc9df;
+  font-size: 12px;
+  line-height: 1.75;
+}
+
+.maintenanceError {
+  margin: 20px 0 0;
+  padding: 14px 16px;
+  border: 1px solid #efd4d8;
+  border-radius: 8px;
+  background: #fbf0f1;
+  color: #a23f4b;
+  font-size: 14px;
+  line-height: 1.75;
+}
+
 .processingInfo {
   margin: 24px 0 0;
   padding-top: 20px;
@@ -465,4 +539,32 @@
   .notePaper {
     padding: 18px;
   }
+}
+
+
+.findings {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #d8dfea;
+}
+
+.findings ol {
+  display: grid;
+  gap: 14px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.findings li {
+  padding-left: 12px;
+  border-left: 2px solid #667b9f;
+}
+
+.findings time {
+  display: block;
+  margin-top: 6px;
+  color: #52627d;
+  font-size: 13px;
+  line-height: 1.6;
 }

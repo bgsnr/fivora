@@ -3,11 +3,17 @@ import { notFound } from 'next/navigation'
 
 import { requireReportRole } from '@/lib/report-access'
 import { createClient } from '@/lib/supabase/server'
+import {
+  parseReportListContext,
+  reportHistoryHref,
+  type ReportSearchParams,
+} from '@/lib/report-filters'
 import DetailLaporanPetugasContent from './detail-laporan-petugas-content'
 import styles from './detail-laporan-petugas.module.css'
 
 type Props = {
   params: Promise<{ id: string }>
+  searchParams: Promise<ReportSearchParams>
 }
 
 type ReportRow = {
@@ -47,10 +53,13 @@ function formatDate(value: string) {
 
 export default async function DetailLaporanPetugasPage({
   params,
+  searchParams,
 }: Props) {
   await requireReportRole('petugas')
 
   const { id } = await params
+  const listContext = parseReportListContext(await searchParams)
+  const backHref = reportHistoryHref(listContext.status, listContext.page, 'petugas')
 
   if (
     !/^[1-9]\d{0,18}$/.test(id) ||
@@ -93,7 +102,7 @@ export default async function DetailLaporanPetugasPage({
             Detail laporan gagal dimuat. Coba muat ulang halaman.
           </p>
 
-          <Link href="/petugas/laporan" className={styles.backLink}>
+          <Link href={backHref} className={styles.backLink}>
             Kembali ke antrean laporan
           </Link>
         </section>
@@ -107,6 +116,8 @@ export default async function DetailLaporanPetugasPage({
 
   return (
     <DetailLaporanPetugasContent
+      backHref={backHref}
+      listContext={listContext}
       report={{
         id,
         facility: report.facility?.name ?? 'Fasilitas tidak tersedia',

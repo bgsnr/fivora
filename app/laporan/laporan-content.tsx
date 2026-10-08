@@ -6,9 +6,14 @@ import {
   FileText,
   Plus,
 } from 'lucide-react'
+import {
+  reportFilters,
+  reportDetailHref,
+  reportHistoryHref,
+  type ReportFilter,
+  type ReportStatus,
+} from '@/lib/report-filters'
 import styles from './laporan.module.css'
-
-type ReportStatus = 'baru' | 'diproses' | 'selesai' | 'ditolak'
 
 type Report = {
   id: string
@@ -22,6 +27,7 @@ type Report = {
 type Props = {
   reports: Report[]
   errorMessage: string
+  selectedStatus: ReportFilter
   page: number
   totalPages: number
 }
@@ -44,6 +50,7 @@ const statusLabels: Record<ReportStatus, string> = {
 export default function LaporanContent({
   reports,
   errorMessage,
+  selectedStatus,
   page,
   totalPages,
 }: Props) {
@@ -90,6 +97,20 @@ export default function LaporanContent({
           </Link>
         </section>
 
+        <nav className={styles.statusFilters} aria-label="Filter status laporan">
+          {reportFilters.map((status) => (
+            <Link
+              key={status}
+              href={reportHistoryHref(status)}
+              className={selectedStatus === status ? styles.activeFilter : styles.statusFilter}
+              aria-current={selectedStatus === status ? 'page' : undefined}
+              scroll={false}
+            >
+              {status === 'semua' ? 'Semua' : statusLabels[status]}
+            </Link>
+          ))}
+        </nav>
+
         {errorMessage ? (
           <section className={styles.error} role="alert">
             <h2>Riwayat belum dapat ditampilkan</h2>
@@ -101,15 +122,23 @@ export default function LaporanContent({
               <FileText size={28} strokeWidth={1.5} />
             </div>
 
-            <h2>Belum ada laporan</h2>
+            <h2>
+              {selectedStatus === 'semua'
+                ? 'Belum ada laporan'
+                : `Tidak ada laporan ${statusLabels[selectedStatus].toLowerCase()}`}
+            </h2>
 
             <p>
-              Laporan yang kamu kirim akan tercatat di sini,
-              beserta status dan catatan penanganannya.
+              {selectedStatus === 'semua'
+                ? 'Laporan yang kamu kirim akan tercatat di sini, beserta status dan catatan penanganannya.'
+                : 'Pilih status lain untuk melihat laporanmu.'}
             </p>
 
-            <Link href="/laporan/buat" className={styles.emptyLink}>
-              Buat laporan pertama
+            <Link
+              href={selectedStatus === 'semua' ? '/laporan/buat' : reportHistoryHref('semua')}
+              className={styles.emptyLink}
+            >
+              {selectedStatus === 'semua' ? 'Buat laporan pertama' : 'Lihat semua laporan'}
               <ArrowUpRight size={17} aria-hidden="true" />
             </Link>
           </section>
@@ -145,7 +174,7 @@ export default function LaporanContent({
                     </div>
 
                     <h3>
-                      <Link href={`/laporan/${report.id}`}>
+                      <Link href={reportDetailHref(report.id, selectedStatus, page)}>
                         {report.facility}
                       </Link>
                     </h3>
@@ -174,7 +203,7 @@ export default function LaporanContent({
                     </span>
 
                     <Link
-                      href={`/laporan/${report.id}`}
+                      href={reportDetailHref(report.id, selectedStatus, page)}
                       className={styles.detailLink}
                       aria-label={`Lihat detail laporan ${report.facility}, nomor ${report.id}`}
                     >
@@ -193,7 +222,7 @@ export default function LaporanContent({
               >
                 {page > 1 ? (
                   <Link
-                    href={`/laporan?page=${page - 1}`}
+                    href={reportHistoryHref(selectedStatus, page - 1)}
                     className={styles.pageLink}
                     rel="prev"
                   >
@@ -213,7 +242,7 @@ export default function LaporanContent({
 
                 {page < totalPages ? (
                   <Link
-                    href={`/laporan?page=${page + 1}`}
+                    href={reportHistoryHref(selectedStatus, page + 1)}
                     className={styles.pageLink}
                     rel="next"
                   >

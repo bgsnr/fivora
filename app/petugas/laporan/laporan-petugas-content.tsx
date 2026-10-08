@@ -10,6 +10,7 @@ import {
   RefreshCw,
 } from 'lucide-react'
 
+import { reportDetailHref, reportHistoryHref } from '@/lib/report-filters'
 import styles from './laporan-petugas.module.css'
 
 type ReportStatus = 'baru' | 'diproses' | 'selesai' | 'ditolak'
@@ -86,7 +87,7 @@ export default function LaporanPetugasContent({
 
   function changeStatus(status: StatusFilter) {
     startTransition(() => {
-      router.push(`/petugas/laporan?status=${status}&page=1`, {
+      router.push(reportHistoryHref(status, 1, 'petugas'), {
         scroll: false,
       })
     })
@@ -224,7 +225,7 @@ export default function LaporanPetugasContent({
                     </div>
 
                     <h3>
-                      <Link href={`/petugas/laporan/${report.id}`}>
+                      <Link href={reportDetailHref(report.id, selectedStatus, page, 'petugas')}>
                         {report.facility}
                       </Link>
                     </h3>
@@ -253,7 +254,7 @@ export default function LaporanPetugasContent({
                     </span>
 
                     <Link
-                      href={`/petugas/laporan/${report.id}`}
+                      href={reportDetailHref(report.id, selectedStatus, page, 'petugas')}
                       className={styles.detailButton}
                       aria-label={`Periksa laporan ${report.facility}, nomor ${report.id}`}
                     >
@@ -273,7 +274,7 @@ export default function LaporanPetugasContent({
             >
               {page > 1 ? (
                 <Link
-                  href={`/petugas/laporan?status=${selectedStatus}&page=${page - 1}`}
+                  href={reportHistoryHref(selectedStatus, page - 1, 'petugas')}
                   className={styles.pageLink}
                   rel="prev"
                 >
@@ -293,7 +294,7 @@ export default function LaporanPetugasContent({
 
               {page < totalPages ? (
                 <Link
-                  href={`/petugas/laporan?status=${selectedStatus}&page=${page + 1}`}
+                  href={reportHistoryHref(selectedStatus, page + 1, 'petugas')}
                   className={styles.pageLink}
                   rel="next"
                 >

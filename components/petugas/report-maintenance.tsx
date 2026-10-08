@@ -9,14 +9,20 @@ import {
   getReportMaintenance,
   startReportMaintenance,
   finishReportMaintenance,
+  addReportMaintenanceNote,
+  type MaintenanceReadState,
   type MaintenanceData,
 } from '@/lib/actions/report-maintenance'
 
+import { reportDetailHref, type ReportListContext } from '@/lib/report-filters'
 import styles from '@/app/petugas/laporan/[id]/detail-laporan-petugas.module.css'
+import historyStyles from './maintenance-history.module.css'
 
 type Props = {
   reportId: string
   reportStatus: string
+  listContext?: ReportListContext
+  onRead?: (state: MaintenanceReadState) => void
 }
 
 const facilityLabels: Record<string, string> = {
@@ -48,6 +54,8 @@ function formatDate(value: string) {
 export default function ReportMaintenance({
   reportId,
   reportStatus,
+  listContext = { status: 'semua', page: 1 },
+  onRead,
 }: Props) {
   const router = useRouter()
 
@@ -74,15 +82,20 @@ export default function ReportMaintenance({
         if (!result.success) {
           setData(null)
           setReadError(result.error)
+          onRead?.({ reportId, checking: false, ownOpen: false, error: result.error })
           return
         }
 
         setData(result.data)
         setReadError('')
+        onRead?.({ reportId, checking: false,
+          ownOpen: result.data.openMaintenance?.reportId === reportId, error: '' })
       } catch {
         if (!cancelled) {
           setData(null)
           setReadError('Data perbaikan gagal dimuat. Coba lagi.')
+          onRead?.({ reportId, checking: false, ownOpen: false,
+            error: 'Data perbaikan gagal dimuat. Coba lagi.' })
         }
       }
     }
@@ -92,9 +105,10 @@ export default function ReportMaintenance({
     return () => {
       cancelled = true
     }
-  }, [reportId, reportStatus, reloadVersion])
+  }, [reportId, reportStatus, reloadVersion, onRead])
 
   function reloadData() {
+    onRead?.({ reportId, checking: true, ownOpen: false, error: '' })
     setData(null)
     setReadError('')
     setError('')
@@ -116,6 +130,11 @@ export default function ReportMaintenance({
 
     if (!maintenance && data.reportStatus !== 'diproses') {
       setError('Ubah status laporan menjadi Diproses terlebih dahulu.')
+      return
+    }
+
+    if (!maintenance && data.history.length > 0) {
+      setError('Perbaikan melalui laporan ini sudah selesai dan tidak dapat dimulai ulang.')
       return
     }
 
@@ -164,10 +183,17 @@ export default function ReportMaintenance({
   }
 
   const maintenance = data?.openMaintenance
+  const hasCompletedMaintenance = Boolean(data?.history.length)
+  const openNotes = data?.notes.filter((entry) => entry.maintenanceId === maintenance?.id) ?? []
+
+  const needsMaintenanceRecord =
+    data?.facilityStatus === 'dalam_perbaikan' && !maintenance
 
   const canStart =
     data?.reportStatus === 'diproses' &&
-    ['aktif', 'nonaktif'].includes(data.facilityStatus)
+    !maintenance &&
+    !hasCompletedMaintenance &&
+    ['aktif', 'nonaktif', 'dalam_perbaikan'].includes(data.facilityStatus)
 
   return (
     <section className={`${styles.card} ${styles.maintenanceCard}`}>
@@ -195,7 +221,7 @@ export default function ReportMaintenance({
           {readError}
         </div>
       ) : !data ? (
-        <p className={styles.text} style={{ marginTop: '20px' }}>
+        <p className={`${styles.text} ${styles.maintenanceLoading}`}>
           Memuat data perbaikan...
         </p>
       ) : (
@@ -213,6 +239,8 @@ export default function ReportMaintenance({
               <dd>
                 {maintenance
                   ? 'Sedang berlangsung'
+                  : hasCompletedMaintenance
+                    ? 'Perbaikan melalui laporan ini sudah selesai'
                   : 'Tidak ada perbaikan terbuka'}
               </dd>
             </div>
@@ -220,10 +248,10 @@ export default function ReportMaintenance({
 
           {maintenance && (
             <>
-              <h3>Laporan Dasar Perbaikan</h3>
+              <h3>Perbaikan ini dimulai dari</h3>
 
               <Link
-                href={`/petugas/laporan/${maintenance.reportId}`}
+                href={reportDetailHref(maintenance.reportId, listContext.status, listContext.page, 'petugas')}
                 className={styles.backLink}
               >
                 Laporan #{maintenance.reportId}
@@ -238,10 +266,38 @@ export default function ReportMaintenance({
             </>
           )}
 
+          {openNotes.length > 0 && (
+            <section className={styles.findings} aria-label="Riwayat catatan pemeriksaan">
+              <h3>Catatan pemeriksaan</h3>
+              <ol className={styles.findingsList}>
+                {openNotes.map((entry) => (
+                  <li key={entry.id}>
+                    <p>{entry.note}</p>
+                    <span>{formatDate(entry.createdAt)} · Perbaikan #{entry.maintenanceId}</span>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )}
+
+          {maintenance && (
+            <FindingsForm key={maintenance.id} maintenanceId={maintenance.id}
+              disabled={loading}
+              onSaved={() => { reloadData(); router.refresh() }} />
+          )}
+
           {data.facilityStatus === 'nonaktif' && (
             <div className={styles.closedNotice}>
               Fasilitas dinonaktifkan admin. Menyelesaikan perbaikan
               tidak akan mengaktifkannya kembali.
+            </div>
+          )}
+
+          {needsMaintenanceRecord && (
+            <div className={styles.closedNotice}>
+              {hasCompletedMaintenance
+                ? 'Fasilitas berstatus Dalam perbaikan, tetapi tidak ada kegiatan terbuka. Perbaikan melalui laporan ini sudah selesai. Periksa data fasilitas; kegiatan berikutnya harus menggunakan laporan lain yang valid dan berstatus Diproses.'
+                : 'Fasilitas sudah berstatus Dalam perbaikan, tetapi belum ada catatan perbaikan yang sedang berlangsung. Isi alasan dan konfirmasi untuk mencatat penanganannya melalui laporan ini. Fasilitas tetap tidak tersedia untuk reservasi.'}
             </div>
           )}
 
@@ -268,21 +324,12 @@ export default function ReportMaintenance({
                 />
               </label>
 
-              <label
-                style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '10px',
-                  fontSize: '14px',
-                  lineHeight: 1.6,
-                }}
-              >
+              <label className={styles.confirmation}>
                 <input
                   type="checkbox"
                   checked={confirmed}
                   onChange={(event) => setConfirmed(event.target.checked)}
                   disabled={loading}
-                  style={{ marginTop: '5px' }}
                 />
 
                 <span>
@@ -307,18 +354,115 @@ export default function ReportMaintenance({
                   ? 'Menyimpan...'
                   : maintenance
                     ? 'Selesaikan Perbaikan'
-                    : 'Mulai Perbaikan Fasilitas'}
+                    : needsMaintenanceRecord
+                      ? 'Catat Perbaikan Fasilitas'
+                      : 'Mulai Perbaikan Fasilitas'}
               </button>
             </form>
           ) : (
             <div className={styles.closedNotice}>
-              {data.facilityStatus === 'dalam_perbaikan'
-                ? 'Status fasilitas menunjukkan perbaikan, tetapi riwayat perbaikannya belum tercatat. Data perlu diperiksa sebelum melanjutkan.'
+              {hasCompletedMaintenance
+                ? data.reportStatus === 'diproses'
+                  ? 'Perbaikan melalui laporan ini sudah selesai. Isi catatan hasil penanganan pada panel Penanganan Laporan, lalu tutup laporan sesuai hasil pemeriksaan.'
+                  : 'Perbaikan melalui laporan ini sudah selesai. Riwayatnya tetap dapat dibaca di bawah.'
+                : needsMaintenanceRecord
+                ? 'Untuk mencatat perbaikan, gunakan laporan yang berstatus Diproses.'
                 : 'Perbaikan baru dapat dimulai melalui laporan berstatus Diproses.'}
             </div>
+          )}
+
+          {data.history.length > 0 && (
+            <section className={historyStyles.history} aria-label="Riwayat perbaikan laporan ini">
+              <h3>Riwayat perbaikan laporan ini</h3>
+              {data.history.map((item) => (
+                <article className={historyStyles.entry} key={item.id}>
+                  <div className={historyStyles.heading}>
+                    <h4>Perbaikan #{item.id}</h4>
+                    <span>Selesai</span>
+                  </div>
+                  <dl className={historyStyles.dates}>
+                    <div><dt>Dimulai</dt><dd><time dateTime={item.startedAt}>{formatDate(item.startedAt)}</time></dd></div>
+                    <div><dt>Selesai</dt><dd><time dateTime={item.completedAt}>{formatDate(item.completedAt)}</time></dd></div>
+                  </dl>
+                  <h4>Alasan awal perbaikan</h4>
+                  <p>{item.reason}</p>
+                  <h4>Catatan pemeriksaan</h4>
+                  {data.notes.some((entry) => entry.maintenanceId === item.id) ? (
+                    <ol className={historyStyles.notes}>
+                      {data.notes.filter((entry) => entry.maintenanceId === item.id).map((entry) => (
+                        <li key={entry.id}>
+                          <p>{entry.note}</p>
+                          <time dateTime={entry.createdAt}>{formatDate(entry.createdAt)}</time>
+                        </li>
+                      ))}
+                    </ol>
+                  ) : <p className={historyStyles.empty}>Tidak ada catatan pemeriksaan tambahan</p>}
+                  <h4>Catatan penyelesaian perbaikan</h4>
+                  <p>{item.completionNote}</p>
+                </article>
+              ))}
+            </section>
           )}
         </>
       )}
     </section>
+  )
+}
+
+function FindingsForm({ maintenanceId, disabled, onSaved }: {
+  maintenanceId: string
+  disabled: boolean
+  onSaved: () => void
+}) {
+  const [note, setNote] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const submitting = useRef(false)
+  const requestId = useRef<string | null>(null)
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (disabled || submitting.current) return
+    setError('')
+    const cleanNote = note.trim()
+    if (!cleanNote || cleanNote.length > 5000) {
+      setError('Catatan pemeriksaan wajib diisi, maksimal 5000 karakter.')
+      return
+    }
+    submitting.current = true
+    setLoading(true)
+    try {
+      requestId.current ??= crypto.randomUUID()
+      const result = await addReportMaintenanceNote(maintenanceId, cleanNote, requestId.current)
+      if (!result.success) { setError(result.error); return }
+      setNote('')
+      requestId.current = null
+      onSaved()
+    } catch {
+      setError('Koneksi terputus. Muat ulang data untuk memeriksa hasil penyimpanan.')
+    } finally {
+      submitting.current = false
+      setLoading(false)
+    }
+  }
+
+  return (
+    <form className={`${styles.form} ${styles.findingsForm}`} onSubmit={handleSubmit}>
+      <label className={styles.field}>
+        <span>Tambah catatan pemeriksaan</span>
+        <textarea value={note} rows={3} maxLength={5000}
+          placeholder="Catat kerusakan tambahan atau perkembangan penanganan"
+          disabled={disabled || loading}
+          onChange={(event) => { setNote(event.target.value); requestId.current = null }} />
+      </label>
+      <p className={styles.help}>
+        Catatan ini dapat dilihat oleh pemilik laporan yang digunakan untuk memulai perbaikan.
+        Menyimpan catatan tidak menyelesaikan perbaikan.
+      </p>
+      {error && <div className={styles.error} role="alert">{error}</div>}
+      <button type="submit" className={styles.noteButton} disabled={disabled || loading}>
+        {loading ? 'Menyimpan catatan...' : 'Simpan catatan pemeriksaan'}
+      </button>
+    </form>
   )
 }

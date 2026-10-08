@@ -6,7 +6,10 @@ import { useRouter } from 'next/navigation'
 import { useRef, useState, useTransition } from 'react'
 import type { FormEvent } from 'react'
 import ReportMaintenance from '@/components/petugas/report-maintenance'
+import ReportProgress from '@/components/reports/report-progress'
 import { ArrowLeft } from 'lucide-react'
+import type { MaintenanceReadState } from '@/lib/actions/report-maintenance'
+import type { ReportListContext } from '@/lib/report-filters'
 import styles from './detail-laporan-petugas.module.css'
 
 type ReportStatus = 'baru' | 'diproses' | 'selesai' | 'ditolak'
@@ -41,12 +44,17 @@ const categoryLabels: Record<string, string> = {
 
 export default function DetailLaporanPetugasContent({
   report,
+  backHref,
+  listContext,
 }: {
   report: Report
+  backHref: string
+  listContext: ReportListContext
 }) {
   const router = useRouter()
   const [refreshing, startTransition] = useTransition()
   const [message, setMessage] = useState('')
+  const [maintenanceRead, setMaintenanceRead] = useState<MaintenanceReadState | null>(null)
   const [failedPhotoId, setFailedPhotoId] = useState<string | null>(null)
 
   function handleSaved() {
@@ -65,7 +73,7 @@ export default function DetailLaporanPetugasContent({
             FIVORA<span className={styles.brandDot}>.</span>
           </Link>
 
-          <Link href="/petugas/laporan" className={styles.backLink}>
+          <Link href={backHref} className={styles.backLink}>
             <ArrowLeft size={16} aria-hidden="true" />
             Antrean laporan
           </Link>
@@ -78,92 +86,91 @@ export default function DetailLaporanPetugasContent({
         </div>
 
         <div className={styles.grid}>
-          <section className={styles.card}>
+          <section className={`${styles.card} ${styles.reportCard}`}>
             <div className={styles.cardHeading}>
               <h2>{report.facility}</h2>
-
-              <span
-                className={`${styles.status} ${styles[report.status]}`}
-              >
+              <span className={`${styles.status} ${styles[report.status]}`}>
                 {statusLabels[report.status]}
               </span>
             </div>
 
-            <dl className={styles.info}>
-              <div>
-                <dt>Kategori</dt>
-                <dd>
-                  {categoryLabels[report.category] ?? report.category}
-                </dd>
+            <div className={styles.reportBody}>
+              <div className={styles.reportInformation}>
+                <dl className={styles.info}>
+                  <div>
+                    <dt>Kategori</dt>
+                    <dd>{categoryLabels[report.category] ?? report.category}</dd>
+                  </div>
+                  <div>
+                    <dt>Lokasi Fasilitas</dt>
+                    <dd>{report.location || 'Lokasi belum dicantumkan'}</dd>
+                  </div>
+                  <div>
+                    <dt>Tanggal Laporan</dt>
+                    <dd>{report.date}</dd>
+                  </div>
+                  <div>
+                    <dt>Status laporan terakhir diperbarui</dt>
+                    <dd>{report.processedAt ?? 'Belum diproses'}</dd>
+                  </div>
+                </dl>
+
+                <h3>Deskripsi Kerusakan</h3>
+                <p className={styles.text}>{report.description}</p>
+
+                <h3>Catatan perubahan status</h3>
+                <p className={`${styles.text} ${styles.savedNote}`}>
+                  {report.officerNote || 'Belum ada catatan dari petugas.'}
+                </p>
               </div>
 
-              <div>
-                <dt>Lokasi Fasilitas</dt>
-                <dd>{report.location || 'Lokasi belum dicantumkan'}</dd>
-              </div>
-
-              <div>
-                <dt>Tanggal Laporan</dt>
-                <dd>{report.date}</dd>
-              </div>
-
-              <div>
-                <dt>Waktu Pemrosesan Terakhir</dt>
-                <dd>{report.processedAt ?? 'Belum diproses'}</dd>
-              </div>
-            </dl>
-
-            <h3>Deskripsi Kerusakan</h3>
-            <p className={styles.text}>{report.description}</p>
-
-            <h3>Foto Kerusakan</h3>
-
-            {failedPhotoId === report.id ? (
-              <p className={styles.text} role="alert">
-                Foto gagal dimuat. Coba muat ulang halaman.
-              </p>
-            ) : (
-              <Image
-                key={report.id}
-                src={`/api/reports/${report.id}/photo`}
-                alt={`Foto kerusakan ${report.facility}`}
-                width={800}
-                height={600}
-                className={styles.photo}
-                unoptimized
-                onError={() => setFailedPhotoId(report.id)}
-              />
-            )}
-
-            <h3>Catatan Petugas Tersimpan</h3>
-            <p className={styles.text}>
-              {report.officerNote || 'Belum ada catatan dari petugas.'}
-            </p>
+              <figure className={styles.reportPhoto}>
+                <figcaption>Foto kerusakan</figcaption>
+                {failedPhotoId === report.id ? (
+                  <p className={styles.photoError} role="alert">
+                    Foto gagal dimuat. Coba muat ulang halaman.
+                  </p>
+                ) : (
+                  <Image
+                    key={report.id}
+                    src={`/api/reports/${report.id}/photo`}
+                    alt={`Foto kerusakan ${report.facility}`}
+                    width={800}
+                    height={600}
+                    className={styles.photo}
+                    unoptimized
+                    onError={() => setFailedPhotoId(report.id)}
+                  />
+                )}
+              </figure>
+            </div>
           </section>
 
-          <div className={styles.actionColumn}>
+          <div className={styles.actionRow}>
             <section className={`${styles.card} ${styles.handlingCard}`}>
               <h2>Penanganan Laporan</h2>
-
               {message && (
                 <div className={styles.success} role="status">
                   {message}
                 </div>
               )}
-
               <HandlingForm
                 key={`${report.id}-${report.updatedAt}`}
                 report={report}
                 refreshing={refreshing}
+                maintenanceRead={maintenanceRead}
                 onSaved={handleSaved}
                 onStart={() => setMessage('')}
               />
+              <ReportProgress key={`${report.id}-${report.status}`} reportId={report.id} editable />
             </section>
 
             <ReportMaintenance
               key={report.id}
               reportId={report.id}
               reportStatus={report.status}
+              listContext={listContext}
+              onRead={setMaintenanceRead}
             />
           </div>
         </div>
@@ -175,11 +182,13 @@ export default function DetailLaporanPetugasContent({
 function HandlingForm({
   report,
   refreshing,
+  maintenanceRead,
   onSaved,
   onStart,
 }: {
   report: Report
   refreshing: boolean
+  maintenanceRead: MaintenanceReadState | null
   onSaved: () => void
   onStart: () => void
 }) {
@@ -204,7 +213,12 @@ function HandlingForm({
         ? ['selesai', 'ditolak']
         : []
 
-  const disabled = loading || refreshing || needsReload || saved
+  const checkingMaintenance = !maintenanceRead ||
+    maintenanceRead.reportId !== report.id || maintenanceRead.checking
+  const blockedByMaintenance = report.status === 'diproses' && (
+    checkingMaintenance || maintenanceRead?.ownOpen || Boolean(maintenanceRead?.error)
+  )
+  const disabled = loading || refreshing || needsReload || saved || blockedByMaintenance
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -295,6 +309,18 @@ function HandlingForm({
       <div className={styles.closedNotice}>
         Laporan sudah {statusLabels[report.status].toLowerCase()} dan
         tidak dapat diubah kembali.
+      </div>
+    )
+  }
+
+  if (blockedByMaintenance) {
+    return (
+      <div className={styles.closedNotice} role="status">
+        {checkingMaintenance
+          ? 'Memeriksa kegiatan perbaikan terkait laporan...'
+          : maintenanceRead?.error
+            ? 'Data perbaikan belum dapat diperiksa. Klik Muat ulang data pada panel Perbaikan Fasilitas.'
+            : 'Laporan ini menjadi dasar perbaikan yang masih berlangsung. Selesaikan perbaikannya terlebih dahulu, lalu tutup laporan dengan catatan resolusi.'}
       </div>
     )
   }
