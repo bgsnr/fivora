@@ -112,7 +112,7 @@ export default async function PetugasPage() {
             <div className={styles.reservationFooter}>
               <Link
                 href="/petugas/reservations"
-                className={styles.primaryButton}
+                className={`${styles.primaryButton} ${styles.reservationButton}`}
               >
                 Antrean reservasi
                 <ArrowRight size={18} aria-hidden="true" />

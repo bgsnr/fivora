@@ -9,11 +9,16 @@ import {
   MessageSquare,
 } from 'lucide-react'
 
+import ReportProgress from '@/components/reports/report-progress'
+import type { UserReportMaintenance } from '@/lib/actions/report-history'
 import styles from './detail-laporan.module.css'
 
 type ReportStatus = 'baru' | 'diproses' | 'selesai' | 'ditolak'
 
 type Props = {
+  backHref: string
+  maintenance: UserReportMaintenance[]
+  maintenanceError: string
   report: {
     id: string
     facility: string
@@ -42,7 +47,23 @@ const statusLabels: Record<ReportStatus, string> = {
   ditolak: 'Ditolak',
 }
 
-export default function DetailLaporanContent({ report }: Props) {
+function formatDate(value: string) {
+  const date = new Date(value)
+  const day = new Intl.DateTimeFormat('id-ID', {
+    day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Jakarta',
+  }).format(date)
+  const time = new Intl.DateTimeFormat('id-ID', {
+    hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone: 'Asia/Jakarta',
+  }).format(date).replace(':', '.')
+  return `${day}, ${time} WIB`
+}
+
+export default function DetailLaporanContent({
+  report,
+  backHref,
+  maintenance,
+  maintenanceError,
+}: Props) {
   const [failedPhotoId, setFailedPhotoId] = useState<string | null>(null)
 
   const statusClasses: Record<ReportStatus, string> = {
@@ -60,7 +81,7 @@ export default function DetailLaporanContent({ report }: Props) {
             FIVORA<span className={styles.brandDot}>.</span>
           </Link>
 
-          <Link href="/laporan" className={styles.historyButton}>
+          <Link href={backHref} className={styles.historyButton}>
             <FileText
               size={18}
               strokeWidth={1.5}
@@ -169,17 +190,70 @@ export default function DetailLaporanContent({ report }: Props) {
               />
             </div>
 
-            <h2 id="officer-note-title">Catatan petugas</h2>
+            <h2 id="officer-note-title">Tindak lanjut</h2>
 
-            <div className={styles.notePaper}>
-              <p>
-                {report.officerNote || 'Belum ada catatan dari petugas'}
+            {report.officerNote ? (
+              <div className={styles.notePaper}>
+                <h3>Catatan petugas</h3>
+                <p>{report.officerNote}</p>
+              </div>
+            ) : maintenance.length === 0 && !maintenanceError ? (
+              <div className={styles.notePaper}>
+                <p>Belum ada catatan perubahan status</p>
+              </div>
+            ) : null}
+
+            <ReportProgress key={`${report.id}-${report.status}`} reportId={report.id} />
+
+            {maintenanceError && (
+              <p className={styles.maintenanceError} role="alert">
+                {maintenanceError}
               </p>
-            </div>
+            )}
+
+            {maintenance.map((item) => (
+              <section className={styles.maintenanceEntry} key={item.id}>
+                <div className={styles.maintenanceHeading}>
+                  <h3>Perbaikan fasilitas</h3>
+                  <span>{item.completedAt ? 'Selesai' : 'Berlangsung'}</span>
+                </div>
+                <p className={styles.maintenanceDate}>
+                  Dimulai {formatDate(item.startedAt)}
+                </p>
+                <div className={styles.notePaper}>
+                  <h4>Alasan perbaikan</h4>
+                  <p>{item.reason}</p>
+                  {item.notes.length > 0 && (
+                    <section className={styles.findings} aria-label="Catatan pemeriksaan perbaikan">
+                      <h4>Catatan pemeriksaan</h4>
+                      <ol>
+                        {item.notes.map((entry) => (
+                          <li key={entry.id}>
+                            <p>{entry.note}</p>
+                            <time dateTime={entry.createdAt}>{formatDate(entry.createdAt)}</time>
+                          </li>
+                        ))}
+                      </ol>
+                    </section>
+                  )}
+                  {item.completionNote && (
+                    <>
+                      <h4 className={styles.completionTitle}>Hasil perbaikan</h4>
+                      <p>{item.completionNote}</p>
+                    </>
+                  )}
+                </div>
+                {item.completedAt && (
+                  <p className={styles.maintenanceDate}>
+                    Selesai {formatDate(item.completedAt)}
+                  </p>
+                )}
+              </section>
+            ))}
 
             <dl className={styles.processingInfo}>
               <div>
-                <dt>Waktu pemrosesan terakhir</dt>
+                <dt>Status laporan terakhir diperbarui</dt>
                 <dd>{report.processedAt ?? 'Belum diproses'}</dd>
               </div>
             </dl>

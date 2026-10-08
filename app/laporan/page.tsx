@@ -1,34 +1,23 @@
 import { redirect } from 'next/navigation'
-import { requireReportRole } from '@/lib/report-access'
-import { createClient } from '@/lib/supabase/server'
+import {
+  getOwnReportHistory,
+  REPORT_PAGE_SIZE,
+} from '@/lib/actions/report-history'
+import { parseReportFilter, reportHistoryHref } from '@/lib/report-filters'
 import LaporanContent from './laporan-content'
-
-type ReportRow = {
-  id: number
-  category: string
-  description: string
-  status: 'baru' | 'diproses' | 'selesai' | 'ditolak'
-  created_at: string
-  facility: {
-    name: string
-  } | null
-}
 
 type Props = {
   searchParams: Promise<{
     page?: string | string[]
+    status?: string | string[]
   }>
 }
 
-const PAGE_SIZE = 10
-
 export default async function LaporanPage({ searchParams }: Props) {
-  const currentUser = await requireReportRole('pengguna')
   const params = await searchParams
-
+  const selectedStatus = parseReportFilter(params.status)
   const requestedPage =
     typeof params.page === 'string' ? Number(params.page) : 1
-
   const page =
     Number.isSafeInteger(requestedPage) &&
     requestedPage > 0 &&
@@ -36,74 +25,51 @@ export default async function LaporanPage({ searchParams }: Props) {
       ? requestedPage
       : 1
 
-  const supabase = await createClient()
-  const start = (page - 1) * PAGE_SIZE
-
-  const { data, error, count } = await supabase
-    .from('reports')
-    .select(
-      `
-        id,
-        category,
-        description,
-        status,
-        created_at,
-        facility:facilities!facility_id (
-          name
-        )
-      `,
-      { count: 'exact' }
-    )
-    .eq('user_id', currentUser.id)
-    .order('created_at', { ascending: false })
-    .order('id', { ascending: false })
-    .range(start, start + PAGE_SIZE - 1)
-    .returns<ReportRow[]>()
+  const { data, error, count } = await getOwnReportHistory(page, selectedStatus)
 
   if (error) {
     console.error('Gagal mengambil riwayat laporan:', error)
-
     return (
       <LaporanContent
         reports={[]}
         errorMessage="Riwayat laporan gagal dimuat. Coba muat ulang halaman."
+        selectedStatus={selectedStatus}
         page={page}
         totalPages={1}
       />
     )
   }
 
-  const totalPages = Math.max(
-    1,
-    Math.ceil((count ?? 0) / PAGE_SIZE)
-  )
-
+  const totalPages = Math.max(1, Math.ceil((count ?? 0) / REPORT_PAGE_SIZE))
   if (page > totalPages) {
-    redirect(`/laporan?page=${totalPages}`)
+    redirect(reportHistoryHref(selectedStatus, totalPages))
   }
 
   const dateFormatter = new Intl.DateTimeFormat('id-ID', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
+    day: 'numeric', month: 'long', year: 'numeric',
     timeZone: 'Asia/Jakarta',
   })
-
-  const reports = (data ?? []).map((report) => ({
-    id: String(report.id),
-    facility: report.facility?.name ?? 'Fasilitas tidak tersedia',
-    category: report.category,
-    description: report.description,
-    status: report.status,
-    date: `${dateFormatter.format(new Date(report.created_at))} WIB`,
-  }))
+  const timeFormatter = new Intl.DateTimeFormat('id-ID', {
+    hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+    timeZone: 'Asia/Jakarta',
+  })
+  const reports = (data ?? []).map((report) => {
+    const date = new Date(report.created_at)
+    return {
+      id: String(report.id),
+      facility: report.facility?.name ?? 'Fasilitas tidak tersedia',
+      category: report.category,
+      description: report.description,
+      status: report.status,
+      date: `${dateFormatter.format(date)}, ${timeFormatter.format(date).replace(':', '.')} WIB`,
+    }
+  })
 
   return (
     <LaporanContent
       reports={reports}
       errorMessage=""
+      selectedStatus={selectedStatus}
       page={page}
       totalPages={totalPages}
     />

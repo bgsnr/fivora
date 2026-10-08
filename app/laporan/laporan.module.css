@@ -126,6 +126,41 @@
   background: #22396f;
 }
 
+.statusFilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.statusFilter,
+.activeFilter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 10px 18px;
+  border: 1px solid #d4dce8;
+  border-radius: 999px;
+  color: #52627d;
+  background: #ffffff;
+  font-size: 14px;
+  line-height: 1.5;
+  text-decoration: none;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.statusFilter:hover {
+  border-color: #22396f;
+  color: #010736;
+}
+
+.activeFilter {
+  border-color: #010736;
+  background: #010736;
+  color: #fcf1d0;
+}
+
 .history {
   overflow: hidden;
   border: 1px solid #d4dce8;

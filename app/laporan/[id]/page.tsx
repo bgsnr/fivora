@@ -3,11 +3,18 @@ import { notFound } from 'next/navigation'
 
 import { requireReportRole } from '@/lib/report-access'
 import { createClient } from '@/lib/supabase/server'
+import {
+  parseReportListContext,
+  reportHistoryHref,
+  type ReportSearchParams,
+} from '@/lib/report-filters'
+import { getOwnReportMaintenance } from '@/lib/actions/report-history'
 import DetailLaporanContent from './detail-laporan-content'
 import styles from './detail-laporan.module.css'
 
 type Props = {
   params: Promise<{ id: string }>
+  searchParams: Promise<ReportSearchParams>
 }
 
 type ReportRow = {
@@ -24,9 +31,11 @@ type ReportRow = {
   } | null
 }
 
-export default async function DetailLaporanPage({ params }: Props) {
+export default async function DetailLaporanPage({ params, searchParams }: Props) {
   const currentUser = await requireReportRole('pengguna')
   const { id } = await params
+  const listContext = parseReportListContext(await searchParams)
+  const backHref = reportHistoryHref(listContext.status, listContext.page, 'pengguna')
 
   if (
     !/^[1-9]\d{0,18}$/.test(id) ||
@@ -64,12 +73,12 @@ export default async function DetailLaporanPage({ params }: Props) {
 
     return (
       <main className={styles.page}>
-        <section className={styles.card}>
+        <section className={`${styles.container} ${styles.errorPanel}`}>
           <p role="alert">
             Detail laporan gagal dimuat. Coba muat ulang halaman.
           </p>
 
-          <Link href="/laporan" className={styles.backButton}>
+          <Link href={backHref} className={styles.historyButton}>
             Kembali ke Riwayat
           </Link>
         </section>
@@ -81,7 +90,7 @@ export default async function DetailLaporanPage({ params }: Props) {
     notFound()
   }
 
-    function formatDate(value: string) {
+  function formatDate(value: string) {
     const date = new Date(value)
 
     const tanggal = new Intl.DateTimeFormat('id-ID', {
@@ -101,8 +110,13 @@ export default async function DetailLaporanPage({ params }: Props) {
     return `${tanggal}, ${waktu} WIB`
   }
 
+  const maintenanceResult = await getOwnReportMaintenance(id)
+
   return (
     <DetailLaporanContent
+      backHref={backHref}
+      maintenance={maintenanceResult.maintenance}
+      maintenanceError={maintenanceResult.errorMessage}
       report={{
         id,
         facility: report.facility?.name ?? 'Fasilitas tidak tersedia',
