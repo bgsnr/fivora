@@ -526,9 +526,7 @@ export default function AdminDashboard({
           <button
             type="button"
             className={styles.navItem}
-            onClick={() =>
-              scrollToSection('rekap')
-            }
+            onClick={() => router.push('/admin/recap')}
           >
             <span>▤</span>
             <span>Rekap & Export</span>
@@ -992,27 +990,26 @@ export default function AdminDashboard({
             <div
               id="rekap"
               className={styles.featureCard}
+              role="link"
+              tabIndex={0}
+              onClick={() => router.push('/admin/recap')}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  router.push('/admin/recap');
+                }
+              }}
+              style={{ cursor: 'pointer' }}
             >
-              <span
-                className={styles.featureIcon}
-              >
-                ▤
-              </span>
+              <span className={styles.featureIcon}>▤</span>
 
-              <div
-                className={styles.featureText}
-              >
+              <div className={styles.featureText}>
                 <h3>Rekap & Export</h3>
-
-                <p>
-                  CSV, Excel, dan PDF.
-                </p>
+                <p>CSV, Excel, dan PDF.</p>
               </div>
 
-              <span
-                className={styles.comingSoon}
-              >
-                Segera
+              <span className={styles.comingSoon}>
+                Buka Rekap
               </span>
             </div>
           </div>
