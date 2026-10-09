@@ -1,9 +1,9 @@
 import { DAILY_TOTAL_SLOTS } from './availability';
 
 interface CalculateOccupancyInput {
-  approvedSlotCount: number; // Total slot terisi dari reservasi disetujui
-  totalDays: number;         // Rentang jumlah hari periode rekap yang dipilih
-  facilityCount?: number;    // Jumlah fasilitas (jika perhitungan per lokasi)
+  approvedSlotCount: number;
+  totalDays: number;
+  facilityCount?: number;
 }
 
 interface OccupancyResult {
@@ -15,53 +15,88 @@ interface OccupancyResult {
 }
 
 /**
- * Menghitung persentase okupansi fasilitas berdasarkan periode tanggal yang dipilih Admin (Point 20).
+ * Menghitung okupansi berdasarkan jumlah slot operasional standar.
+ * Satu hari = 26 slot, masing-masing berdurasi 30 menit.
  */
 export function calculateOccupancy({
   approvedSlotCount,
   totalDays,
   facilityCount = 1,
 }: CalculateOccupancyInput): OccupancyResult {
-  // Total slot operasional standar = 26 slot * total hari * total fasilitas
-  const totalOperationalSlots = DAILY_TOTAL_SLOTS * totalDays * facilityCount;
+  const validTotalDays =
+    Number.isFinite(totalDays) && totalDays > 0
+      ? Math.floor(totalDays)
+      : 0;
 
-  // Jika tidak ada slot operasional pada periode tersebut (Point 20)
-  if (totalOperationalSlots <= 0 || totalDays <= 0) {
+  const validFacilityCount =
+    Number.isFinite(facilityCount) && facilityCount > 0
+      ? Math.floor(facilityCount)
+      : 0;
+
+  const validApprovedSlotCount =
+    Number.isFinite(approvedSlotCount) && approvedSlotCount > 0
+      ? approvedSlotCount
+      : 0;
+
+  const totalOperationalSlots =
+    DAILY_TOTAL_SLOTS * validTotalDays * validFacilityCount;
+
+  if (totalOperationalSlots <= 0) {
     return {
       occupancyPercentage: 0,
       formattedPercentage: 'Tidak ada data',
       totalOperationalSlots: 0,
-      approvedSlotCount: 0,
+      approvedSlotCount: validApprovedSlotCount,
       hasData: false,
     };
   }
 
-  // Hitung persentase okupansi
-  const rawPercentage = (approvedSlotCount / totalOperationalSlots) * 100;
-  const occupancyPercentage = Math.min(Math.max(rawPercentage, 0), 100);
+  const occupancyPercentage =
+    (validApprovedSlotCount / totalOperationalSlots) * 100;
 
   return {
     occupancyPercentage,
     formattedPercentage: `${occupancyPercentage.toFixed(1)}%`,
     totalOperationalSlots,
-    approvedSlotCount,
+    approvedSlotCount: validApprovedSlotCount,
     hasData: true,
   };
 }
 
 /**
- * Menghitung jumlah hari antara dua tanggal (inclusive)
+ * Menghitung jumlah hari kalender secara inklusif.
+ * Contoh: 2026-10-01 sampai 2026-10-03 = 3 hari.
+ * Menghasilkan 0 jika tanggal tidak valid atau rentang terbalik.
  */
-export function getDaysDifference(startDateStr: string, endDateStr: string): number {
-  const start = new Date(startDateStr);
-  const end = new Date(endDateStr);
+export function getDaysDifference(
+  startDateStr: string,
+  endDateStr: string,
+): number {
+  function parseDateOnly(value: string): number | null {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      return null;
+    }
 
-  // Normalisasi ke UTC/Awal Hari untuk menghindari selisih jam
-  start.setHours(0, 0, 0, 0);
-  end.setHours(0, 0, 0, 0);
+    const date = new Date(`${value}T00:00:00.000Z`);
 
-  const diffTime = Math.abs(end.getTime() - start.getTime());
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 agar inclusive
+    if (
+      Number.isNaN(date.getTime()) ||
+      date.toISOString().slice(0, 10) !== value
+    ) {
+      return null;
+    }
 
-  return diffDays > 0 ? diffDays : 0;
+    return date.getTime();
+  }
+
+  const startTime = parseDateOnly(startDateStr);
+  const endTime = parseDateOnly(endDateStr);
+
+  if (startTime === null || endTime === null || startTime > endTime) {
+    return 0;
+  }
+
+  const millisecondsPerDay = 24 * 60 * 60 * 1000;
+
+  return Math.floor((endTime - startTime) / millisecondsPerDay) + 1;
 }
