@@ -1,5 +1,6 @@
 'use client'
 
+import FivoraLogo from '@/components/branding/fivora-logo'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -70,7 +71,7 @@ export default function DetailLaporanPetugasContent({
       <div className={styles.container}>
         <header className={styles.navigation}>
           <Link href="/" className={styles.brand}>
-            FIVORA<span className={styles.brandDot}>.</span>
+            <FivoraLogo />
           </Link>
 
           <Link href={backHref} className={styles.backLink}>

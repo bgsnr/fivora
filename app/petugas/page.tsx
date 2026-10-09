@@ -1,3 +1,4 @@
+import FivoraLogo from '@/components/branding/fivora-logo'
 import Link from 'next/link'
 import {
   ArrowRight,
@@ -19,7 +20,7 @@ export default async function PetugasPage() {
       <div className={styles.container}>
         <header className={styles.navigation}>
           <Link href="/" className={styles.brand}>
-            FIVORA<span className={styles.brandDot}>.</span>
+            <FivoraLogo />
           </Link>
 
           <div className={styles.accountActions}>

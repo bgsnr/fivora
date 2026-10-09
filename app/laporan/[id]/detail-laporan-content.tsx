@@ -1,5 +1,6 @@
 'use client'
 
+import FivoraLogo from '@/components/branding/fivora-logo'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
@@ -78,7 +79,7 @@ export default function DetailLaporanContent({
       <div className={styles.container}>
         <header className={styles.navigation}>
           <Link href="/" className={styles.brand}>
-            FIVORA<span className={styles.brandDot}>.</span>
+            <FivoraLogo />
           </Link>
 
           <Link href={backHref} className={styles.historyButton}>
