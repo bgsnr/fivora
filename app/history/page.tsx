@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { CalendarDays, Clock3, MapPin, Plus } from 'lucide-react'
+import { CalendarDays, Clock3, MapPin, Plus, Eye } from 'lucide-react'
 
 import { AppLayout } from '@/components/layout/app-layout'
 import { createClient } from '@/lib/supabase/client'
@@ -155,6 +155,7 @@ export default function ReservationHistoryPage() {
                     <th className="px-5 py-4 font-semibold">Tanggal</th>
                     <th className="px-5 py-4 font-semibold">Waktu</th>
                     <th className="px-5 py-4 font-semibold">Status</th>
+                    <th className="px-5 py-4 font-semibold">Aksi</th>
                   </tr>
                 </thead>
 
@@ -194,6 +195,16 @@ export default function ReservationHistoryPage() {
                         >
                           {item.status}
                         </span>
+                      </td>
+                      <td className="px-5 py-4">
+                        <button
+                          type="button"
+                          onClick={() => router.push(`/reservations/${item.id}`)}
+                          className="inline-flex items-center gap-2 rounded-lg border border-[var(--border)] px-3 py-2 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
+                        >
+                          <Eye className="h-4 w-4" />
+                          Lihat Detail
+                        </button>
                       </td>
                     </tr>
                   ))}

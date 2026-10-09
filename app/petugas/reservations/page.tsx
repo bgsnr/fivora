@@ -4,6 +4,7 @@ import { Footer } from '@/components/landing/footer'
 import { getCurrentUser } from '@/lib/auth'
 import {
   getPendingReservationsQueue,
+  getApprovedReservationsQueue,
   sweepExpiredPendingReservationsAction,
 } from '@/lib/actions/reservations'
 import { Button } from '@/components/ui/button'
@@ -22,6 +23,51 @@ export const metadata = {
   title: 'Antrean Reservasi Petugas - FIVORA',
   description:
     'Dashboard pemrosesan antrean reservasi fasilitas kampus untuk petugas.',
+}
+
+function getScheduleState(
+  date: string,
+  startTime: string,
+  endTime: string
+) {
+  const normalizeTime = (time: string) =>
+    time.length === 5 ? `${time}:00` : time.slice(0, 8)
+
+  const startAt = new Date(
+    `${date}T${normalizeTime(startTime)}+07:00`
+  ).getTime()
+
+  const endAt = new Date(
+    `${date}T${normalizeTime(endTime)}+07:00`
+  ).getTime()
+
+  if (!Number.isFinite(startAt) || !Number.isFinite(endAt)) {
+    return {
+      label: 'Jadwal tidak valid',
+      className: 'border-red-200 bg-red-50 text-red-700',
+    }
+  }
+
+  const now = Date.now()
+
+  if (now < startAt) {
+    return {
+      label: 'Akan Datang',
+      className: 'border-blue-200 bg-blue-50 text-blue-700',
+    }
+  }
+
+  if (now < endAt) {
+    return {
+      label: 'Sedang Berlangsung',
+      className: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+    }
+  }
+
+  return {
+    label: 'Sudah Lewat',
+    className: 'border-slate-200 bg-slate-100 text-slate-700',
+  }
 }
 
 export default async function StaffReservationsDashboardPage() {
@@ -67,6 +113,7 @@ export default async function StaffReservationsDashboardPage() {
 
   // Mengambil antrean reservasi 'menunggu', diurutkan created_at ASC (FIFO)
   const queue = await getPendingReservationsQueue()
+  const approvedQueue = await getApprovedReservationsQueue()
 
   return (
     <div className="flex min-h-screen flex-col bg-background selection:bg-[#FCF1D0] selection:text-[#010736]">
@@ -202,6 +249,115 @@ export default async function StaffReservationsDashboardPage() {
             ))}
           </div>
         )}
+        
+        <section className="mt-12 space-y-4">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="text-xl font-bold text-[#010736] sm:text-2xl">
+                Reservasi Disetujui
+              </h2>
+              <p className="mt-1 text-sm text-[#22396F]">
+                Pantau jadwal reservasi yang telah disetujui, termasuk jadwal yang sudah lewat.
+              </p>
+            </div>
+
+            <span className="text-sm font-medium text-[#22396F]">
+              {approvedQueue.length} reservasi
+            </span>
+          </div>
+
+          {approvedQueue.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-[#22396F]/30 bg-white p-8 text-center">
+              <p className="font-semibold text-[#010736]">
+                Belum ada reservasi disetujui
+              </p>
+              <p className="mt-1 text-sm text-[#22396F]">
+                Reservasi yang disetujui petugas akan muncul di sini.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {approvedQueue.map((item) => {
+                const schedule = getScheduleState(
+                  item.reservation_date,
+                  item.start_time,
+                  item.end_time
+                )
+
+                return (
+                  <article
+                    key={item.id}
+                    className="rounded-2xl border border-border bg-white p-5 shadow-sm sm:p-6"
+                  >
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <p className="font-mono text-xs text-[#22396F]">
+                          ID Reservasi: {item.id}
+                        </p>
+
+                        <h3 className="mt-1 text-lg font-bold text-[#010736]">
+                          {item.facilities?.name || 'Fasilitas'}
+                        </h3>
+
+                        <p className="mt-1 text-sm text-[#22396F]">
+                          {item.users?.name || 'Pengguna'}
+                          {item.users?.email ? ` (${item.users.email})` : ''}
+                        </p>
+                      </div>
+
+                      <span
+                        className={`inline-flex self-start rounded-full border px-3 py-1 text-xs font-semibold ${schedule.className}`}
+                      >
+                        {schedule.label}
+                      </span>
+                    </div>
+
+                    <div className="mt-4 grid gap-3 border-t border-[#22396F]/15 pt-4 text-sm sm:grid-cols-2">
+                      <div className="flex items-start gap-2 text-[#22396F]">
+                        <Calendar className="mt-0.5 h-4 w-4 shrink-0" />
+                        <span>{item.reservation_date}</span>
+                      </div>
+
+                      <div className="flex items-start gap-2 text-[#22396F]">
+                        <Clock className="mt-0.5 h-4 w-4 shrink-0" />
+                        <span>
+                          {item.start_time.slice(0, 5)} -{' '}
+                          {item.end_time.slice(0, 5)} WIB
+                        </span>
+                      </div>
+
+                      {item.facilities?.location && (
+                        <div className="flex items-start gap-2 text-[#22396F]">
+                          <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
+                          <span>{item.facilities.location}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="mt-3 rounded-lg bg-[#FCF1D0]/50 p-3 text-sm text-[#22396F]">
+                      <span className="font-semibold text-[#010736]">
+                        Tujuan:
+                      </span>{' '}
+                      {item.purpose}
+                    </div>
+
+                    <div className="mt-4 flex justify-end">
+                      <Link href={`/petugas/reservations/${item.id}`}>
+                        <Button
+                          size="sm"
+                          className="flex items-center gap-1.5 bg-[#010736] text-white hover:bg-[#0D1C42]"
+                        >
+                          Lihat Detail
+                          <ArrowRight className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                    </div>
+                  </article>
+                )
+              })}
+            </div>
+          )}
+        </section>
       </main>
       <Footer />
     </div>

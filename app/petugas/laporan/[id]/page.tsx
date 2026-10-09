@@ -21,7 +21,7 @@ type ReportRow = {
   category: string
   description: string
   status: 'baru' | 'diproses' | 'selesai' | 'ditolak'
-  officer_note: string
+  officer_note: string | null
   created_at: string
   processed_at: string | null
   updated_at: string
@@ -125,7 +125,7 @@ export default async function DetailLaporanPetugasPage({
         category: report.category,
         description: report.description,
         status: report.status,
-        officerNote: report.officer_note,
+        officerNote: report.officer_note ?? '',
         date: formatDate(report.created_at),
         processedAt: report.processed_at
           ? formatDate(report.processed_at)

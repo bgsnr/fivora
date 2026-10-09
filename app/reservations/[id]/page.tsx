@@ -108,7 +108,7 @@ export default async function ReservationDetailPage({
             </p>
 
             <div className="mt-6">
-              <Link href="/reservations">
+              <Link href="/history">
                 <Button
                   variant="outline"
                   className="border-red-200 text-red-800 hover:bg-red-100"
@@ -189,7 +189,7 @@ export default async function ReservationDetailPage({
       <main className="container mx-auto max-w-3xl flex-1 px-4 py-8 sm:py-12">
         <div className="mb-6">
           <Link
-            href="/reservations"
+            href="/history"
             className="mb-2 inline-flex items-center gap-1.5 text-xs font-semibold text-[#22396F] hover:text-[#010736] hover:underline"
           >
             <ArrowLeft className="h-3.5 w-3.5" />

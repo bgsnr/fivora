@@ -126,6 +126,38 @@ export async function getPendingReservationsQueue(): Promise<Reservation[]> {
   return (data as Reservation[]) || []
 }
 
+
+export async function getApprovedReservationsQueue(): Promise<Reservation[]> {
+  const user = await getCurrentUser()
+
+  if (
+    !user ||
+    user.status !== 'aktif' ||
+    (user.role !== 'petugas' && user.role !== 'admin')
+  ) {
+    return []
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from('reservations')
+    .select(`
+      *,
+      users:user_id(id, name, email),
+      facilities:facility_id(id, name, location, type, status)
+    `)
+    .eq('status', 'disetujui')
+    .order('reservation_date', { ascending: true })
+    .order('start_time', { ascending: true })
+
+  if (error) {
+    throw new Error(
+      `Gagal mengambil reservasi yang disetujui: ${error.message}`
+    )
+  }
+
+  return (data as Reservation[]) || []
+}
+
 export const getPendingReservationsQueueSortedByCreatedAt = getPendingReservationsQueue
 
 export async function updateReservationStatus(
