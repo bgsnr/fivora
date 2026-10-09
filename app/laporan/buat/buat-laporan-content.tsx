@@ -1,5 +1,6 @@
 'use client'
 
+import FivoraLogo from '@/components/branding/fivora-logo'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
@@ -16,6 +17,7 @@ import {
   Zap,
 } from 'lucide-react'
 
+import FacilityPicker from '@/components/reports/facility-picker'
 import styles from './buat-laporan.module.css'
 
 type Facility = {
@@ -196,7 +198,7 @@ export default function BuatLaporanContent({
       <div className={styles.container}>
         <header className={styles.navigation}>
           <Link href="/" className={styles.brand}>
-            FIVORA<span className={styles.brandDot}>.</span>
+            <FivoraLogo />
           </Link>
 
           <Link href="/laporan" className={styles.historyButton}>
@@ -268,24 +270,12 @@ export default function BuatLaporanContent({
             )}
 
             <form className={styles.form} onSubmit={handleSubmit}>
-              <label className={styles.field}>
-                <span>Fasilitas yang dilaporkan</span>
-
-                <select
-                  value={facility}
-                  onChange={(event) => setFacility(event.target.value)}
-                  disabled={loading || formUnavailable}
-                >
-                  <option value="">Pilih fasilitas</option>
-
-                  {facilities.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.name}
-                      {item.location ? ` / ${item.location}` : ''}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <FacilityPicker
+                facilities={facilities}
+                value={facility}
+                onChange={setFacility}
+                disabled={loading || formUnavailable}
+              />
 
               <fieldset className={styles.categoryField}>
                 <legend>Kategori kerusakan</legend>

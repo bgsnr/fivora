@@ -1,0 +1,32 @@
+.frame {
+  position: relative;
+  display: block;
+  flex-shrink: 0;
+  width: 180px;
+  aspect-ratio: 902 / 295;
+  overflow: hidden;
+}
+
+.compact {
+  width: 164px;
+}
+
+.image {
+  position: absolute;
+  top: -128.814%;
+  left: -7.539%;
+  display: block;
+  width: 115.299%;
+  max-width: none;
+  height: auto;
+}
+
+@media (max-width: 540px) {
+  .frame {
+    width: 156px;
+  }
+
+  .compact {
+    width: 128px;
+  }
+}

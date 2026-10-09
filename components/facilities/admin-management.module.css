@@ -1,0 +1,44 @@
+.formPage { width: min(720px, 100%); margin: 0 auto; padding: 28px 20px 56px; color: #010736; }
+.backLink { display: inline-flex; margin-bottom: 22px; color: #52627d; font-size: 14px; text-decoration: none; }
+.backLink:hover { color: #010736; text-decoration: underline; }
+.formCard { padding: 32px; border: 1px solid #d8dfea; border-radius: 20px; background: #fff; }
+.formHeader { padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid #d8dfea; }
+.eyebrow { margin: 0 0 10px; color: #52627d; font-size: 11px; letter-spacing: .12em; }
+.formHeader h1 { margin: 0; font-size: clamp(25px, 4vw, 32px); font-weight: 600; letter-spacing: -.7px; }
+.formHeader > p:last-child { margin: 12px 0 0; color: #52627d; font-size: 15px; line-height: 1.65; }
+.fields { display: grid; gap: 20px; min-width: 0; margin: 0; padding: 0; border: 0; }
+.field { display: grid; gap: 8px; min-width: 0; }
+.field label { font-size: 14px; font-weight: 500; }
+.field label span { color: #a33341; }
+.field input, .field select, .field textarea { box-sizing: border-box; width: 100%; min-height: 46px; padding: 11px 15px; border: 1px solid #c9d3e1; border-radius: 12px; background: #fff; color: #010736; font: inherit; font-size: 15px; line-height: 1.5; }
+.field textarea { min-height: 120px; resize: vertical; }
+.field small { color: #52627d; font-size: 13px; line-height: 1.6; }
+.field input:focus, .field select:focus, .field textarea:focus { outline: 2px solid #22396f; outline-offset: 2px; }
+.fields:disabled { opacity: .7; }
+.statusInfo { margin-top: 24px; padding: 18px; border: 1px solid #e5dcc1; border-radius: 12px; background: #fcf1d0; }
+.statusInfo > span { display: block; margin-bottom: 5px; color: #62614f; font-size: 13px; }
+.statusInfo strong { font-size: 15px; font-weight: 600; }
+.statusInfo p { margin: 10px 0 0; color: #4e5365; font-size: 13px; line-height: 1.7; }
+.formActions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 12px; margin-top: 28px; padding-top: 22px; border-top: 1px solid #d8dfea; }
+.primaryButton, .secondaryButton { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 18px; border: 1px solid #010736; border-radius: 999px; font: inherit; font-size: 14px; font-weight: 500; text-decoration: none; cursor: pointer; }
+.primaryButton { background: #010736; color: #fcf1d0; }
+.primaryButton:hover { background: #22396f; }
+.secondaryButton { border-color: #c9d3e1; background: #fff; color: #010736; }
+.secondaryButton:hover { background: #f2f5fa; }
+.primaryButton:disabled, .secondaryButton:disabled { opacity: .55; cursor: not-allowed; }
+.primaryButton:focus-visible, .secondaryButton:focus-visible, .backLink:focus-visible { outline: 2px solid #22396f; outline-offset: 4px; }
+.error, .success { padding: 14px 16px; border-radius: 12px; font-size: 14px; line-height: 1.7; overflow-wrap: anywhere; }
+.error { border: 1px solid #efd2d6; background: #fff1f3; color: #a33341; }
+.success { border: 1px solid #bfdfcd; background: #e9f7ef; color: #236346; }
+.listTools { display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin: 0 0 20px; }
+.pendingHint { margin: 16px 0 0; color: #52627d; font-size: 14px; line-height: 1.7; }
+.modalContent { max-height: min(58vh, 540px); overflow-y: auto; overflow-wrap: anywhere; }
+.modalContent button { margin-top: 12px; }
+.modalLink { color: #22396f; font-size: 14px; font-weight: 500; }
+.neutralBadge { display: inline-block; padding: 6px 10px; border-radius: 999px; background: #edf0f4; color: #52627d; font-size: 12px; }
+@media (max-width: 540px) {
+  .formPage { padding: 20px 12px 36px; }
+  .formCard { padding: 24px 18px; }
+  .formActions { flex-direction: column-reverse; }
+  .formActions > * { width: 100%; box-sizing: border-box; }
+}

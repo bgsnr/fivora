@@ -1,3 +1,4 @@
+import FivoraLogo from '@/components/branding/fivora-logo'
 import Link from 'next/link'
 
 import { LogoutButton } from './logout-button'
@@ -47,7 +48,7 @@ export function AppNavbar({ user }: { user: AppNavbarUser | null }) {
           href="/"
           className="text-sm font-extrabold tracking-tight text-[#010736]"
         >
-          FIVORA<span className="text-[#22396F]">.</span>
+          <FivoraLogo compact />
         </Link>
 
         <nav
