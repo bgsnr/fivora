@@ -196,6 +196,7 @@ export async function POST(request: Request) {
         description,
         photo_path: photoPath,
         status: 'baru',
+        officer_note: '',
       })
 
     if (insertError) {
