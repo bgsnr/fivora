@@ -216,10 +216,31 @@
 }
 
 .badgeMaintenance {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  white-space: nowrap;
   padding: 4px 8px;
   border-radius: 999px;
   background: #fffbeb;
   color: #b45309;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.badgeUnavailable {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  white-space: nowrap;
+  padding: 4px 8px;
+  border: 1px solid #fca5a5;
+  border-radius: 999px;
+  background: #fef2f2;
+  color: #dc2626;
   font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.02em;

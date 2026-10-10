@@ -116,6 +116,12 @@ async function buildPublicFacilities(): Promise<FacilityItem[]> {
 export default async function Home() {
   const user = await getCurrentUser()
 
+   // Admin langsung ke dashboard admin
+  if (user?.role === 'admin' && user.status === 'aktif') {
+    redirect('/admin')
+  }
+
+  // Petugas langsung ke halaman petugas
   if (user?.role === 'petugas' && user.status === 'aktif') {
     redirect('/petugas')
   }

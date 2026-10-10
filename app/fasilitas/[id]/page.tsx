@@ -1,10 +1,11 @@
+
 'use client';
 
 import { useState, useEffect, use, useMemo } from 'react';
 import Link from 'next/link';
 
 import { createClient } from '@/lib/supabase/client';
-import { Facility, TimeSlot } from '@/types/facility';
+import type { Facility, TimeSlot } from '@/types/facility';
 
 const styles = {
   container:
@@ -25,19 +26,21 @@ const styles = {
     'px-2.5 py-1 rounded-full bg-amber-50 border border-amber-300 text-amber-700 text-[10px] font-extrabold',
   badgeUnavailable:
     'px-2.5 py-1 rounded-full bg-red-50 border border-red-300 text-red-600 text-[10px] font-extrabold',
+  badgeChecking:
+    'px-2.5 py-1 rounded-full bg-slate-100 border border-slate-300 text-slate-600 text-[10px] font-extrabold',
   infoGrid:
     'grid grid-cols-1 sm:grid-cols-3 gap-4 mt-5 p-4 rounded-xl bg-[#fcf1d0] border border-[#22396f26]',
   infoItem: 'flex flex-col gap-1',
   infoLabel: 'text-[#22396f] text-[11px] font-semibold',
   infoValue: 'text-[#010736] text-[13px] font-bold',
   description: 'mt-4 text-[#22396f] text-xs leading-relaxed',
-  ctaRow:
-    'mt-5 pt-4 border-t border-[#22396f26]',
+  ctaRow: 'mt-5 pt-4 border-t border-[#22396f26]',
   ctaButton:
     'inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-[#010736] text-[#fcf1d0] text-[13px] font-bold no-underline transition hover:bg-[#22396f] hover:-translate-y-px',
   ctaButtonDisabled:
     'inline-flex items-center justify-center px-5 py-2.5 rounded-xl border border-[#22396f40] bg-slate-100 text-slate-400 text-[13px] font-bold cursor-not-allowed',
-  ctaNote: 'm-0 mt-2 text-amber-700 text-[11px] font-semibold',
+  ctaNote:
+    'm-0 mt-2 text-amber-700 text-[11px] font-semibold',
   scheduleSection: 'mt-8',
   sectionHeader:
     'flex flex-col items-start gap-4 mb-4 sm:flex-row sm:items-center sm:justify-between',
@@ -71,14 +74,13 @@ const styles = {
     'p-10 text-center text-[#22396f] text-[13px]',
   errorState:
     'p-3.5 rounded-xl bg-red-50 border border-red-300 text-red-600 text-xs',
-}
+};
 
 interface DetailPageProps {
   params: Promise<{ id: string }>;
 }
 
-// Supaya tanggal mengikuti tanggal lokal komputer / WIB
-const getTodayLocal = () => {
+const getTodayLocal = (): string => {
   const today = new Date();
 
   const year = today.getFullYear();
@@ -88,13 +90,12 @@ const getTodayLocal = () => {
   return `${year}-${month}-${day}`;
 };
 
-// Buat client sekali saja
+// Supaya client Supabase dibuat sekali.
 const supabase = createClient();
 
 export default function FacilityDetailPage({
   params,
 }: DetailPageProps) {
-  // Unwrap params menggunakan use() Hook di Next.js
   const resolvedParams = use(params);
   const facilityId = resolvedParams.id;
 
@@ -102,7 +103,6 @@ export default function FacilityDetailPage({
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Tanggal default hari ini
   const [selectedDate, setSelectedDate] =
     useState<string>(getTodayLocal());
 
@@ -112,9 +112,7 @@ export default function FacilityDetailPage({
 
   const [loadingSlots, setLoadingSlots] = useState<boolean>(false);
 
-  // ==========================================
-  // 1. Fetch Detail Fasilitas
-  // ==========================================
+  // 1. Mengambil detail fasilitas.
   useEffect(() => {
     async function fetchFacilityDetail() {
       setLoading(true);
@@ -127,10 +125,7 @@ export default function FacilityDetailPage({
         .single();
 
       if (error || !data) {
-        console.error(
-          'Error fetching facility detail:',
-          error
-        );
+        console.error('Error fetching facility detail:', error);
 
         setError(
           'Fasilitas tidak ditemukan atau gagal memuat data.'
@@ -142,16 +137,15 @@ export default function FacilityDetailPage({
       setLoading(false);
     }
 
-    fetchFacilityDetail();
+    void fetchFacilityDetail();
   }, [facilityId]);
 
-  // ==========================================
-  // 2. Fetch Reservasi yang Disetujui
-  // pada tanggal yang dipilih
-  // ==========================================
+  // 2. Mengambil reservasi yang disetujui pada tanggal pilihan.
   useEffect(() => {
     async function fetchReservations() {
-      if (!facilityId) return;
+      if (!facilityId) {
+        return;
+      }
 
       setLoadingSlots(true);
 
@@ -163,11 +157,7 @@ export default function FacilityDetailPage({
         .in('status', ['disetujui', 'approved']);
 
       if (error) {
-        console.error(
-          'Error fetching slots:',
-          error
-        );
-
+        console.error('Error fetching slots:', error);
         setApprovedReservations([]);
       } else {
         setApprovedReservations(data || []);
@@ -176,13 +166,10 @@ export default function FacilityDetailPage({
       setLoadingSlots(false);
     }
 
-    fetchReservations();
+    void fetchReservations();
   }, [facilityId, selectedDate]);
 
-  // ==========================================
-  // 3. Generate Slot 30 Menit
-  // 07.00 - 20.00
-  // ==========================================
+  // 3. Membuat slot 30 menit dari pukul 07.00 sampai 20.00.
   const timeSlots = useMemo<TimeSlot[]>(() => {
     const slots: TimeSlot[] = [];
 
@@ -191,6 +178,10 @@ export default function FacilityDetailPage({
 
     let currentMinutes = startHour * 60;
     const maxMinutes = endHour * 60;
+
+    const isInactive =
+      facility?.status === 'nonaktif' ||
+      facility?.status === 'inactive';
 
     const isUnderMaintenance =
       facility?.status === 'dalam_perbaikan' ||
@@ -218,30 +209,25 @@ export default function FacilityDetailPage({
       const startTimeStr = `${startH}:${startM}`;
       const endTimeStr = `${endH}:${endM}`;
 
-      // Cek apakah slot bentrok dengan
-      // reservasi yang sudah disetujui
-      const isBooked = approvedReservations.some(
-        (res) => {
-          // Karena kolom database bertipe TIME,
-          // cukup ambil HH:mm
-          const resStart = res.start_time.slice(0, 5);
-          const resEnd = res.end_time.slice(0, 5);
+      // Mengecek apakah slot bertabrakan dengan reservasi disetujui.
+      const isBooked = approvedReservations.some((reservation) => {
+        const reservationStart = reservation.start_time.slice(0, 5);
+        const reservationEnd = reservation.end_time.slice(0, 5);
 
-          // Cek overlap:
-          // Start A < End B
-          // dan End A > Start B
-          return (
-            startTimeStr < resEnd &&
-            endTimeStr > resStart
-          );
-        }
-      );
+        return (
+          startTimeStr < reservationEnd &&
+          endTimeStr > reservationStart
+        );
+      });
 
       let isAvailable = true;
       let reason = 'Tersedia';
 
-      // Maintenance memiliki prioritas paling tinggi
-      if (isUnderMaintenance) {
+      // Urutan status: nonaktif, perbaikan, lalu reservasi.
+      if (isInactive) {
+        isAvailable = false;
+        reason = 'Tidak Tersedia';
+      } else if (isUnderMaintenance) {
         isAvailable = false;
         reason = 'Dalam Perbaikan';
       } else if (isBooked) {
@@ -262,9 +248,7 @@ export default function FacilityDetailPage({
     return slots;
   }, [facility, approvedReservations]);
 
-  // ==========================================
-  // Loading
-  // ==========================================
+  // Loading detail fasilitas.
   if (loading) {
     return (
       <div className={styles.container}>
@@ -275,9 +259,7 @@ export default function FacilityDetailPage({
     );
   }
 
-  // ==========================================
-  // Error
-  // ==========================================
+  // Error detail fasilitas.
   if (error || !facility) {
     return (
       <div className={styles.container}>
@@ -295,33 +277,30 @@ export default function FacilityDetailPage({
     );
   }
 
-  // ==========================================
-  // Status Fasilitas
-  // ==========================================
+  // Status fasilitas.
+  const isInactive =
+    facility.status === 'nonaktif' ||
+    facility.status === 'inactive';
+
   const isMaintenance =
     facility.status === 'dalam_perbaikan' ||
     facility.status === 'under_maintenance';
 
-  // ==========================================
-  // Apakah semua slot sudah terisi?
-  //
-  // Hanya dicek kalau:
-  // - bukan maintenance
-  // - data slot sudah selesai dimuat
-  // - ada slot
-  // - semua slot tidak tersedia
-  // ==========================================
+  // Mengecek apakah seluruh slot hari yang dipilih sudah terisi.
   const isFullyBooked =
+    !isInactive &&
     !isMaintenance &&
     !loadingSlots &&
     timeSlots.length > 0 &&
-    timeSlots.every(
-      (slot) => !slot.isAvailable
-    );
+    timeSlots.every((slot) => !slot.isAvailable);
+
+  const isFacilityActive =
+    facility.status === 'aktif' ||
+    facility.status === 'active';
 
   return (
     <div className={styles.container}>
-      {/* Tombol Kembali */}
+      {/* Tombol kembali */}
       <Link
         href="/fasilitas"
         className={styles.backButton}
@@ -329,7 +308,7 @@ export default function FacilityDetailPage({
         ← Kembali ke Katalog Fasilitas
       </Link>
 
-      {/* Card Info Utama Fasilitas */}
+      {/* Informasi utama fasilitas */}
       <div className={styles.facilityCard}>
         <div className={styles.header}>
           <div>
@@ -342,13 +321,21 @@ export default function FacilityDetailPage({
             </h1>
           </div>
 
-          {isMaintenance ? (
+          {isInactive ? (
+            <span className={styles.badgeUnavailable}>
+              TIDAK TERSEDIA
+            </span>
+          ) : isMaintenance ? (
             <span className={styles.badgeMaintenance}>
               DALAM PERBAIKAN
             </span>
+          ) : loadingSlots ? (
+            <span className={styles.badgeChecking}>
+              MEMERIKSA...
+            </span>
           ) : isFullyBooked ? (
             <span className={styles.badgeUnavailable}>
-              TIDAK TERSEDIA
+              TERISI
             </span>
           ) : (
             <span className={styles.badgeActive}>
@@ -357,7 +344,7 @@ export default function FacilityDetailPage({
           )}
         </div>
 
-        {/* Info Atribut */}
+        {/* Informasi atribut */}
         <div className={styles.infoGrid}>
           <div className={styles.infoItem}>
             <span className={styles.infoLabel}>
@@ -398,10 +385,9 @@ export default function FacilityDetailPage({
           </p>
         )}
 
-        {/* CTA Reservasi */}
+        {/* Tombol reservasi */}
         <div className={styles.ctaRow}>
-          {facility.status === 'aktif' ||
-          facility.status === 'active' ? (
+          {isFacilityActive ? (
             <Link
               href={`/reservations/new?facility_id=${facilityId}`}
               className={styles.ctaButton}
@@ -414,10 +400,11 @@ export default function FacilityDetailPage({
                 type="button"
                 disabled
                 title={
-                  facility.status === 'dalam_perbaikan' ||
-                  facility.status === 'under_maintenance'
-                    ? 'Fasilitas sedang dalam perbaikan'
-                    : 'Fasilitas tidak aktif'
+                  isInactive
+                    ? 'Fasilitas sedang nonaktif'
+                    : isMaintenance
+                      ? 'Fasilitas sedang dalam perbaikan'
+                      : 'Fasilitas tidak dapat dipesan'
                 }
                 className={styles.ctaButtonDisabled}
               >
@@ -425,24 +412,24 @@ export default function FacilityDetailPage({
               </button>
 
               <p className={styles.ctaNote}>
-                {facility.status === 'dalam_perbaikan' ||
-                facility.status === 'under_maintenance'
-                  ? 'Fasilitas sedang dalam perbaikan dan belum dapat dipesan.'
-                  : 'Fasilitas sedang nonaktif dan tidak menerima reservasi.'}
+                {isInactive
+                  ? 'Fasilitas sedang nonaktif dan tidak menerima reservasi.'
+                  : isMaintenance
+                    ? 'Fasilitas sedang dalam perbaikan dan belum dapat dipesan.'
+                    : 'Fasilitas tidak dapat dipesan saat ini.'}
               </p>
             </>
           )}
         </div>
       </div>
 
-      {/* Section Jadwal */}
+      {/* Jadwal dan ketersediaan */}
       <div className={styles.scheduleSection}>
         <div className={styles.sectionHeader}>
           <h2 className={styles.sectionTitle}>
             Jadwal & Ketersediaan Slot
           </h2>
 
-          {/* Filter Tanggal */}
           <div className={styles.datePickerBox}>
             <label
               htmlFor="scheduleDate"
@@ -455,20 +442,18 @@ export default function FacilityDetailPage({
               type="date"
               id="scheduleDate"
               value={selectedDate}
-              onChange={(e) =>
-                setSelectedDate(e.target.value)
+              onChange={(event) =>
+                setSelectedDate(event.target.value)
               }
               className={styles.dateInput}
             />
           </div>
         </div>
 
-        {/* Keterangan Warna */}
+        {/* Keterangan warna */}
         <div className={styles.legend}>
           <div className={styles.legendItem}>
-            <span
-              className={styles.dotAvailable}
-            />
+            <span className={styles.dotAvailable} />
             <span>Tersedia</span>
           </div>
 
@@ -478,43 +463,34 @@ export default function FacilityDetailPage({
           </div>
 
           <div className={styles.legendItem}>
-            <span
-              className={styles.dotMaintenance}
-            />
+            <span className={styles.dotMaintenance} />
             <span>Dalam Perbaikan</span>
           </div>
         </div>
 
-        {/* Loading Slot */}
+        {/* Slot waktu */}
         {loadingSlots ? (
           <div className={styles.loadingState}>
             Memeriksa ketersediaan slot waktu...
           </div>
         ) : (
           <div className={styles.slotGrid}>
-            {timeSlots.map((slot, idx) => {
-              let cardStyle =
-                styles.slotCardAvailable;
+            {timeSlots.map((slot, index) => {
+              let cardStyle = styles.slotCardAvailable;
 
-              if (
-                slot.reason ===
-                'Dalam Perbaikan'
-              ) {
-                cardStyle =
-                  styles.slotCardMaintenance;
+              if (slot.reason === 'Dalam Perbaikan') {
+                cardStyle = styles.slotCardMaintenance;
               } else if (!slot.isAvailable) {
-                cardStyle =
-                  styles.slotCardBooked;
+                cardStyle = styles.slotCardBooked;
               }
 
               return (
                 <div
-                  key={idx}
+                  key={index}
                   className={cardStyle}
                 >
                   <div className={styles.slotTime}>
-                    {slot.startTime} -{' '}
-                    {slot.endTime}
+                    {slot.startTime} - {slot.endTime}
                   </div>
 
                   <div className={styles.slotStatus}>

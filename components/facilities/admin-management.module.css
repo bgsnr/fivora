@@ -42,3 +42,114 @@
   .formActions { flex-direction: column-reverse; }
   .formActions > * { width: 100%; box-sizing: border-box; }
 }
+
+/* ==============================
+   SEARCH BAR FASILITAS
+============================== */
+
+.facilitySearchTools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.facilitySearchBox {
+  display: flex;
+  align-items: center;
+  flex: 1 1 100%;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  min-height: 44px;
+  box-sizing: border-box;
+  gap: 10px;
+  padding: 0 13px;
+  background: #ffffff;
+  border: 1px solid #d8dfea;
+  border-radius: 12px;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.facilitySearchBox:focus-within {
+  border-color: #22396f;
+  box-shadow: 0 0 0 3px rgba(34, 57, 111, 0.08);
+}
+
+.facilitySearchIcon {
+  flex-shrink: 0;
+  color: #718097;
+}
+
+.facilitySearchInput {
+  width: 100%;
+  min-width: 0;
+  padding: 11px 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #010736;
+  font: inherit;
+  font-size: 12px;
+}
+
+.facilitySearchInput::placeholder {
+  color: #929db0;
+}
+
+.facilitySearchInput::-webkit-search-cancel-button {
+  display: none;
+}
+
+.facilitySearchClearButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #718097;
+  cursor: pointer;
+}
+
+.facilitySearchClearButton:hover {
+  background: #f0f3f9;
+  color: #010736;
+}
+
+.facilitySearchResultCount {
+  flex-shrink: 0;
+  color: #718097;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.facilitySearchClearButton:focus-visible {
+  outline: 2px solid #22396f;
+  outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+  .facilitySearchTools {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+  }
+
+  .facilitySearchBox {
+    grid-column: 1 / -1;
+    max-width: none;
+  }
+
+  .facilitySearchResultCount {
+    white-space: normal;
+  }
+}

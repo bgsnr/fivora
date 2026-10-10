@@ -1,6 +1,7 @@
+
 'use client'
 
-import { FormEvent, useState } from 'react'
+import { type FormEvent, useState } from 'react'
 import { Eye, EyeOff, Menu, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
@@ -31,6 +32,19 @@ type AccountUser = {
   created_at: string
 }
 
+export type RecentReservation = {
+  id: string | number
+  reservation_date: string
+  start_time: string
+  status: string
+  users: {
+    name: string
+  }[] | null
+  facilities: {
+    name: string
+  }[] | null
+}
+
 type AdminDashboardProps = {
   adminName: string
   totalUsers: number
@@ -38,6 +52,11 @@ type AdminDashboardProps = {
   totalOperators: number
   pendingUsers: PendingUser[]
   activeAccounts: AccountUser[]
+  facilityCount: number
+  pendingReservationsCount: number
+  maintenanceFacilityCount: number
+  openReportsCount: number
+  recentReservations: RecentReservation[]
 }
 
 export default function AdminDashboard({
@@ -47,36 +66,39 @@ export default function AdminDashboard({
   totalOperators,
   pendingUsers,
   activeAccounts,
+  facilityCount,
+  pendingReservationsCount,
+  maintenanceFacilityCount,
+  openReportsCount,
+  recentReservations,
 }: AdminDashboardProps) {
   const router = useRouter()
 
-  /* State sidebar */
+  // State sidebar
   const [sidebarCollapsed, setSidebarCollapsed] =
     useState(false)
 
-  /* State modal tambah akun */
+  // State modal tambah akun
   const [showAddAccountForm, setShowAddAccountForm] =
     useState(false)
 
   const [accountType, setAccountType] =
     useState<'operator' | 'pengguna'>('operator')
 
-  /* State akun operator */
+  // State akun operator
   const [operatorName, setOperatorName] = useState('')
   const [operatorEmail, setOperatorEmail] = useState('')
   const [operatorPassword, setOperatorPassword] =
     useState('')
-  const [
-    showOperatorPassword,
-    setShowOperatorPassword,
-  ] = useState(false)
+  const [showOperatorPassword, setShowOperatorPassword] =
+    useState(false)
   const [operatorLoading, setOperatorLoading] =
     useState(false)
   const [operatorError, setOperatorError] = useState('')
   const [operatorMessage, setOperatorMessage] =
     useState('')
 
-  /* State akun pengguna */
+  // State akun pengguna
   const [userName, setUserName] = useState('')
   const [userEmail, setUserEmail] = useState('')
   const [userNimNip, setUserNimNip] = useState('')
@@ -87,7 +109,7 @@ export default function AdminDashboard({
   const [userError, setUserError] = useState('')
   const [userMessage, setUserMessage] = useState('')
 
-  /* Membuka modal tambah akun */
+  // Membuka modal tambah akun
   function openAddAccountForm() {
     setAccountType('operator')
     setOperatorError('')
@@ -97,11 +119,9 @@ export default function AdminDashboard({
     setShowAddAccountForm(true)
   }
 
-  /* Menutup modal tambah akun */
+  // Menutup modal tambah akun
   function closeAddAccountForm() {
-    if (operatorLoading || userLoading) {
-      return
-    }
+    if (operatorLoading || userLoading) return
 
     setShowAddAccountForm(false)
     setOperatorError('')
@@ -110,7 +130,7 @@ export default function AdminDashboard({
     setUserMessage('')
   }
 
-  /* Mengganti jenis akun */
+  // Mengganti jenis akun
   function changeAccountType(
     type: 'operator' | 'pengguna'
   ) {
@@ -121,46 +141,30 @@ export default function AdminDashboard({
     setUserMessage('')
   }
 
-  /* Membuat akun operator */
+  // Membuat akun operator
   async function handleCreateOperator(
     event: FormEvent<HTMLFormElement>
   ) {
     event.preventDefault()
-
     setOperatorError('')
     setOperatorMessage('')
 
     const cleanName = operatorName.trim()
-    const cleanEmail = operatorEmail
-      .trim()
-      .toLowerCase()
+    const cleanEmail = operatorEmail.trim().toLowerCase()
 
-    /* Validasi field wajib */
-    if (
-      !cleanName ||
-      !cleanEmail ||
-      !operatorPassword
-    ) {
+    if (!cleanName || !cleanEmail || !operatorPassword) {
       setOperatorError(
         'Nama, email, dan password wajib diisi.'
       )
       return
     }
 
-    /* Validasi password */
     if (operatorPassword.length < 8) {
-      setOperatorError(
-        'Password minimal 8 karakter.'
-      )
+      setOperatorError('Password minimal 8 karakter.')
       return
     }
 
-    /* Validasi email operator */
-    if (
-      !cleanEmail.endsWith(
-        '@operator.undip.ac.id'
-      )
-    ) {
+    if (!cleanEmail.endsWith('@operator.undip.ac.id')) {
       setOperatorError(
         'Email operator harus menggunakan @operator.undip.ac.id.'
       )
@@ -170,27 +174,23 @@ export default function AdminDashboard({
     setOperatorLoading(true)
 
     try {
-      const response = await fetch(
-        '/api/admin/operators',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            name: cleanName,
-            email: cleanEmail,
-            password: operatorPassword,
-          }),
-        }
-      )
+      const response = await fetch('/api/admin/operators', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: cleanName,
+          email: cleanEmail,
+          password: operatorPassword,
+        }),
+      })
 
       const result = await response.json()
 
       if (!response.ok) {
         setOperatorError(
-          result.error ||
-            'Gagal membuat akun operator.'
+          result.error || 'Gagal membuat akun operator.'
         )
         return
       }
@@ -206,11 +206,7 @@ export default function AdminDashboard({
 
       router.refresh()
     } catch (error) {
-      console.error(
-        'CREATE OPERATOR ERROR:',
-        error
-      )
-
+      console.error('CREATE OPERATOR ERROR:', error)
       setOperatorError(
         'Terjadi kesalahan. Silakan coba lagi.'
       )
@@ -219,22 +215,18 @@ export default function AdminDashboard({
     }
   }
 
-  /* Membuat akun pengguna */
+  // Membuat akun pengguna
   async function handleCreateUser(
     event: FormEvent<HTMLFormElement>
   ) {
     event.preventDefault()
-
     setUserError('')
     setUserMessage('')
 
     const cleanName = userName.trim()
-    const cleanEmail = userEmail
-      .trim()
-      .toLowerCase()
+    const cleanEmail = userEmail.trim().toLowerCase()
     const cleanNimNip = userNimNip.trim()
 
-    /* Validasi field wajib */
     if (
       !cleanName ||
       !cleanEmail ||
@@ -247,23 +239,16 @@ export default function AdminDashboard({
       return
     }
 
-    /* Validasi password */
     if (userPassword.length < 8) {
-      setUserError(
-        'Password minimal 8 karakter.'
-      )
+      setUserError('Password minimal 8 karakter.')
       return
     }
 
-    /* Validasi NIM/NIP */
     if (!/^\d+$/.test(cleanNimNip)) {
-      setUserError(
-        'NIM/NIP hanya boleh berisi angka.'
-      )
+      setUserError('NIM/NIP hanya boleh berisi angka.')
       return
     }
 
-    /* Validasi domain email */
     const isStudent = cleanEmail.endsWith(
       '@students.undip.ac.id'
     )
@@ -276,29 +261,20 @@ export default function AdminDashboard({
       '@staff.undip.ac.id'
     )
 
-    if (
-      !isStudent &&
-      !isLecturer &&
-      !isStaff
-    ) {
+    if (!isStudent && !isLecturer && !isStaff) {
       setUserError(
         'Email harus menggunakan email SSO UNDIP yang valid.'
       )
       return
     }
 
-    /* Validasi NIM mahasiswa */
-    if (
-      isStudent &&
-      !/^\d{14}$/.test(cleanNimNip)
-    ) {
+    if (isStudent && !/^\d{14}$/.test(cleanNimNip)) {
       setUserError(
         'NIM mahasiswa harus terdiri dari 14 digit.'
       )
       return
     }
 
-    /* Validasi NIP dosen atau staf */
     if (
       (isLecturer || isStaff) &&
       !/^\d{18}$/.test(cleanNimNip)
@@ -312,28 +288,24 @@ export default function AdminDashboard({
     setUserLoading(true)
 
     try {
-      const response = await fetch(
-        '/api/admin/users',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            name: cleanName,
-            email: cleanEmail,
-            nim_nip: cleanNimNip,
-            password: userPassword,
-          }),
-        }
-      )
+      const response = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: cleanName,
+          email: cleanEmail,
+          nim_nip: cleanNimNip,
+          password: userPassword,
+        }),
+      })
 
       const result = await response.json()
 
       if (!response.ok) {
         setUserError(
-          result.error ||
-            'Gagal membuat akun pengguna.'
+          result.error || 'Gagal membuat akun pengguna.'
         )
         return
       }
@@ -350,11 +322,7 @@ export default function AdminDashboard({
 
       router.refresh()
     } catch (error) {
-      console.error(
-        'CREATE USER ERROR:',
-        error
-      )
-
+      console.error('CREATE USER ERROR:', error)
       setUserError(
         'Terjadi kesalahan. Silakan coba lagi.'
       )
@@ -363,51 +331,75 @@ export default function AdminDashboard({
     }
   }
 
-  /* Logout */
+  // Logout
   async function handleLogout() {
     try {
-      const response = await fetch(
-        '/api/auth/logout',
-        {
-          method: 'POST',
-        }
-      )
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+      })
 
       if (!response.ok) {
         console.error('Logout gagal.')
         return
       }
 
-      router.push('/login')
+      router.replace('/login')
       router.refresh()
     } catch (error) {
-      console.error(
-        'LOGOUT ERROR:',
-        error
-      )
+      console.error('LOGOUT ERROR:', error)
     }
   }
 
-  /* Scroll ke bagian tertentu */
+  // Navigasi ke bagian tertentu
   function scrollToSection(id: string) {
-    document
-      .getElementById(id)
-      ?.scrollIntoView({
-        behavior: 'smooth',
-      })
+    document.getElementById(id)?.scrollIntoView({
+      behavior: 'smooth',
+    })
+  }
+
+  // Label dan warna status reservasi
+  function getReservationStatus(status: string) {
+    switch (status) {
+      case 'menunggu':
+        return {
+          label: 'Menunggu',
+          className: styles.reservationStatusPending,
+        }
+
+      case 'disetujui':
+        return {
+          label: 'Disetujui',
+          className: styles.reservationStatusApproved,
+        }
+
+      case 'ditolak':
+        return {
+          label: 'Ditolak',
+          className: styles.reservationStatusClosed,
+        }
+
+      case 'dibatalkan':
+        return {
+          label: 'Dibatalkan',
+          className: styles.reservationStatusClosed,
+        }
+
+      default:
+        return {
+          label: status,
+          className: styles.reservationStatusClosed,
+        }
+    }
   }
 
   return (
     <main className={styles.page}>
-      {/* Sidebar */}
+      {/* SIDEBAR */}
       <aside
         className={`${styles.sidebar} ${
-          sidebarCollapsed
-            ? styles.sidebarCollapsed
-            : ''
+          sidebarCollapsed ? styles.sidebarCollapsed : ''
         }`}
       >
-        {/* Logo */}
         <div className={styles.brand}>
           <img
             src="/fivora-logo.png"
@@ -416,19 +408,14 @@ export default function AdminDashboard({
           />
         </div>
 
-        {/* Tombol buka atau tutup sidebar */}
         <button
           type="button"
           className={styles.sidebarToggle}
           onClick={() =>
-            setSidebarCollapsed(
-              (current) => !current
-            )
+            setSidebarCollapsed((current) => !current)
           }
           aria-label={
-            sidebarCollapsed
-              ? 'Buka sidebar'
-              : 'Tutup sidebar'
+            sidebarCollapsed ? 'Buka sidebar' : 'Tutup sidebar'
           }
         >
           {sidebarCollapsed ? (
@@ -438,9 +425,7 @@ export default function AdminDashboard({
           )}
         </button>
 
-        {/* Menu sidebar */}
         <nav className={styles.nav}>
-          {/* Dashboard */}
           <a
             href="#dashboard"
             className={`${styles.navItem} ${styles.navItemActive}`}
@@ -449,10 +434,10 @@ export default function AdminDashboard({
             <span>Dashboard</span>
           </a>
 
-          {/* Verifikasi akun */}
-          <a
-            href="#verifikasi"
+          <button
+            type="button"
             className={styles.navItem}
+            onClick={() => scrollToSection('verifikasi')}
           >
             <span>✓</span>
             <span>Verifikasi Akun</span>
@@ -462,9 +447,8 @@ export default function AdminDashboard({
                 {pendingCount}
               </span>
             )}
-          </a>
+          </button>
 
-          {/* Tambah akun */}
           <button
             type="button"
             className={styles.navItem}
@@ -474,19 +458,15 @@ export default function AdminDashboard({
             <span>Tambah Akun</span>
           </button>
 
-          {/* Daftar akun */}
           <button
             type="button"
             className={styles.navItem}
-            onClick={() =>
-              scrollToSection('akun')
-            }
+            onClick={() => scrollToSection('akun')}
           >
             <span>👥</span>
             <span>Daftar Akun</span>
           </button>
 
-          {/* Fasilitas */}
           <button
             type="button"
             className={styles.navItem}
@@ -496,31 +476,24 @@ export default function AdminDashboard({
             <span>Fasilitas</span>
           </button>
 
-          {/* Reservasi */}
           <button
             type="button"
             className={styles.navItem}
-            onClick={() =>
-              scrollToSection('reservasi')
-            }
+            onClick={() => scrollToSection('reservasi')}
           >
             <span>◷</span>
             <span>Reservasi</span>
           </button>
 
-          {/* Laporan */}
           <button
             type="button"
             className={styles.navItem}
-            onClick={() =>
-              scrollToSection('laporan')
-            }
+            onClick={() => scrollToSection('operasional')}
           >
             <span>⚠</span>
-            <span>Laporan</span>
+            <span>Laporan Kerusakan</span>
           </button>
 
-          {/* Rekap */}
           <button
             type="button"
             className={styles.navItem}
@@ -531,13 +504,10 @@ export default function AdminDashboard({
           </button>
         </nav>
 
-        {/* Profile dan logout */}
         <div className={styles.sidebarBottom}>
           <div className={styles.adminProfile}>
             <div className={styles.avatar}>
-              {adminName
-                .charAt(0)
-                .toUpperCase()}
+              {adminName.charAt(0).toUpperCase()}
             </div>
 
             <div className={styles.profileText}>
@@ -556,52 +526,27 @@ export default function AdminDashboard({
         </div>
       </aside>
 
-      {/* Konten utama */}
+      {/* KONTEN UTAMA */}
       <section
         className={`${styles.content} ${
-          sidebarCollapsed
-            ? styles.contentExpanded
-            : ''
+          sidebarCollapsed ? styles.contentExpanded : ''
         }`}
       >
-        {/* Header */}
-        <header
-          id="dashboard"
-          className={styles.topbar}
-        >
+        {/* HEADER */}
+        <header id="dashboard" className={styles.topbar}>
           <div>
-            <p className={styles.eyebrow}>
-              ADMINISTRATOR
-            </p>
-
+            <p className={styles.eyebrow}>ADMINISTRATOR</p>
             <h1>Dashboard</h1>
 
             <p className={styles.subtitle}>
-              Kelola akun dan aktivitas Fivora dari
-              satu tempat.
+              Kelola akun dan aktivitas Fivora dari satu tempat.
             </p>
           </div>
 
           <div className={styles.topbarRight}>
-            <div className={styles.notification}>
-              <span>🔔</span>
-
-              {pendingCount > 0 && (
-                <span
-                  className={
-                    styles.notificationBadge
-                  }
-                >
-                  {pendingCount}
-                </span>
-              )}
-            </div>
-
             <div className={styles.topProfile}>
               <div className={styles.avatar}>
-                {adminName
-                  .charAt(0)
-                  .toUpperCase()}
+                {adminName.charAt(0).toUpperCase()}
               </div>
 
               <div className={styles.profileText}>
@@ -612,12 +557,10 @@ export default function AdminDashboard({
           </div>
         </header>
 
-        {/* Statistik */}
+        {/* 1. STATISTIK AKUN */}
         <section className={styles.statsGrid}>
           <div className={styles.statCard}>
-            <div className={styles.statIcon}>
-              👤
-            </div>
+            <div className={styles.statIcon}>👤</div>
 
             <div>
               <span>Total Akun</span>
@@ -628,9 +571,7 @@ export default function AdminDashboard({
           <div
             className={`${styles.statCard} ${styles.statCardWarning}`}
           >
-            <div className={styles.statIcon}>
-              ⏳
-            </div>
+            <div className={styles.statIcon}>⏳</div>
 
             <div>
               <span>Menunggu Verifikasi</span>
@@ -639,195 +580,120 @@ export default function AdminDashboard({
           </div>
 
           <div className={styles.statCard}>
-            <div className={styles.statIcon}>
-              🛠
-            </div>
+            <div className={styles.statIcon}>🛠</div>
 
             <div>
               <span>Operator Aktif</span>
               <strong>{totalOperators}</strong>
             </div>
           </div>
-
-          <div className={styles.statCardMuted}>
-            <div className={styles.statIcon}>
-              ▣
-            </div>
-
-            <div>
-              <span>Fasilitas</span>
-              <strong>—</strong>
-            </div>
-
-            <small>Segera</small>
-          </div>
         </section>
 
-        {/* Quick action */}
+        {/* 2. AKSES CEPAT MANAJEMEN AKUN */}
         <section className={styles.section}>
           <div className={styles.sectionHeader}>
             <div>
-              <p
-                className={
-                  styles.sectionEyebrow
-                }
-              >
+              <p className={styles.sectionEyebrow}>
                 AKSES CEPAT
               </p>
 
-              <h2>Manajemen akun</h2>
+              <h2>Manajemen Akun</h2>
 
               <p>
-                Fitur akun yang tersedia di dashboard
-                admin.
+                Kelola pendaftaran, buat akun, dan lihat akun aktif.
               </p>
             </div>
           </div>
 
           <div className={styles.actionGrid}>
-            {/* Verifikasi */}
             <button
               type="button"
               className={styles.actionCard}
-              onClick={() =>
-                scrollToSection('verifikasi')
-              }
+              onClick={() => scrollToSection('verifikasi')}
             >
-              <div className={styles.actionIcon}>
-                ✓
-              </div>
+              <div className={styles.actionIcon}>✓</div>
 
-              <div
-                className={
-                  styles.actionContent
-                }
-              >
+              <div className={styles.actionContent}>
                 <h3>Verifikasi Akun</h3>
 
                 <p>
-                  Periksa dan proses pendaftaran
-                  pengguna.
+                  Periksa dan proses pendaftaran pengguna.
                 </p>
               </div>
 
               {pendingCount > 0 && (
-                <span
-                  className={
-                    styles.actionBadge
-                  }
-                >
+                <span className={styles.actionBadge}>
                   {pendingCount} menunggu
                 </span>
               )}
             </button>
 
-            {/* Tambah akun */}
             <button
               type="button"
               className={styles.actionCard}
               onClick={openAddAccountForm}
             >
-              <div className={styles.actionIcon}>
-                +
-              </div>
+              <div className={styles.actionIcon}>+</div>
 
-              <div
-                className={
-                  styles.actionContent
-                }
-              >
+              <div className={styles.actionContent}>
                 <h3>Tambah Akun</h3>
 
                 <p>
-                  Buat akun pengguna atau operator
-                  secara langsung.
+                  Buat akun operator atau pengguna secara langsung.
                 </p>
               </div>
             </button>
 
-            {/* Daftar akun */}
             <button
               type="button"
               className={styles.actionCard}
-              onClick={() =>
-                scrollToSection('akun')
-              }
+              onClick={() => scrollToSection('akun')}
             >
-              <div className={styles.actionIcon}>
-                👥
-              </div>
+              <div className={styles.actionIcon}>👥</div>
 
-              <div
-                className={
-                  styles.actionContent
-                }
-              >
+              <div className={styles.actionContent}>
                 <h3>Daftar Akun</h3>
 
                 <p>
-                  Lihat semua akun yang sedang aktif.
+                  Lihat semua akun yang saat ini aktif.
                 </p>
               </div>
 
-              <span
-                className={styles.actionBadge}
-              >
+              <span className={styles.actionBadge}>
                 {activeAccounts.length} aktif
               </span>
             </button>
           </div>
         </section>
 
-        {/* Verifikasi akun */}
-        <section
-          id="verifikasi"
-          className={styles.section}
-        >
+        {/* 3. VERIFIKASI AKUN */}
+        <section id="verifikasi" className={styles.section}>
           <div className={styles.sectionHeader}>
             <div>
-              <p
-                className={
-                  styles.sectionEyebrow
-                }
-              >
+              <p className={styles.sectionEyebrow}>
                 VERIFIKASI
               </p>
 
               <h2>Pendaftaran Menunggu</h2>
 
               <p>
-                Pendaftar harus disetujui sebelum
-                dapat menggunakan akun.
+                Pendaftar harus disetujui sebelum dapat menggunakan akun.
               </p>
             </div>
 
-            <span
-              className={styles.sectionCount}
-            >
+            <span className={styles.sectionCount}>
               {pendingCount} akun
             </span>
           </div>
 
-          <div
-            className={styles.verificationCard}
-          >
+          <div className={styles.verificationCard}>
             {pendingUsers.length > 0 ? (
-              <RegistrationList
-                users={pendingUsers}
-              />
+              <RegistrationList users={pendingUsers} />
             ) : (
-              <div
-                className={styles.emptyState}
-              >
-                <div
-                  className={styles.emptyIcon}
-                >
-                  ✓
-                </div>
+              <div className={styles.emptyState}>
+                <div className={styles.emptyIcon}>✓</div>
 
-                <h3>
-                  Tidak ada pendaftaran
-                </h3>
+                <h3>Tidak ada pendaftaran</h3>
 
                 <p>
                   Semua pendaftaran sudah diproses.
@@ -837,192 +703,186 @@ export default function AdminDashboard({
           </div>
         </section>
 
-        {/* Daftar akun */}
-        <section
-          id="akun"
-          className={styles.section}
-        >
+        {/* 4. DAFTAR AKUN AKTIF */}
+        <section id="akun" className={styles.section}>
           <div className={styles.sectionHeader}>
             <div>
-              <p
-                className={
-                  styles.sectionEyebrow
-                }
-              >
+              <p className={styles.sectionEyebrow}>
                 AKUN AKTIF
               </p>
 
               <h2>Daftar Akun</h2>
 
               <p>
-                Daftar akun yang saat ini aktif di
-                sistem Fivora.
+                Daftar akun yang saat ini aktif di sistem Fivora.
               </p>
             </div>
 
-            <span
-              className={styles.sectionCount}
-            >
+            <span className={styles.sectionCount}>
               {activeAccounts.length} akun
             </span>
           </div>
 
-          <div
-            className={styles.verificationCard}
-          >
-            <AccountList
-              accounts={activeAccounts}
-            />
+          <div className={styles.verificationCard}>
+            <AccountList accounts={activeAccounts} />
           </div>
         </section>
 
-        {/* Fitur lainnya */}
-        <section className={styles.section}>
+        {/* 5. STATISTIK OPERASIONAL — SETELAH DAFTAR AKUN */}
+        <section id="operasional" className={styles.section}>
           <div className={styles.sectionHeader}>
             <div>
-              <p
-                className={
-                  styles.sectionEyebrow
-                }
-              >
-                MODUL SISTEM
+              <p className={styles.sectionEyebrow}>
+                OPERASIONAL
               </p>
 
-              <h2>Fitur lainnya</h2>
+              <h2>Ringkasan Operasional</h2>
 
               <p>
-                Tampilan sudah disiapkan untuk
-                pengembangan berikutnya.
+                Pantau kondisi fasilitas dan aktivitas reservasi.
               </p>
             </div>
           </div>
 
-          <div className={styles.featureGrid}>
-            {/* Fasilitas */}
-            <div
-              id="fasilitas"
-              className={styles.featureCard}
-            >
-              <span
-                className={styles.featureIcon}
-              >
-                ▣
-              </span>
+          <div className={styles.statsGrid}>
+            <div className={styles.statCard}>
+              <div className={styles.statIcon}>▣</div>
 
-              <div
-                className={styles.featureText}
-              >
-                <h3>Kelola Fasilitas</h3>
+              <div>
+                <span>Total Fasilitas</span>
+                <strong>{facilityCount}</strong>
+              </div>
+            </div>
+
+            <div
+              className={`${styles.statCard} ${styles.statCardWarning}`}
+            >
+              <div className={styles.statIcon}>◷</div>
+
+              <div>
+                <span>Menunggu Persetujuan</span>
+                <strong>{pendingReservationsCount}</strong>
+              </div>
+            </div>
+
+            <div className={styles.statCard}>
+              <div className={styles.statIcon}>🛠</div>
+
+              <div>
+                <span>Dalam Perbaikan</span>
+                <strong>{maintenanceFacilityCount}</strong>
+              </div>
+            </div>
+
+            <div
+              className={`${styles.statCard} ${styles.statCardWarning}`}
+            >
+              <div className={styles.statIcon}>⚠</div>
+
+              <div>
+                <span>Laporan Belum Selesai</span>
+                <strong>{openReportsCount}</strong>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 6. RESERVASI TERBARU */}
+        <section id="reservasi" className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <div>
+              <p className={styles.sectionEyebrow}>
+                AKTIVITAS TERBARU
+              </p>
+
+              <h2>Reservasi Terbaru</h2>
+
+              <p>
+                Lima pengajuan reservasi terakhir di Fivora.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              className={styles.viewAllButton}
+              onClick={() => router.push('/admin/reservations')}
+            >
+              Lihat Semua
+            </button>
+          </div>
+
+          <div className={styles.verificationCard}>
+            {recentReservations.length > 0 ? (
+              <div className={styles.reservationList}>
+                {recentReservations.map((reservation) => {
+                  const statusInfo = getReservationStatus(
+                    reservation.status
+                  )
+
+                  const date = new Date(
+                    `${reservation.reservation_date}T00:00:00`
+                  )
+
+                  const formattedDate = Number.isNaN(
+                    date.getTime()
+                  )
+                    ? reservation.reservation_date
+                    : date.toLocaleDateString('id-ID', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric',
+                      })
+
+                  return (
+                    <div
+                      key={reservation.id}
+                      className={styles.reservationRow}
+                    >
+                      <div className={styles.reservationInfo}>
+                        <div className={styles.reservationName}>
+                          {reservation.facilities?.[0]?.name ??
+                            'Fasilitas tidak ditemukan'}
+                        </div>
+
+                        <div className={styles.reservationMeta}>
+                          {reservation.users?.[0]?.name ?? 'Pengguna'}
+                          {' · '}
+                          {formattedDate}
+                          {' · '}
+                          {reservation.start_time.slice(0, 5)}
+                        </div>
+                      </div>
+
+                      <span
+                        className={`${styles.reservationStatus} ${statusInfo.className}`}
+                      >
+                        {statusInfo.label}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            ) : (
+              <div className={styles.emptyState}>
+                <div className={styles.emptyIcon}>✓</div>
+
+                <h3>Belum ada reservasi</h3>
 
                 <p>
-                  Tambah, edit, dan nonaktifkan
-                  fasilitas.
+                  Pengajuan reservasi terbaru akan muncul di sini.
                 </p>
               </div>
-
-              <span
-                className={styles.comingSoon}
-              >
-                Segera
-              </span>
-            </div>
-
-            {/* Reservasi */}
-            <div
-              id="reservasi"
-              className={styles.featureCard}
-            >
-              <span
-                className={styles.featureIcon}
-              >
-                ◷
-              </span>
-
-              <div
-                className={styles.featureText}
-              >
-                <h3>Reservasi</h3>
-
-                <p>
-                  Monitoring dan pengelolaan
-                  reservasi.
-                </p>
-              </div>
-
-              <span
-                className={styles.comingSoon}
-              >
-                Segera
-              </span>
-            </div>
-
-            {/* Laporan */}
-            <div
-              id="laporan"
-              className={styles.featureCard}
-            >
-              <span
-                className={styles.featureIcon}
-              >
-                ⚠
-              </span>
-
-              <div
-                className={styles.featureText}
-              >
-                <h3>Laporan Kerusakan</h3>
-
-                <p>
-                  Monitoring laporan fasilitas.
-                </p>
-              </div>
-
-              <span
-                className={styles.comingSoon}
-              >
-                Segera
-              </span>
-            </div>
-
-            {/* Rekap */}
-            <div
-              id="rekap"
-              className={styles.featureCard}
-              role="link"
-              tabIndex={0}
-              onClick={() => router.push('/admin/recap')}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                  event.preventDefault();
-                  router.push('/admin/recap');
-                }
-              }}
-              style={{ cursor: 'pointer' }}
-            >
-              <span className={styles.featureIcon}>▤</span>
-
-              <div className={styles.featureText}>
-                <h3>Rekap & Export</h3>
-                <p>CSV, Excel, dan PDF.</p>
-              </div>
-
-              <span className={styles.comingSoon}>
-                Buka Rekap
-              </span>
-            </div>
+            )}
           </div>
         </section>
       </section>
 
-      {/* Modal tambah akun */}
+      {/* MODAL TAMBAH AKUN */}
       {showAddAccountForm && (
         <div
           className={styles.modalBackdrop}
           onMouseDown={(event) => {
-            if (
-              event.target ===
-              event.currentTarget
-            ) {
+            if (event.target === event.currentTarget) {
               closeAddAccountForm()
             }
           }}
@@ -1035,19 +895,14 @@ export default function AdminDashboard({
           >
             <div className={styles.modalHeader}>
               <div>
-                <p
-                  className={
-                    styles.sectionEyebrow
-                  }
-                >
+                <p className={styles.sectionEyebrow}>
                   ADMIN
                 </p>
 
                 <h2>Tambah Akun</h2>
 
                 <p>
-                  Buat akun operator atau pengguna
-                  secara langsung.
+                  Buat akun operator atau pengguna secara langsung.
                 </p>
               </div>
 
@@ -1055,21 +910,15 @@ export default function AdminDashboard({
                 type="button"
                 className={styles.closeButton}
                 onClick={closeAddAccountForm}
-                disabled={
-                  operatorLoading ||
-                  userLoading
-                }
+                disabled={operatorLoading || userLoading}
+                aria-label="Tutup modal"
               >
                 ×
               </button>
             </div>
 
             {/* Pilihan jenis akun */}
-            <div
-              className={
-                styles.accountTypeSelector
-              }
-            >
+            <div className={styles.accountTypeSelector}>
               <button
                 type="button"
                 className={
@@ -1077,15 +926,8 @@ export default function AdminDashboard({
                     ? styles.accountTypeActive
                     : styles.accountTypeButton
                 }
-                onClick={() =>
-                  changeAccountType(
-                    'operator'
-                  )
-                }
-                disabled={
-                  operatorLoading ||
-                  userLoading
-                }
+                onClick={() => changeAccountType('operator')}
+                disabled={operatorLoading || userLoading}
               >
                 Operator
               </button>
@@ -1097,29 +939,19 @@ export default function AdminDashboard({
                     ? styles.accountTypeActive
                     : styles.accountTypeButton
                 }
-                onClick={() =>
-                  changeAccountType(
-                    'pengguna'
-                  )
-                }
-                disabled={
-                  operatorLoading ||
-                  userLoading
-                }
+                onClick={() => changeAccountType('pengguna')}
+                disabled={operatorLoading || userLoading}
               >
                 Pengguna
               </button>
             </div>
 
-            {/* Form operator */}
+            {/* FORM OPERATOR */}
             {accountType === 'operator' && (
               <form
                 className={styles.operatorForm}
-                onSubmit={
-                  handleCreateOperator
-                }
+                onSubmit={handleCreateOperator}
               >
-                {/* Nama */}
                 <label>
                   <span>Nama</span>
 
@@ -1127,19 +959,14 @@ export default function AdminDashboard({
                     type="text"
                     value={operatorName}
                     onChange={(event) =>
-                      setOperatorName(
-                        event.target.value
-                      )
+                      setOperatorName(event.target.value)
                     }
                     placeholder="Masukkan nama operator"
-                    disabled={
-                      operatorLoading
-                    }
+                    disabled={operatorLoading}
                     required
                   />
                 </label>
 
-                {/* Email operator */}
                 <label>
                   <span>Email Operator</span>
 
@@ -1147,108 +974,77 @@ export default function AdminDashboard({
                     type="email"
                     value={operatorEmail}
                     onChange={(event) =>
-                      setOperatorEmail(
-                        event.target.value
-                      )
+                      setOperatorEmail(event.target.value)
                     }
                     placeholder="nama@operator.undip.ac.id"
-                    disabled={
-                      operatorLoading
-                    }
+                    disabled={operatorLoading}
                     required
                   />
 
                   <small>
-                    Gunakan email
-                    @operator.undip.ac.id.
+                    Gunakan email @operator.undip.ac.id.
                   </small>
                 </label>
 
-                {/* Password operator */}
                 <label>
                   <span>Password</span>
 
-                  <div
-                    className={
-                      styles.passwordBox
-                    }
-                  >
+                  <div className={styles.passwordBox}>
                     <input
                       type={
-                        showOperatorPassword
-                          ? 'text'
-                          : 'password'
+                        showOperatorPassword ? 'text' : 'password'
                       }
-                      value={
-                        operatorPassword
-                      }
+                      value={operatorPassword}
                       onChange={(event) =>
-                        setOperatorPassword(
-                          event.target.value
-                        )
+                        setOperatorPassword(event.target.value)
                       }
                       placeholder="Minimal 8 karakter"
-                      disabled={
-                        operatorLoading
-                      }
+                      disabled={operatorLoading}
                       required
                       minLength={8}
+                      autoComplete="new-password"
                     />
 
                     <button
-                        type="button"
-                        className={styles.passwordToggle}
-                        onClick={() =>
-                            setShowOperatorPassword(
-                            (current) => !current
-                            )
-                        }
-                        disabled={operatorLoading}
-                        aria-label={
-                            showOperatorPassword
-                            ? 'Sembunyikan password'
-                            : 'Tampilkan password'
-                        }
-                        >
-                        {showOperatorPassword ? (
-                            <EyeOff size={16} />
-                        ) : (
-                            <Eye size={16} />
-                        )}
+                      type="button"
+                      className={styles.passwordToggle}
+                      onClick={() =>
+                        setShowOperatorPassword(
+                          (current) => !current
+                        )
+                      }
+                      disabled={operatorLoading}
+                      aria-label={
+                        showOperatorPassword
+                          ? 'Sembunyikan password'
+                          : 'Tampilkan password'
+                      }
+                    >
+                      {showOperatorPassword ? (
+                        <EyeOff size={16} />
+                      ) : (
+                        <Eye size={16} />
+                      )}
                     </button>
                   </div>
                 </label>
 
-                {/* Error */}
                 {operatorError && (
-                  <div
-                    className={
-                      styles.formError
-                    }
-                  >
+                  <div className={styles.formError} role="alert">
                     {operatorError}
                   </div>
                 )}
 
-                {/* Success */}
                 {operatorMessage && (
-                  <div
-                    className={
-                      styles.formSuccess
-                    }
-                  >
+                  <div className={styles.formSuccess} role="status">
                     {operatorMessage}
                   </div>
                 )}
 
                 <button
                   type="submit"
-                  className={
-                    styles.submitButton
-                  }
-                  disabled={
-                    operatorLoading
-                  }
+                  className={styles.submitButton}
+                  disabled={operatorLoading}
                 >
                   {operatorLoading
                     ? 'Membuat akun...'
@@ -1257,13 +1053,12 @@ export default function AdminDashboard({
               </form>
             )}
 
-            {/* Form pengguna */}
+            {/* FORM PENGGUNA */}
             {accountType === 'pengguna' && (
               <form
                 className={styles.operatorForm}
                 onSubmit={handleCreateUser}
               >
-                {/* Nama */}
                 <label>
                   <span>Nama</span>
 
@@ -1271,9 +1066,7 @@ export default function AdminDashboard({
                     type="text"
                     value={userName}
                     onChange={(event) =>
-                      setUserName(
-                        event.target.value
-                      )
+                      setUserName(event.target.value)
                     }
                     placeholder="Masukkan nama pengguna"
                     disabled={userLoading}
@@ -1281,7 +1074,6 @@ export default function AdminDashboard({
                   />
                 </label>
 
-                {/* Email pengguna */}
                 <label>
                   <span>Email</span>
 
@@ -1289,9 +1081,7 @@ export default function AdminDashboard({
                     type="email"
                     value={userEmail}
                     onChange={(event) =>
-                      setUserEmail(
-                        event.target.value
-                      )
+                      setUserEmail(event.target.value)
                     }
                     placeholder="nama@students.undip.ac.id"
                     disabled={userLoading}
@@ -1303,7 +1093,6 @@ export default function AdminDashboard({
                   </small>
                 </label>
 
-                {/* NIM/NIP */}
                 <label>
                   <span>NIM/NIP</span>
 
@@ -1312,9 +1101,7 @@ export default function AdminDashboard({
                     inputMode="numeric"
                     value={userNimNip}
                     onChange={(event) =>
-                      setUserNimNip(
-                        event.target.value
-                      )
+                      setUserNimNip(event.target.value)
                     }
                     placeholder="Masukkan NIM/NIP"
                     disabled={userLoading}
@@ -1323,89 +1110,66 @@ export default function AdminDashboard({
                   />
 
                   <small>
-                    NIM mahasiswa 14 digit, NIP
-                    dosen/staf 18 digit.
+                    NIM mahasiswa 14 digit, NIP dosen/staf 18 digit.
                   </small>
                 </label>
 
-                {/* Password pengguna */}
                 <label>
                   <span>Password</span>
 
-                  <div
-                    className={
-                      styles.passwordBox
-                    }
-                  >
+                  <div className={styles.passwordBox}>
                     <input
-                      type={
-                        showUserPassword
-                          ? 'text'
-                          : 'password'
-                      }
+                      type={showUserPassword ? 'text' : 'password'}
                       value={userPassword}
                       onChange={(event) =>
-                        setUserPassword(
-                          event.target.value
-                        )
+                        setUserPassword(event.target.value)
                       }
                       placeholder="Minimal 8 karakter"
                       disabled={userLoading}
                       required
                       minLength={8}
+                      autoComplete="new-password"
                     />
 
                     <button
-                        type="button"
-                        className={styles.passwordToggle}
-                        onClick={() =>
-                            setShowUserPassword(
-                            (current) => !current
-                            )
-                        }
-                        disabled={userLoading}
-                        aria-label={
-                            showUserPassword
-                            ? 'Sembunyikan password'
-                            : 'Tampilkan password'
-                        }
-                        >
-                        {showUserPassword ? (
-                            <EyeOff size={16} />
-                        ) : (
-                            <Eye size={16} />
-                        )}
+                      type="button"
+                      className={styles.passwordToggle}
+                      onClick={() =>
+                        setShowUserPassword(
+                          (current) => !current
+                        )
+                      }
+                      disabled={userLoading}
+                      aria-label={
+                        showUserPassword
+                          ? 'Sembunyikan password'
+                          : 'Tampilkan password'
+                      }
+                    >
+                      {showUserPassword ? (
+                        <EyeOff size={16} />
+                      ) : (
+                        <Eye size={16} />
+                      )}
                     </button>
                   </div>
                 </label>
 
-                {/* Error */}
                 {userError && (
-                  <div
-                    className={
-                      styles.formError
-                    }
-                  >
+                  <div className={styles.formError} role="alert">
                     {userError}
                   </div>
                 )}
 
-                {/* Success */}
                 {userMessage && (
-                  <div
-                    className={
-                      styles.formSuccess
-                    }
-                  >
+                  <div className={styles.formSuccess} role="status">
                     {userMessage}
                   </div>
                 )}
 
                 <button
                   type="submit"
-                  className={
-                    styles.submitButton
-                  }
+                  className={styles.submitButton}
                   disabled={userLoading}
                 >
                   {userLoading
