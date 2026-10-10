@@ -1,6 +1,5 @@
 'use client'
 
-import FivoraLogo from '@/components/branding/fivora-logo'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -69,19 +68,15 @@ export default function DetailLaporanPetugasContent({
   return (
     <main className={styles.page}>
       <div className={styles.container}>
-        <header className={styles.navigation}>
-          <Link href="/" className={styles.brand}>
-            <FivoraLogo />
-          </Link>
-
-          <Link href={backHref} className={styles.backLink}>
-            <ArrowLeft size={16} aria-hidden="true" />
-            Antrean laporan
-          </Link>
-        </header>
-
         <div className={styles.heading}>
-          <p className={styles.eyebrow}>PETUGAS</p>
+          <div className={styles.headingTop}>
+            <p className={styles.eyebrow}>PETUGAS</p>
+
+            <Link href={backHref} className={styles.backLink}>
+              <ArrowLeft size={16} aria-hidden="true" />
+              Antrean Laporan
+            </Link>
+          </div>
           <h1>Detail Laporan #{report.id}</h1>
           <p>Periksa kondisi fasilitas dan tentukan tindak lanjut laporan.</p>
         </div>

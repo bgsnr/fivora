@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation'
 import { Navbar } from "@/components/landing/navbar"
 import { Hero } from "@/components/landing/hero"
 import {
@@ -113,8 +114,13 @@ async function buildPublicFacilities(): Promise<FacilityItem[]> {
 }
 
 export default async function Home() {
-  const facilities = await buildPublicFacilities()
   const user = await getCurrentUser()
+
+  if (user?.role === 'petugas' && user.status === 'aktif') {
+    redirect('/petugas')
+  }
+
+  const facilities = await buildPublicFacilities()
 
   return (
     <div className="flex min-h-screen flex-col bg-background selection:bg-primary/20 selection:text-foreground">

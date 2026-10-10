@@ -32,7 +32,10 @@ export function getLoginTarget(
     ) return fallback
 
     if (role === 'admin' && !isRoute(pathname, '/admin')) return fallback
-    if (role === 'petugas' && !isRoute(pathname, '/petugas')) return fallback
+    if (role === 'petugas') {
+      if (!isRoute(pathname, '/petugas') || pathname === '/petugas') return fallback
+      if (isRoute(pathname, '/petugas/fasilitas')) return '/petugas/laporan'
+    }
     if (role === 'pengguna' && (isRoute(pathname, '/admin') || isRoute(pathname, '/petugas'))) return fallback
 
     return url.pathname + url.search + url.hash

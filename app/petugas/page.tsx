@@ -1,13 +1,10 @@
-import FivoraLogo from '@/components/branding/fivora-logo'
 import Link from 'next/link'
 import {
   ArrowRight,
   CalendarDays,
   ClipboardList,
-  UserRound,
 } from 'lucide-react'
 
-import LogoutButton from '@/components/petugas/logout-button'
 import { requireReportRole } from '@/lib/report-access'
 
 import styles from './petugas.module.css'
@@ -18,25 +15,6 @@ export default async function PetugasPage() {
   return (
     <main className={styles.page}>
       <div className={styles.container}>
-        <header className={styles.navigation}>
-          <Link href="/" className={styles.brand}>
-            <FivoraLogo />
-          </Link>
-
-          <div className={styles.accountActions}>
-            <span className={styles.role}>
-              <UserRound
-                size={16}
-                strokeWidth={1.5}
-                aria-hidden="true"
-              />
-              Petugas
-            </span>
-
-            <LogoutButton />
-          </div>
-        </header>
-
         <section
           className={styles.welcome}
           aria-labelledby="welcome-title"

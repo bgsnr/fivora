@@ -18,7 +18,6 @@ const STAFF_LINKS: Record<
     { href: '/petugas', label: 'Beranda Petugas' },
     { href: '/petugas/reservations', label: 'Antrean Reservasi' },
     { href: '/petugas/laporan', label: 'Antrean Laporan' },
-    { href: '/petugas/fasilitas', label: 'Fasilitas' },
   ],
   admin: [
     { href: '/admin', label: 'Dashboard Admin' },
@@ -30,9 +29,15 @@ const STAFF_LINKS: Record<
 export function AppNavbar({ user }: { user: AppNavbarUser | null }) {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-[#22396F]/15 bg-white">
-      <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+      <div
+        className={`container mx-auto flex max-w-7xl items-center justify-between gap-x-3 px-4 sm:px-6 lg:px-8 ${
+          user?.role === 'petugas'
+            ? 'min-h-16 flex-wrap py-2 md:h-16 md:flex-nowrap md:py-0'
+            : 'h-16'
+        }`}
+      >
         <Link
-          href="/"
+          href={user?.role === 'petugas' ? '/petugas' : '/'}
           className="text-sm font-extrabold tracking-tight text-[#010736]"
         >
           <FivoraLogo compact />
@@ -40,7 +45,11 @@ export function AppNavbar({ user }: { user: AppNavbarUser | null }) {
 
         {user && user.role !== 'pengguna' && (
           <nav
-            className="hidden items-center gap-7 text-xs font-semibold text-[#22396F] md:flex"
+            className={
+              user.role === 'petugas'
+                ? 'order-last flex w-full flex-wrap items-center justify-center gap-x-4 gap-y-2 border-t border-[#D8DFEA] pt-3 pb-1 text-xs font-semibold text-[#22396F] md:order-none md:w-auto md:border-0 md:p-0'
+                : 'hidden items-center gap-7 text-xs font-semibold text-[#22396F] md:flex'
+            }
             aria-label="Navigasi utama"
           >
             {STAFF_LINKS[user.role].map((link) => (
@@ -55,7 +64,7 @@ export function AppNavbar({ user }: { user: AppNavbarUser | null }) {
           </nav>
         )}
 
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           {user ? (
             <>
               <AccountInfo name={user.name} email={user.email} />
