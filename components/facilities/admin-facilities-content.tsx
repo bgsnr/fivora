@@ -1,3 +1,4 @@
+
 'use client'
 
 import Link from 'next/link'
@@ -18,6 +19,11 @@ import {
 
 import type { PendingReservationInfo } from '@/lib/actions/admin-facilities'
 import type { Facility } from '@/types/facility'
+
+import {
+  getFacilityCategory,
+  formatFacilityCapacity,
+} from '@/lib/facility-categories'
 
 import styles from '@/app/admin/fasilitas/adminFasilitas.module.css'
 import extra from './admin-management.module.css'
@@ -42,7 +48,6 @@ export default function AdminFacilitiesContent({
   const [saving, setSaving] = useState(false)
   const [actionError, setActionError] = useState('')
   const [message, setMessage] = useState('')
-
   const [searchQuery, setSearchQuery] = useState('')
 
   const [selectedFacility, setSelectedFacility] =
@@ -61,8 +66,8 @@ export default function AdminFacilitiesContent({
 
   const busy = saving || refreshing
 
-  // Pencarian fasilitas berdasarkan ID, nama, tipe,
-  // lokasi, kapasitas, dan status.
+  // Pencarian berdasarkan ID, nama, tipe, lokasi,
+  // kapasitas, kategori, dan status fasilitas.
   const filteredFacilities = useMemo(() => {
     const query = searchQuery
       .trim()
@@ -82,12 +87,10 @@ export default function AdminFacilitiesContent({
       if (
         ['nonaktif', 'inactive', 'tidak aktif'].includes(status)
       ) {
-        statusAliases = 'nonaktif tidak aktif inactive'
+        statusAliases =
+          'nonaktif tidak aktif inactive tidak tersedia'
       } else if (
-        [
-          'dalam perbaikan',
-          'under maintenance',
-        ].includes(status)
+        ['dalam perbaikan', 'under maintenance'].includes(status)
       ) {
         statusAliases =
           'dalam perbaikan perbaikan under maintenance'
@@ -99,8 +102,10 @@ export default function AdminFacilitiesContent({
         facility.id,
         facility.name,
         facility.type,
+        getFacilityCategory(facility.type),
         facility.location,
         facility.capacity,
+        formatFacilityCapacity(facility),
         status,
         statusAliases,
       ]
@@ -192,7 +197,8 @@ export default function AdminFacilitiesContent({
     }
   }, [selectedFacility, closeModal])
 
-  // Memuat ulang daftar fasilitas.
+  // Memuat ulang data setelah perubahan status.
+  // Fungsi ini tetap diperlukan meskipun tombol Muat ulang dihapus.
   async function refreshFacilities() {
     if (readingRef.current) return
 
@@ -206,7 +212,7 @@ export default function AdminFacilitiesContent({
       setReadError('')
     } catch {
       setReadError(
-        'Data fasilitas gagal dimuat. Klik Muat ulang untuk mencoba lagi. Data yang masih tampil adalah hasil pemuatan sebelumnya.'
+        'Data fasilitas gagal dimuat. Data yang tampil mungkin belum terbaru. Segarkan halaman untuk mencoba kembali.'
       )
     } finally {
       readingRef.current = false
@@ -261,7 +267,7 @@ export default function AdminFacilitiesContent({
 
     if (
       status === 'nonaktif' &&
-      (checking || checkError || reservations.length)
+      (checking || checkError || reservations.length > 0)
     ) {
       return
     }
@@ -294,7 +300,7 @@ export default function AdminFacilitiesContent({
 
           setActionError(
             result.error ??
-              'Data fasilitas berubah. Muat ulang daftar.'
+              'Data fasilitas berubah. Segarkan halaman untuk memeriksa data terbaru.'
           )
 
           await refreshFacilities()
@@ -308,9 +314,7 @@ export default function AdminFacilitiesContent({
 
       setMessage(
         `Fasilitas "${facility.name}" berhasil ${
-          status === 'aktif'
-            ? 'diaktifkan'
-            : 'dinonaktifkan'
+          status === 'aktif' ? 'diaktifkan' : 'dinonaktifkan'
         }.`
       )
 
@@ -319,7 +323,7 @@ export default function AdminFacilitiesContent({
       setSelectedFacility(null)
 
       setActionError(
-        'Hasil perubahan belum dapat dipastikan. Daftar dimuat ulang agar status terbaru dapat diperiksa.'
+        'Hasil perubahan belum dapat dipastikan. Data fasilitas dimuat ulang untuk memeriksa status terbaru.'
       )
 
       await refreshFacilities()
@@ -329,11 +333,9 @@ export default function AdminFacilitiesContent({
     }
   }
 
-  // Badge status fasilitas.
+  // Badge status fasilitas di halaman admin.
   function badge(facility: Facility) {
-    if (
-      ['nonaktif', 'inactive'].includes(facility.status)
-    ) {
+    if (['nonaktif', 'inactive'].includes(facility.status)) {
       return (
         <span className={styles.badgeInactive}>
           NONAKTIF
@@ -342,10 +344,9 @@ export default function AdminFacilitiesContent({
     }
 
     if (
-      [
-        'dalam_perbaikan',
-        'under_maintenance',
-      ].includes(facility.status)
+      ['dalam_perbaikan', 'under_maintenance'].includes(
+        facility.status
+      )
     ) {
       return (
         <span className={styles.badgeMaintenance}>
@@ -396,7 +397,7 @@ export default function AdminFacilitiesContent({
         </Link>
       </header>
 
-      {/* SEARCH BAR DAN TOMBOL MUAT ULANG */}
+      {/* SEARCH BAR */}
       <div className={extra.facilitySearchTools}>
         <div className={extra.facilitySearchBox}>
           <Search
@@ -521,15 +522,13 @@ export default function AdminFacilitiesContent({
                         {facility.name}
                       </td>
 
-                      <td>{facility.type || '-'}</td>
+                      <td>
+                        {getFacilityCategory(facility.type)}
+                      </td>
 
                       <td>{facility.location || '-'}</td>
 
-                      <td>
-                        {facility.capacity == null
-                          ? '-'
-                          : `${facility.capacity} Orang`}
-                      </td>
+                      <td>{formatFacilityCapacity(facility)}</td>
 
                       <td>{badge(facility)}</td>
 
@@ -564,9 +563,7 @@ export default function AdminFacilitiesContent({
                                 : initiateDeactivate(facility)
                             }
                           >
-                            {inactive
-                              ? 'Aktifkan'
-                              : 'Nonaktifkan'}
+                            {inactive ? 'Aktifkan' : 'Nonaktifkan'}
                           </button>
                         </div>
                       </td>
@@ -648,7 +645,7 @@ export default function AdminFacilitiesContent({
                     Periksa lagi
                   </button>
                 </div>
-              ) : reservations.length ? (
+              ) : reservations.length > 0 ? (
                 <div>
                   <p className={styles.warningBox}>
                     Fasilitas ini masih memiliki{' '}

@@ -16,7 +16,7 @@ import {
   X,
 } from 'lucide-react'
 
-import { getFacilityCategory, isEquipmentFacility } from '@/lib/facility-categories'
+import { FACILITY_CAPACITY_NOTE, getFacilityCategory, formatFacilityCapacity } from '@/lib/facility-categories'
 
 import { AppLayout } from '@/components/layout/app-layout'
 import { createClient } from '@/lib/supabase/client'
@@ -29,7 +29,7 @@ type Room = {
   name: string
   description: string
   location: string
-  capacity: number
+  capacity: number | null
   status: string
   type: string
 }
@@ -283,7 +283,7 @@ export default function CatalogPage() {
             item.description ||
             'Fasilitas kampus untuk kegiatan akademik dan nonakademik.',
           location: item.location || 'Lokasi belum diatur',
-          capacity: Number(item.capacity ?? 0),
+          capacity: item.capacity == null ? null : Number(item.capacity),
           status: item.status || '',
           type: item.type || 'Lainnya',
         }))
@@ -523,6 +523,9 @@ export default function CatalogPage() {
             Pilih fasilitas yang kamu butuhkan, tentukan jadwalnya,
             dan ajukan peminjaman langsung dari katalog.
           </p>
+          <p className="mx-auto mt-2 max-w-xl text-xs leading-6 text-[var(--muted-foreground)]">
+            {FACILITY_CAPACITY_NOTE}
+          </p>
         </div>
 
         {fetchError && (
@@ -610,7 +613,7 @@ export default function CatalogPage() {
 
                     <div className="flex items-center gap-2">
                       <Users className="h-4 w-4 shrink-0 text-[var(--primary)]" />
-                      <span>Kapasitas {room.capacity} {isEquipmentFacility(room.type) ? 'unit' : 'orang'}</span>
+                      <span>Kapasitas {formatFacilityCapacity(room)}</span>
                     </div>
                   </div>
 

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -6,7 +5,17 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
 import { createClient } from '@/lib/supabase/client';
+import FilterDropdown from '@/components/facilities/filter-dropdown';
+import { matchesFacilityLocation } from '@/lib/facility-search';
+
 import type { Facility, FacilityStatus } from '@/types/facility';
+
+import {
+  FACILITY_CATEGORIES,
+  FACILITY_CAPACITY_NOTE,
+  getFacilityCategory,
+  formatFacilityCapacity,
+} from '@/lib/facility-categories';
 
 import styles from './fasilitas.module.css';
 
@@ -37,7 +46,7 @@ const formatTime = (minutes: number): string => {
   return `${hours}:${mins}`;
 };
 
-// Mengecek apakah semua slot fasilitas sudah dipesan hari ini.
+// Mengecek apakah seluruh slot fasilitas sudah terisi hari ini.
 function isFacilityFullyBookedToday(
   facilityId: Facility['id'],
   reservations: ApprovedReservation[]
@@ -72,7 +81,7 @@ function isFacilityFullyBookedToday(
       );
     });
 
-    // Jika masih ada satu slot kosong, fasilitas belum terisi penuh.
+    // Masih ada slot kosong, berarti belum terisi penuh.
     if (!isBooked) {
       return false;
     }
@@ -83,6 +92,7 @@ function isFacilityFullyBookedToday(
 
 export default function CatalogFacilitiesPage() {
   const [facilities, setFacilities] = useState<Facility[]>([]);
+
   const [approvedReservations, setApprovedReservations] = useState<
     ApprovedReservation[]
   >([]);
@@ -90,13 +100,14 @@ export default function CatalogFacilitiesPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // State untuk filter dan pencarian.
+  // State pencarian dan filter.
   const [search, setSearch] = useState('');
   const [selectedType, setSelectedType] = useState('all');
-  const [selectedLocation, setSelectedLocation] = useState('all');
+  const [locationSearch, setLocationSearch] = useState('');
+  const [exactLocation, setExactLocation] = useState('');
   const [minCapacity, setMinCapacity] = useState<number | ''>('');
 
-  // Mengambil seluruh fasilitas dan reservasi hari ini.
+  // Mengambil semua fasilitas, termasuk yang nonaktif.
   useEffect(() => {
     async function fetchFacilities() {
       setLoading(true);
@@ -127,7 +138,7 @@ export default function CatalogFacilitiesPage() {
         setError('Gagal memuat data fasilitas. Silakan coba lagi.');
         setFacilities([]);
       } else {
-        // Fasilitas nonaktif tetap ditampilkan di katalog.
+        // Fasilitas nonaktif tetap terlihat di katalog.
         setFacilities(facilitiesResult.data || []);
       }
 
@@ -139,9 +150,7 @@ export default function CatalogFacilitiesPage() {
 
         setApprovedReservations([]);
       } else {
-        setApprovedReservations(
-          reservationsResult.data || []
-        );
+        setApprovedReservations(reservationsResult.data || []);
       }
 
       setLoading(false);
@@ -150,25 +159,33 @@ export default function CatalogFacilitiesPage() {
     void fetchFacilities();
   }, []);
 
-  // Opsi unik untuk dropdown tipe.
+  // Opsi kategori fasilitas.
   const uniqueTypes = useMemo(() => {
-    const types = facilities
-      .map((facility) => facility.type)
-      .filter((type): type is string => Boolean(type));
+    const types = new Set(
+      facilities.map((facility) =>
+        getFacilityCategory(facility.type)
+      )
+    );
 
-    return Array.from(new Set(types));
+    return FACILITY_CATEGORIES.filter((type) =>
+      types.has(type)
+    );
   }, [facilities]);
 
-  // Opsi unik untuk dropdown lokasi.
+  // Opsi lokasi yang tersedia.
   const uniqueLocations = useMemo(() => {
     const locations = facilities
-      .map((facility) => facility.location)
-      .filter((location): location is string => Boolean(location));
+      .map((facility) => facility.location?.trim())
+      .filter(
+        (location): location is string => Boolean(location)
+      );
 
-    return Array.from(new Set(locations));
+    return Array.from(new Set(locations)).sort((a, b) =>
+      a.localeCompare(b, 'id')
+    );
   }, [facilities]);
 
-  // Filter fasilitas di sisi client.
+  // Filter nama, deskripsi, kategori, lokasi, dan kapasitas.
   const filteredFacilities = useMemo(() => {
     return facilities.filter((facility) => {
       const normalizedSearch = search.trim().toLowerCase();
@@ -183,11 +200,14 @@ export default function CatalogFacilitiesPage() {
 
       const matchesType =
         selectedType === 'all' ||
-        facility.type === selectedType;
+        getFacilityCategory(facility.type) === selectedType;
 
-      const matchesLocation =
-        selectedLocation === 'all' ||
-        facility.location === selectedLocation;
+      const matchesLocation = exactLocation
+        ? facility.location?.trim() === exactLocation
+        : matchesFacilityLocation(
+            facility.location,
+            locationSearch
+          );
 
       const matchesCapacity =
         minCapacity === '' ||
@@ -205,16 +225,17 @@ export default function CatalogFacilitiesPage() {
     facilities,
     search,
     selectedType,
-    selectedLocation,
+    locationSearch,
+    exactLocation,
     minCapacity,
   ]);
 
-  // Badge status fasilitas.
+  // Menentukan badge status fasilitas.
   const renderStatusBadge = (
     status: FacilityStatus,
     isFullyBooked: boolean
   ) => {
-    // Status nonaktif memiliki prioritas tertinggi.
+    // Status nonaktif memiliki prioritas paling tinggi.
     if (status === 'nonaktif' || status === 'inactive') {
       return (
         <span className={styles.badgeUnavailable}>
@@ -223,6 +244,7 @@ export default function CatalogFacilitiesPage() {
       );
     }
 
+    // Fasilitas sedang diperbaiki.
     if (
       status === 'dalam_perbaikan' ||
       status === 'under_maintenance'
@@ -234,6 +256,7 @@ export default function CatalogFacilitiesPage() {
       );
     }
 
+    // Fasilitas aktif, tetapi semua slot hari ini terisi.
     if (isFullyBooked) {
       return (
         <span
@@ -254,6 +277,7 @@ export default function CatalogFacilitiesPage() {
 
   return (
     <div className={styles.container}>
+      {/* Tombol kembali */}
       <Link href="/" className={styles.backLink}>
         <ArrowLeft size={17} aria-hidden="true" />
         Kembali ke halaman utama
@@ -273,11 +297,16 @@ export default function CatalogFacilitiesPage() {
           Cari dan cek ketersediaan ruang kelas, laboratorium,
           aula, alat, dan lapangan kampus.
         </p>
+
+        <p className={styles.dataNote}>
+          {FACILITY_CAPACITY_NOTE}
+        </p>
       </div>
 
       {/* Filter dan pencarian */}
       <div className={styles.filterCard}>
         <div className={styles.filterGrid}>
+          {/* Pencarian nama atau deskripsi */}
           <div className={styles.filterGroup}>
             <label htmlFor="search">
               Cari Fasilitas
@@ -287,58 +316,52 @@ export default function CatalogFacilitiesPage() {
               type="text"
               id="search"
               value={search}
-              onChange={(event) => setSearch(event.target.value)}
+              onChange={(event) =>
+                setSearch(event.target.value)
+              }
               placeholder="Kata kunci nama atau deskripsi..."
               className={styles.filterInput}
             />
           </div>
 
-          <div className={styles.filterGroup}>
-            <label htmlFor="type">
-              Tipe Fasilitas
-            </label>
+          {/* Filter kategori */}
+          <FilterDropdown
+            id="type"
+            label="Tipe Fasilitas"
+            value={selectedType}
+            options={[
+              { value: 'all', label: 'Semua Tipe' },
+              ...uniqueTypes.map((type) => ({
+                value: type,
+                label: type,
+              })),
+            ]}
+            onChange={setSelectedType}
+          />
 
-            <select
-              id="type"
-              value={selectedType}
-              onChange={(event) =>
-                setSelectedType(event.target.value)
-              }
-              className={styles.filterSelect}
-            >
-              <option value="all">Semua Tipe</option>
+          {/* Filter dan pencarian lokasi */}
+          <FilterDropdown
+            id="location"
+            label="Lokasi"
+            value={locationSearch}
+            options={[
+              { value: '', label: 'Semua Lokasi' },
+              ...uniqueLocations.map((location) => ({
+                value: location,
+                label: location,
+              })),
+            ]}
+            onChange={(value) => {
+              setLocationSearch(value);
+              setExactLocation(value);
+            }}
+            onSearch={(value) => {
+              setLocationSearch(value);
+              setExactLocation('');
+            }}
+          />
 
-              {uniqueTypes.map((type) => (
-                <option key={type} value={type}>
-                  {type}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className={styles.filterGroup}>
-            <label htmlFor="location">
-              Lokasi
-            </label>
-
-            <select
-              id="location"
-              value={selectedLocation}
-              onChange={(event) =>
-                setSelectedLocation(event.target.value)
-              }
-              className={styles.filterSelect}
-            >
-              <option value="all">Semua Lokasi</option>
-
-              {uniqueLocations.map((location) => (
-                <option key={location} value={location}>
-                  {location}
-                </option>
-              ))}
-            </select>
-          </div>
-
+          {/* Filter kapasitas */}
           <div className={styles.filterGroup}>
             <label htmlFor="capacity">
               Kapasitas Minimal
@@ -362,9 +385,10 @@ export default function CatalogFacilitiesPage() {
           </div>
         </div>
 
+        {/* Reset filter */}
         {(search ||
           selectedType !== 'all' ||
-          selectedLocation !== 'all' ||
+          locationSearch ||
           minCapacity !== '') && (
           <div className={styles.filterAction}>
             <button
@@ -372,7 +396,8 @@ export default function CatalogFacilitiesPage() {
               onClick={() => {
                 setSearch('');
                 setSelectedType('all');
-                setSelectedLocation('all');
+                setLocationSearch('');
+                setExactLocation('');
                 setMinCapacity('');
               }}
               className={styles.resetButton}
@@ -409,7 +434,7 @@ export default function CatalogFacilitiesPage() {
           </div>
         )}
 
-      {/* Grid fasilitas */}
+      {/* Kartu fasilitas */}
       {!loading &&
         !error &&
         filteredFacilities.length > 0 && (
@@ -440,7 +465,9 @@ export default function CatalogFacilitiesPage() {
                     <div className={styles.cardDetails}>
                       <p>
                         Tipe:{' '}
-                        <strong>{facility.type || '-'}</strong>
+                        <strong>
+                          {getFacilityCategory(facility.type)}
+                        </strong>
                       </p>
 
                       <p>
@@ -453,9 +480,7 @@ export default function CatalogFacilitiesPage() {
                       <p>
                         Kapasitas:{' '}
                         <strong>
-                          {facility.capacity
-                            ? `${facility.capacity} Orang`
-                            : '-'}
+                          {formatFacilityCapacity(facility)}
                         </strong>
                       </p>
                     </div>
@@ -467,6 +492,7 @@ export default function CatalogFacilitiesPage() {
                     )}
                   </div>
 
+                  {/* Tombol detail */}
                   <div className={styles.cardFooter}>
                     <Link
                       href={`/fasilitas/${facility.id}`}

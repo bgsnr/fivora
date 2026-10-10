@@ -1,11 +1,6 @@
-export const facilityTypes = [
-  'Ruang Kelas', 'Aula', 'Laboratorium', 'Peralatan', 'Lapangan',
-] as const
+import { FACILITY_CATEGORIES, normalizeFacilityType } from '@/lib/facility-categories'
 
-const allowedTypes = new Set<string>([
-  ...facilityTypes,
-  'ruang_kelas', 'aula', 'laboratorium', 'alat', 'peralatan', 'lapangan',
-])
+export const facilityTypes = FACILITY_CATEGORIES
 
 export type FacilityMasterInput = {
   name: string
@@ -40,13 +35,13 @@ export function validateFacilityMaster(value: unknown): ValidationResult {
     return { success: false, error: 'Data fasilitas tidak valid.' }
   }
   const name = (input.name as string).trim()
-  const type = (input.type as string).trim()
+  const type = normalizeFacilityType(input.type as string)
   const location = (input.location as string).trim()
   const description = (input.description as string).trim()
   if (!name || name.length > 255) {
     return { success: false, error: 'Nama fasilitas wajib diisi, maksimal 255 karakter.' }
   }
-  if (!allowedTypes.has(type)) {
+  if (!type) {
     return { success: false, error: 'Pilih tipe fasilitas yang tersedia.' }
   }
   if (location.length > 255) {

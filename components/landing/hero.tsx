@@ -9,7 +9,7 @@ export function Hero({ user = null }: { user?: HeroUser }) {
   const reservationHref = canCreateReservation(user)
     ? '/catalog'
     : '/login?redirect=%2Fcatalog'
-  const primaryClass = 'inline-flex min-h-12 items-center justify-center rounded-full bg-[#010736] px-6 py-3 text-sm font-semibold text-white shadow-md shadow-[#010736]/15 transition-colors hover:bg-[#0D1C42]'
+  const primaryClass = 'inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#010736] px-6 py-3 text-sm font-semibold text-white shadow-md shadow-[#010736]/15 transition-colors hover:bg-[#FCF1D0] hover:text-[#010736] disabled:hover:bg-[#010736] disabled:hover:text-white'
 
   return (
     <section className="relative overflow-hidden border-b border-[#D8DFEA] py-16 lg:py-24">
@@ -42,9 +42,13 @@ export function Hero({ user = null }: { user?: HeroUser }) {
             {staff ? (
               <button type="button" disabled className={`${primaryClass} cursor-not-allowed opacity-55`}>
                 Buat Reservasi
+                <ArrowUpRight className="size-4 shrink-0" aria-hidden="true" />
               </button>
             ) : (
-              <Link href={reservationHref} className={primaryClass}>Buat Reservasi</Link>
+              <Link href={reservationHref} className={primaryClass}>
+                Buat Reservasi
+                <ArrowUpRight className="size-4 shrink-0" aria-hidden="true" />
+              </Link>
             )}
 
             <Link

@@ -5,7 +5,8 @@ import { useState, useEffect, use, useMemo } from 'react';
 import Link from 'next/link';
 
 import { createClient } from '@/lib/supabase/client';
-import type { Facility, TimeSlot } from '@/types/facility';
+import { Facility, TimeSlot } from '@/types/facility';
+import { FACILITY_CAPACITY_NOTE, getFacilityCategory, formatFacilityCapacity } from '@/lib/facility-categories';
 
 const styles = {
   container:
@@ -352,7 +353,7 @@ export default function FacilityDetailPage({
             </span>
 
             <span className={styles.infoValue}>
-              {facility.type || '-'}
+              {getFacilityCategory(facility.type)}
             </span>
           </div>
 
@@ -372,12 +373,12 @@ export default function FacilityDetailPage({
             </span>
 
             <span className={styles.infoValue}>
-              {facility.capacity
-                ? `${facility.capacity} Orang`
-                : '-'}
+              {formatFacilityCapacity(facility)}
             </span>
           </div>
         </div>
+
+        <p className="mt-3 text-xs leading-6 text-[#59677d]">{FACILITY_CAPACITY_NOTE}</p>
 
         {facility.description && (
           <p className={styles.description}>
