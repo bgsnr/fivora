@@ -14,7 +14,7 @@ export default async function LaporanLayout({
       <AppNavbar
         user={
           user
-            ? { name: user.name, role: user.role }
+            ? { name: user.name, email: user.email, role: user.role }
             : null
         }
       />

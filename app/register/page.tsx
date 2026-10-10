@@ -171,20 +171,14 @@ export default function RegisterPage() {
       <section className={styles.shell}>
         {/* Panel kiri */}
         <aside className={styles.side}>
-          <div className={styles.brand}>
-            <span className={styles.brandDot} />
-            Fivora
-          </div>
-
           <div className={styles.sideContent}>
             <h1>
-              Kelola fasilitas kampus dengan lebih mudah.
+              Reservasi Fasilitas dan Lapor Kerusakan.
             </h1>
 
             <p>
-              Daftar akun Fivora untuk mengakses reservasi
-              fasilitas, pelaporan kerusakan, dan layanan kampus
-              dalam satu platform.
+              Buat akun untuk mengajukan reservasi, mengirim laporan
+              kerusakan, dan melihat perkembangannya.
             </p>
           </div>
         </aside>
@@ -201,10 +195,6 @@ export default function RegisterPage() {
 
           <div className={styles.formWrap}>
             <div className={styles.heading}>
-              <p className={styles.eyebrow}>
-                FIVORA
-              </p>
-
               <h2>Daftar Akun</h2>
 
               <p>

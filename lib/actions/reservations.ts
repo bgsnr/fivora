@@ -1,6 +1,7 @@
 'use server'
 
 import { getCurrentUser } from '@/lib/auth'
+import { canCreateReservation } from '@/lib/reservation-access'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import {
   getActiveFacilities as getActiveFacilitiesFromService,
@@ -299,16 +300,10 @@ export async function createReservationAction(
       }
     }
 
-    // Akun harus berstatus aktif.
-    const accountStatus = String(currentUser.status ?? '')
-      .toLowerCase()
-      .trim()
-
-    if (!['aktif', 'active'].includes(accountStatus)) {
+    if (!canCreateReservation(currentUser)) {
       return {
         success: false,
-        error:
-          'Akun kamu belum aktif sehingga belum bisa mengajukan reservasi.',
+        error: 'Akun kamu belum aktif sehingga belum bisa mengajukan reservasi.',
       }
     }
 

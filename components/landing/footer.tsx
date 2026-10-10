@@ -46,7 +46,7 @@ export function Footer() {
               <ul className="space-y-2 text-[#22396F]">
                 <li>
                   <Link
-                    href="#katalog"
+                    href="/#katalog"
                     className="transition-colors hover:text-[#010736]"
                   >
                     Katalog Fasilitas
@@ -55,19 +55,19 @@ export function Footer() {
 
                 <li>
                   <Link
-                    href="#ketentuan"
+                    href="/#alur"
                     className="transition-colors hover:text-[#010736]"
                   >
-                    Jam Operasional
+                    Alur Layanan
                   </Link>
                 </li>
 
                 <li>
                   <Link
-                    href="#alur"
+                    href="/#ketentuan"
                     className="transition-colors hover:text-[#010736]"
                   >
-                    Alur Layanan
+                    Jam Layanan & Aturan
                   </Link>
                 </li>
               </ul>
@@ -100,10 +100,10 @@ export function Footer() {
 
                 <li>
                   <Link
-                    href="/laporan"
+                    href="/laporan/buat"
                     className="transition-colors hover:text-[#010736]"
                   >
-                    Pusat Lapor Kerusakan
+                    Buat Laporan Kerusakan
                   </Link>
                 </li>
               </ul>

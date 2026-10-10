@@ -11,32 +11,13 @@
   margin: 0 auto;
 }
 
-.navigation {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  min-height: 88px;
-  border-bottom: 1px solid #d8dfea;
-}
-
-.brand {
-  color: #010736;
-  font-family: inherit;
-  font-size: 29px;
-  font-weight: 700;
-  letter-spacing: -0.8px;
-  text-decoration: none;
-}
-
-.brandDot {
-  color: #667b9f;
-}
-
 .backLink {
   display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
   gap: 10px;
+  min-height: 44px;
+  margin-left: auto;
   color: #52627d;
   font-size: 14px;
   text-decoration: none;
@@ -47,11 +28,16 @@
 }
 
 .heading {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 32px;
   padding: 52px 0 40px;
+}
+
+.headingTop {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 24px;
+  margin-bottom: 16px;
 }
 
 .headingText {
@@ -59,7 +45,7 @@
 }
 
 .eyebrow {
-  margin: 0 0 16px;
+  margin: 0;
   color: #52627d;
   font-size: 11px;
   font-weight: 500;
@@ -107,7 +93,6 @@
   justify-content: center;
   gap: 10px;
   min-height: 48px;
-  margin-bottom: 3px;
   padding: 12px 22px;
   border: 1px solid #010736;
   border-radius: 999px;
@@ -126,11 +111,18 @@
   background: #22396f;
 }
 
+.reportToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
 .statusFilters {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 24px;
 }
 
 .statusFilter,
@@ -483,7 +475,6 @@
   }
 
   .heading {
-    gap: 24px;
     padding-top: 40px;
   }
 
@@ -497,29 +488,29 @@
   }
 }
 
+@media (max-width: 700px) {
+  .reportToolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .createButton {
+    align-self: flex-end;
+  }
+}
+
 @media (max-width: 600px) {
   .page {
     padding: 0 16px 32px;
   }
 
-  .navigation {
-    min-height: 72px;
-    gap: 16px;
-  }
-
-  .brand {
-    font-size: 25px;
-  }
-
   .backLink {
     gap: 7px;
-    font-size: 12px;
+    font-size: 14px;
   }
 
   .heading {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 24px;
     padding: 32px 0;
   }
 

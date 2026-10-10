@@ -21,30 +21,17 @@
   line-height: 1.75;
 }
 
-.navigation {
+.headingTop {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  min-height: 88px;
-  border-bottom: 1px solid #d8dfea;
-}
-
-.brand {
-  color: #010736;
-  font-family: inherit;
-  font-size: 29px;
-  font-weight: 700;
-  letter-spacing: -0.8px;
-  text-decoration: none;
-}
-
-.brandDot {
-  color: #667b9f;
+  margin-bottom: 16px;
 }
 
 .historyButton {
   display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
   gap: 10px;
@@ -72,19 +59,19 @@
 }
 
 .heading {
+  padding: 48px 0 32px;
+}
+
+.titleRow {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: 32px;
-  padding: 48px 0 32px;
-}
-
-.headingText {
-  min-width: 0;
 }
 
 .eyebrow {
-  margin: 0 0 16px;
+  min-width: 0;
+  margin: 0;
   color: #52627d;
   font-size: 11px;
   font-weight: 500;
@@ -94,6 +81,7 @@
 }
 
 .heading h1 {
+  min-width: 0;
   max-width: 850px;
   margin: 0;
   font-family: inherit;
@@ -488,15 +476,6 @@
     padding: 0 16px 32px;
   }
 
-  .navigation {
-    min-height: 72px;
-    gap: 16px;
-  }
-
-  .brand {
-    font-size: 25px;
-  }
-
   .historyButton {
     gap: 8px;
     padding: 9px 13px;
@@ -504,10 +483,21 @@
   }
 
   .heading {
+    padding: 30px 0 24px;
+  }
+
+  .headingTop {
+    gap: 12px;
+  }
+
+  .eyebrow {
+    font-size: 10px;
+  }
+
+  .titleRow {
     align-items: flex-start;
     flex-direction: column;
     gap: 20px;
-    padding: 30px 0 24px;
   }
 
   .heading h1 {

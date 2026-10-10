@@ -16,13 +16,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
-type FacilityCategory =
-  | "Ruang Kelas"
-  | "Laboratorium"
-  | "Aula"
-  | "Lapangan"
-  | "Peralatan"
-  | "Lainnya"
+import { getFacilityCategory, type FacilityCategory } from '@/lib/facility-categories'
 
 type CategoryFilter = "Semua" | FacilityCategory
 
@@ -47,60 +41,8 @@ const CATEGORIES: CategoryFilter[] = [
   "Laboratorium",
   "Aula",
   "Lapangan",
-  "Peralatan",
   "Lainnya",
 ]
-
-/**
- * Menyamakan variasi penulisan kategori fasilitas.
- * Contoh: ruang_kelas, Ruang Kelas, dan classroom.
- */
-function normalizeFacilityCategory(
-  type: string | null | undefined,
-): FacilityCategory {
-  const key = (type ?? "")
-    .toLowerCase()
-    .trim()
-    .replace(/[_/-]+/g, " ")
-    .replace(/\s+/g, " ")
-
-  const categoryMap: Record<string, FacilityCategory> = {
-    ruang: "Ruang Kelas",
-    ruangan: "Ruang Kelas",
-    kelas: "Ruang Kelas",
-    "ruang kelas": "Ruang Kelas",
-    "ruang kuliah": "Ruang Kelas",
-    "ruangan kuliah": "Ruang Kelas",
-    classroom: "Ruang Kelas",
-    class: "Ruang Kelas",
-
-    lab: "Laboratorium",
-    laboratorium: "Laboratorium",
-    laboratory: "Laboratorium",
-
-    aula: "Aula",
-    auditorium: "Aula",
-
-    lapangan: "Lapangan",
-    "lapangan olahraga": "Lapangan",
-    "lapangan futsal": "Lapangan",
-    "lapangan basket": "Lapangan",
-    "lapangan voli": "Lapangan",
-    "lapangan badminton": "Lapangan",
-    field: "Lapangan",
-
-    alat: "Peralatan",
-    "alat lab": "Peralatan",
-    peralatan: "Peralatan",
-    "peralatan lab": "Peralatan",
-    perlengkapan: "Peralatan",
-    equipment: "Peralatan",
-
-    lainnya: "Lainnya",
-  }
-
-  return categoryMap[key] ?? "Lainnya"
-}
 
 export const FALLBACK_FACILITIES: FacilityItem[] = [
   {
@@ -159,7 +101,7 @@ export const FALLBACK_FACILITIES: FacilityItem[] = [
     id: 5,
     code: "EQUIP-SND",
     name: "Paket Mobile Sound System Portable",
-    type: "Peralatan",
+    type: "Lainnya",
     location: "Unit Layanan Sarana Prasarana (UPT)",
     capacity: 2,
     capacityUnit: "Speaker Aktif",
@@ -204,7 +146,7 @@ export function FacilityShowcase({
         facility.code.toLowerCase().includes(query) ||
         facility.description.toLowerCase().includes(query)
 
-      const normalizedCategory = normalizeFacilityCategory(
+      const normalizedCategory = getFacilityCategory(
         facility.type,
       )
 

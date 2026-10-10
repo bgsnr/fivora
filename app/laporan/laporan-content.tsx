@@ -1,4 +1,3 @@
-import FivoraLogo from '@/components/branding/fivora-logo'
 import Link from 'next/link'
 import {
   ArrowLeft,
@@ -65,23 +64,19 @@ export default function LaporanContent({
   return (
     <main className={styles.page}>
       <div className={styles.container}>
-        <header className={styles.navigation}>
-          <Link href="/" className={styles.brand}>
-            <FivoraLogo />
-          </Link>
-
-          <Link href="/" className={styles.backLink}>
-            <ArrowLeft size={16} aria-hidden="true" />
-            Halaman utama
-          </Link>
-        </header>
-
         <section
           className={styles.heading}
           aria-labelledby="history-title"
         >
           <div className={styles.headingText}>
-            <p className={styles.eyebrow}>LAPORAN SAYA</p>
+            <div className={styles.headingTop}>
+              <p className={styles.eyebrow}>LAPORAN SAYA</p>
+
+              <Link href="/" className={styles.backLink}>
+                <ArrowLeft size={16} aria-hidden="true" />
+                Kembali ke Halaman Utama
+              </Link>
+            </div>
 
             <h1 id="history-title">
               Riwayat <span>laporan.</span>
@@ -91,26 +86,28 @@ export default function LaporanContent({
               Pantau status penanganan fasilitas yang kamu laporkan.
             </p>
           </div>
+        </section>
+
+        <div className={styles.reportToolbar}>
+          <nav className={styles.statusFilters} aria-label="Filter status laporan">
+            {reportFilters.map((status) => (
+              <Link
+                key={status}
+                href={reportHistoryHref(status)}
+                className={selectedStatus === status ? styles.activeFilter : styles.statusFilter}
+                aria-current={selectedStatus === status ? 'page' : undefined}
+                scroll={false}
+              >
+                {status === 'semua' ? 'Semua' : statusLabels[status]}
+              </Link>
+            ))}
+          </nav>
 
           <Link href="/laporan/buat" className={styles.createButton}>
             <Plus size={18} aria-hidden="true" />
-            Buat laporan
+            Buat Laporan
           </Link>
-        </section>
-
-        <nav className={styles.statusFilters} aria-label="Filter status laporan">
-          {reportFilters.map((status) => (
-            <Link
-              key={status}
-              href={reportHistoryHref(status)}
-              className={selectedStatus === status ? styles.activeFilter : styles.statusFilter}
-              aria-current={selectedStatus === status ? 'page' : undefined}
-              scroll={false}
-            >
-              {status === 'semua' ? 'Semua' : statusLabels[status]}
-            </Link>
-          ))}
-        </nav>
+        </div>
 
         {errorMessage ? (
           <section className={styles.error} role="alert">

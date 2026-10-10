@@ -5,7 +5,6 @@ import {
   FALLBACK_FACILITIES,
   type FacilityItem,
 } from "@/components/landing/facility-showcase"
-import { Features } from "@/components/landing/features"
 import { Workflow } from "@/components/landing/workflow"
 import { OperatingHours } from "@/components/landing/operating-hours"
 import { Footer } from "@/components/landing/footer"
@@ -14,61 +13,14 @@ import { getCurrentUser } from "@/lib/auth"
 import { getFacilitySlotAvailability } from "@/lib/integration"
 import { getWIBDateTime } from "@/lib/validations/reservation-time"
 
-// Menyamakan format tipe fasilitas dari database.
-// Contoh: "Ruang Kelas" menjadi "ruang_kelas".
-function normalizeTypeKey(type: string | null | undefined): string {
-  return (type ?? "")
-    .toLowerCase()
-    .trim()
-    .replace(/[\s/-]+/g, "_")
-    .replace(/_+/g, "_")
-}
+import { getFacilityCategory, isEquipmentFacility } from '@/lib/facility-categories'
 
-// Memetakan tipe fasilitas ke kategori yang ditampilkan.
-const TYPE_LABELS: Record<string, FacilityItem["type"]> = {
-  ruang: "Ruang Kelas",
-  ruangan: "Ruang Kelas",
-  kelas: "Ruang Kelas",
-  ruang_kelas: "Ruang Kelas",
-  ruang_kuliah: "Ruang Kelas",
-  ruangan_kuliah: "Ruang Kelas",
-  classroom: "Ruang Kelas",
-  class: "Ruang Kelas",
-
-  lab: "Laboratorium",
-  laboratorium: "Laboratorium",
-  laboratory: "Laboratorium",
-
-  aula: "Aula",
-  auditorium: "Aula",
-
-  lapangan: "Lapangan",
-  lapangan_olahraga: "Lapangan",
-  lapangan_futsal: "Lapangan",
-  lapangan_basket: "Lapangan",
-  lapangan_voli: "Lapangan",
-  lapangan_badminton: "Lapangan",
-  field: "Lapangan",
-
-  alat: "Peralatan",
-  alat_lab: "Peralatan",
-  peralatan: "Peralatan",
-  peralatan_lab: "Peralatan",
-  perlengkapan: "Peralatan",
-  equipment: "Peralatan",
-
-  lainnya: "Lainnya",
-}
-
-// Satuan kapasitas ditentukan berdasarkan kategori hasil pemetaan,
-// bukan berdasarkan penulisan tipe asli di database.
 const CAPACITY_UNITS: Record<string, string> = {
-  "Ruang Kelas": "Mahasiswa",
-  Laboratorium: "Workstation PC",
-  Aula: "Kursi Peserta",
-  Lapangan: "Pemain",
-  Peralatan: "Unit",
-  Lainnya: "Pengguna",
+  'Ruang Kelas': 'Mahasiswa',
+  Laboratorium: 'Workstation PC',
+  Aula: 'Kursi Peserta',
+  Lapangan: 'Pemain',
+  Lainnya: 'Pengguna',
 }
 
 function minutesOf(time: string): number {
@@ -94,9 +46,8 @@ async function buildPublicFacilities(): Promise<FacilityItem[]> {
       if (facility.status === "nonaktif") continue
 
       // Normalisasi tipe fasilitas dari database.
-      const typeKey = normalizeTypeKey(facility.type)
-      const type = TYPE_LABELS[typeKey] ?? "Lainnya"
-      const capacityUnit = CAPACITY_UNITS[type] ?? "Pengguna"
+      const type = getFacilityCategory(facility.type)
+      const capacityUnit = isEquipmentFacility(facility.type) ? 'Unit' : CAPACITY_UNITS[type]
 
       const code = `FAC-${String(facility.id).padStart(3, "0")}`
 
@@ -171,18 +122,17 @@ export default async function Home() {
       <Navbar
         user={
           user
-            ? { name: user.name, role: user.role }
+            ? { name: user.name, email: user.email, role: user.role }
             : null
         }
       />
 
       {/* Konten landing page */}
       <main className="flex-1">
-        <Hero />
+        <Hero user={user} />
         <FacilityShowcase facilities={facilities} />
-        <Features />
         <Workflow />
-        <OperatingHours />
+        <OperatingHours user={user} />
       </main>
 
       {/* Footer */}
