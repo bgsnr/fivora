@@ -67,6 +67,8 @@ function refreshMaintenancePages() {
   try {
     revalidatePath('/laporan')
     revalidatePath('/laporan/[id]', 'page')
+    revalidatePath('/admin/laporan')
+    revalidatePath('/admin/laporan/[id]', 'page')
     revalidatePath('/petugas/laporan')
     revalidatePath('/petugas/laporan/[id]', 'page')
     revalidatePath('/petugas/fasilitas')
