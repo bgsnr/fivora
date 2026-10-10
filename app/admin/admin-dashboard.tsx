@@ -490,9 +490,7 @@ export default function AdminDashboard({
           <button
             type="button"
             className={styles.navItem}
-            onClick={() =>
-              scrollToSection('fasilitas')
-            }
+            onClick={() => router.push('/admin/fasilitas')}
           >
             <span>▣</span>
             <span>Fasilitas</span>
