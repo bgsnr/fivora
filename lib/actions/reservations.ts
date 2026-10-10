@@ -14,102 +14,49 @@ import {
   type CreateReservationState as CreateReservationStateFromService,
   type CreateReservationParams as CreateReservationParamsFromService,
 } from '@/lib/reservation-service'
-import type {
-  Reservation,
-  NewReservationInput,
-  ReservationStatus,
-  UpdateReservationStatusMeta,
-} from '@/types/reservation'
+import type { Reservation } from '@/types/reservation'
+import { getReservationById as getReservationByIdRecord } from '@/lib/reservation-repository'
 
 /**
  * Chapter 3 — Data Access Layer (Server Actions Reservasi)
- * 8 Fungsi Wajib Disediakan
  */
 
-export async function createReservation(data: NewReservationInput): Promise<Reservation> {
-  const insertData = {
-    user_id: data.user_id,
-    facility_id: data.facility_id,
-    reservation_date: data.reservation_date,
-    start_time: data.start_time,
-    end_time: data.end_time,
-    purpose: data.purpose,
-    status: data.status || 'menunggu',
+
+export async function getReservationById(
+  id: string | number
+): Promise<Reservation | null> {
+  const user = await getCurrentUser()
+
+  // Hanya akun aktif yang boleh mengakses detail.
+  if (!user || user.status !== 'aktif') {
+    return null
   }
 
-  const { data: result, error } = await supabaseAdmin
-    .from('reservations')
-    .insert(insertData)
-    .select(`
-      *,
-      users:user_id(id, name, email),
-      facilities:facility_id(id, name, location, type, status)
-    `)
-    .single()
+  const reservation = await getReservationByIdRecord(id)
 
-  if (error) {
-    throw new Error(`Gagal membuat reservasi: ${error.message}`)
+  if (!reservation) {
+    return null
   }
-  return result as Reservation
-}
 
-export async function getReservationById(id: string | number): Promise<Reservation | null> {
-  const { data, error } = await supabaseAdmin
-    .from('reservations')
-    .select(`
-      *,
-      users:user_id(id, name, email),
-      facilities:facility_id(id, name, location, type, status)
-    `)
-    .eq('id', id)
-    .maybeSingle()
+  const isOwner =
+    String(user.id) === String(reservation.user_id)
 
-  if (error) {
-    throw new Error(`Gagal mengambil data reservasi: ${error.message}`)
+  // Petugas aktif boleh melihat detail untuk pemrosesan.
+  const isActiveStaff = user.role === 'petugas'
+
+  if (!isOwner && !isActiveStaff) {
+    return null
   }
-  return (data as Reservation) || null
-}
 
-export async function getReservationsByUser(userId: string | number): Promise<Reservation[]> {
-  const { data, error } = await supabaseAdmin
-    .from('reservations')
-    .select(`
-      *,
-      users:user_id(id, name, email),
-      facilities:facility_id(id, name, location, type, status)
-    `)
-    .eq('user_id', userId)
-    .order('reservation_date', { ascending: false })
-    .order('start_time', { ascending: false })
-
-  if (error) {
-    throw new Error(`Gagal mengambil riwayat reservasi pengguna: ${error.message}`)
-  }
-  return (data as Reservation[]) || []
-}
-
-export async function getReservationsByFacilityAndDate(
-  facilityId: string | number,
-  date: string
-): Promise<Reservation[]> {
-  const { data, error } = await supabaseAdmin
-    .from('reservations')
-    .select(`
-      *,
-      users:user_id(id, name, email),
-      facilities:facility_id(id, name, location, type, status)
-    `)
-    .eq('facility_id', facilityId)
-    .eq('reservation_date', date)
-    .order('start_time', { ascending: true })
-
-  if (error) {
-    throw new Error(`Gagal mengambil reservasi fasilitas: ${error.message}`)
-  }
-  return (data as Reservation[]) || []
+  return reservation
 }
 
 export async function getPendingReservationsQueue(): Promise<Reservation[]> {
+  const user = await getCurrentUser()
+    if (!user || user.status !== 'aktif' || user.role !== 'petugas') {
+      return []
+    }
+
   const { data, error } = await supabaseAdmin
     .from('reservations')
     .select(`
@@ -129,14 +76,9 @@ export async function getPendingReservationsQueue(): Promise<Reservation[]> {
 
 export async function getApprovedReservationsQueue(): Promise<Reservation[]> {
   const user = await getCurrentUser()
-
-  if (
-    !user ||
-    user.status !== 'aktif' ||
-    (user.role !== 'petugas' && user.role !== 'admin')
-  ) {
-    return []
-  }
+    if (!user || user.status !== 'aktif' || user.role !== 'petugas') {
+      return []
+    }
 
   const { data, error } = await supabaseAdmin
     .from('reservations')
@@ -155,105 +97,6 @@ export async function getApprovedReservationsQueue(): Promise<Reservation[]> {
     )
   }
 
-  return (data as Reservation[]) || []
-}
-
-export const getPendingReservationsQueueSortedByCreatedAt = getPendingReservationsQueue
-
-export async function updateReservationStatus(
-  id: string | number,
-  status: ReservationStatus,
-  meta?: UpdateReservationStatusMeta
-): Promise<Reservation> {
-  const updatePayload: Record<string, unknown> = {
-    status,
-  }
-  if (meta?.rejection_reason !== undefined) {
-    updatePayload.rejection_reason = meta.rejection_reason
-  }
-  if (meta?.processed_by !== undefined) {
-    updatePayload.processed_by = meta.processed_by
-  }
-  if (meta?.processed_at !== undefined) {
-    updatePayload.processed_at = meta.processed_at
-  } else if (status !== 'menunggu') {
-    updatePayload.processed_at = new Date().toISOString()
-  }
-
-  const { data, error } = await supabaseAdmin
-    .from('reservations')
-    .update(updatePayload)
-    .eq('id', id)
-    .select(`
-      *,
-      users:user_id(id, name, email),
-      facilities:facility_id(id, name, location, type, status)
-    `)
-    .single()
-
-  if (error) {
-    throw new Error(`Gagal memperbarui status reservasi: ${error.message}`)
-  }
-  return data as Reservation
-}
-
-export async function getOverlappingReservations(
-  facilityId: string | number,
-  date: string,
-  startTime: string,
-  endTime: string,
-  statusFilter?: ReservationStatus | ReservationStatus[]
-): Promise<Reservation[]> {
-  let query = supabaseAdmin
-    .from('reservations')
-    .select(`
-      *,
-      users:user_id(id, name, email),
-      facilities:facility_id(id, name, location, type, status)
-    `)
-    .eq('facility_id', facilityId)
-    .eq('reservation_date', date)
-    .lt('start_time', endTime)
-    .gt('end_time', startTime)
-
-  if (statusFilter) {
-    if (Array.isArray(statusFilter)) {
-      query = query.in('status', statusFilter)
-    } else {
-      query = query.eq('status', statusFilter)
-    }
-  }
-
-  const { data, error } = await query.order('start_time', { ascending: true })
-  if (error) {
-    throw new Error(`Gagal memeriksa reservasi tumpang tindih: ${error.message}`)
-  }
-  return (data as Reservation[]) || []
-}
-
-export async function getUserReservationsOverlapping(
-  userId: string | number,
-  date: string,
-  startTime: string,
-  endTime: string
-): Promise<Reservation[]> {
-  const { data, error } = await supabaseAdmin
-    .from('reservations')
-    .select(`
-      *,
-      users:user_id(id, name, email),
-      facilities:facility_id(id, name, location, type, status)
-    `)
-    .eq('user_id', userId)
-    .eq('reservation_date', date)
-    .in('status', ['menunggu', 'disetujui'])
-    .lt('start_time', endTime)
-    .gt('end_time', startTime)
-    .order('start_time', { ascending: true })
-
-  if (error) {
-    throw new Error(`Gagal memeriksa tumpang tindih reservasi pengguna: ${error.message}`)
-  }
   return (data as Reservation[]) || []
 }
 
@@ -287,6 +130,13 @@ export async function cancelReservationByUserAction(
       }
     }
 
+    if (user.status !== 'aktif' || user.role !== 'pengguna') {
+      return {
+        success: false,
+        error: 'Hanya pengguna aktif yang dapat membatalkan reservasi sendiri',
+      }
+    }
+
     return await cancelReservationForUser(reservationId, reason, Number(user.id))
   } catch (err: unknown) {
     const errorMsg = err instanceof Error ? err.message : String(err)
@@ -310,6 +160,16 @@ export async function sweepExpiredPendingReservationsAction(): Promise<{
   error?: string
   sweptCount: number
 }> {
+  const user = await getCurrentUser()
+
+  if (!user || user.status !== 'aktif' || user.role !== 'petugas') {
+    return {
+      success: false,
+      error: 'Hanya petugas aktif yang dapat menjalankan proses ini',
+      sweptCount: 0,
+    }
+  }
+
   try {
     const result = await sweepExpiredPendingReservations()
     return {
@@ -334,15 +194,16 @@ export async function sweepExpiredPendingReservationsAction(): Promise<{
 export async function approveReservationAction(
   reservationId: number
 ): Promise<{
-  success: boolean
-  error?: string
-  autoRejected?: boolean
-  autoRejectedCount?: number
-  data?: Reservation
+    success: boolean
+    error?: string
+    warning?: string
+    autoRejected?: boolean
+    autoRejectedCount?: number
+    data?: Reservation
 }> {
   try {
     const user = await getCurrentUser()
-    if (!user || user.role !== 'petugas') {
+    if (!user || user.status !== 'aktif' || user.role !== 'petugas') {
       return {
         success: false,
         error: 'Hanya petugas yang memiliki wewenang untuk menyetujui reservasi',
@@ -369,7 +230,7 @@ export async function rejectReservationAction(
 ): Promise<{ success: boolean; error?: string; data?: Reservation }> {
   try {
     const user = await getCurrentUser()
-    if (!user || user.role !== 'petugas') {
+    if (!user || user.status !== 'aktif' || user.role !== 'petugas') {
       return {
         success: false,
         error: 'Hanya petugas yang memiliki wewenang untuk menolak reservasi',
@@ -395,7 +256,7 @@ export async function cancelReservationByStaffAction(
 ): Promise<{ success: boolean; error?: string; data?: Reservation }> {
   try {
     const user = await getCurrentUser()
-    if (!user || user.role !== 'petugas') {
+    if (!user || user.status !== 'aktif' || user.role !== 'petugas') {
       return {
         success: false,
         error: 'Hanya petugas yang memiliki wewenang membatalkan reservasi secara darurat',
@@ -420,16 +281,43 @@ export async function createReservationAction(
 ): Promise<CreateReservationState> {
   try {
     const currentUser = await getCurrentUser()
+
+    // Pastikan pengguna sudah login.
     if (!currentUser) {
       return {
         success: false,
-        error: 'Harap masuk (login) terlebih dahulu untuk mengajukan reservasi',
+        error:
+          'Harap masuk (login) terlebih dahulu untuk mengajukan reservasi.',
       }
     }
 
+    // Hanya role pengguna yang boleh mengajukan reservasi.
+    if (currentUser.role !== 'pengguna') {
+      return {
+        success: false,
+        error: 'Hanya pengguna yang dapat mengajukan reservasi.',
+      }
+    }
+
+    // Akun harus berstatus aktif.
+    const accountStatus = String(currentUser.status ?? '')
+      .toLowerCase()
+      .trim()
+
+    if (!['aktif', 'active'].includes(accountStatus)) {
+      return {
+        success: false,
+        error:
+          'Akun kamu belum aktif sehingga belum bisa mengajukan reservasi.',
+      }
+    }
+
+    // Identitas pengguna berasal dari sesi, bukan input dari browser.
     return await submitReservation(params, Number(currentUser.id))
   } catch (err: unknown) {
-    const errorMsg = err instanceof Error ? err.message : String(err)
+    const errorMsg =
+      err instanceof Error ? err.message : String(err)
+
     return {
       success: false,
       error: `Terjadi kesalahan saat memproses reservasi: ${errorMsg}`,

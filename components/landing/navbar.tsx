@@ -53,12 +53,18 @@ export function Navbar({ user }: { user?: NavbarUser | null }) {
             Alur Layanan
           </Link>
 
-          <Link
-            href="/reservations"
-            className="transition-colors hover:text-[#010736]"
-          >
-            Reservasi
-          </Link>
+          {(!user || user.role === 'pengguna') && (
+            <Link
+              href={
+                user
+                  ? '/reservations'
+                  : '/login?redirect=%2Freservations'
+              }
+              className="transition-colors hover:text-[#010736]"
+            >
+              Reservasi
+            </Link>
+          )}
         </nav>
 
         <div className="flex items-center gap-2">

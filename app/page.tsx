@@ -14,20 +14,61 @@ import { getCurrentUser } from "@/lib/auth"
 import { getFacilitySlotAvailability } from "@/lib/integration"
 import { getWIBDateTime } from "@/lib/validations/reservation-time"
 
-const TYPE_LABELS: Record<string, FacilityItem["type"]> = {
-  ruang_kelas: "Ruang Kelas",
-  laboratorium: "Laboratorium",
-  aula: "Aula",
-  lapangan: "Lapangan",
-  alat: "Peralatan",
+// Menyamakan format tipe fasilitas dari database.
+// Contoh: "Ruang Kelas" menjadi "ruang_kelas".
+function normalizeTypeKey(type: string | null | undefined): string {
+  return (type ?? "")
+    .toLowerCase()
+    .trim()
+    .replace(/[\s/-]+/g, "_")
+    .replace(/_+/g, "_")
 }
 
+// Memetakan tipe fasilitas ke kategori yang ditampilkan.
+const TYPE_LABELS: Record<string, FacilityItem["type"]> = {
+  ruang: "Ruang Kelas",
+  ruangan: "Ruang Kelas",
+  kelas: "Ruang Kelas",
+  ruang_kelas: "Ruang Kelas",
+  ruang_kuliah: "Ruang Kelas",
+  ruangan_kuliah: "Ruang Kelas",
+  classroom: "Ruang Kelas",
+  class: "Ruang Kelas",
+
+  lab: "Laboratorium",
+  laboratorium: "Laboratorium",
+  laboratory: "Laboratorium",
+
+  aula: "Aula",
+  auditorium: "Aula",
+
+  lapangan: "Lapangan",
+  lapangan_olahraga: "Lapangan",
+  lapangan_futsal: "Lapangan",
+  lapangan_basket: "Lapangan",
+  lapangan_voli: "Lapangan",
+  lapangan_badminton: "Lapangan",
+  field: "Lapangan",
+
+  alat: "Peralatan",
+  alat_lab: "Peralatan",
+  peralatan: "Peralatan",
+  peralatan_lab: "Peralatan",
+  perlengkapan: "Peralatan",
+  equipment: "Peralatan",
+
+  lainnya: "Lainnya",
+}
+
+// Satuan kapasitas ditentukan berdasarkan kategori hasil pemetaan,
+// bukan berdasarkan penulisan tipe asli di database.
 const CAPACITY_UNITS: Record<string, string> = {
-  ruang_kelas: "Mahasiswa",
-  laboratorium: "Workstation PC",
-  aula: "Kursi Peserta",
-  lapangan: "Pemain",
-  alat: "Unit",
+  "Ruang Kelas": "Mahasiswa",
+  Laboratorium: "Workstation PC",
+  Aula: "Kursi Peserta",
+  Lapangan: "Pemain",
+  Peralatan: "Unit",
+  Lainnya: "Pengguna",
 }
 
 function minutesOf(time: string): number {
@@ -36,10 +77,9 @@ function minutesOf(time: string): number {
 }
 
 /**
- * Katalog publik dibangun dari data nyata (getFacilitySlotAvailability)
- * agar status ketersediaan konsisten dengan penguncian slot di Chapter 5.
- * Jika DB belum terjangkau, gunakan data demo sebagai cadangan agar
- * halaman landing tetap tampil selama build/prerender.
+ * Katalog publik dibangun dari data fasilitas aktif.
+ * Status ketersediaan diperiksa berdasarkan jadwal slot hari ini.
+ * Data contoh digunakan sebagai cadangan jika pengambilan data gagal.
  */
 async function buildPublicFacilities(): Promise<FacilityItem[]> {
   try {
@@ -50,13 +90,17 @@ async function buildPublicFacilities(): Promise<FacilityItem[]> {
     const items: FacilityItem[] = []
 
     for (const facility of raw) {
-      // Fasilitas nonaktif tidak ditampilkan di daftar publik (AGENTS.md)
+      // Fasilitas nonaktif tidak ditampilkan kepada pengunjung.
       if (facility.status === "nonaktif") continue
 
-      const type = TYPE_LABELS[facility.type] ?? "Peralatan"
-      const capacityUnit = CAPACITY_UNITS[facility.type] ?? "Pengguna"
+      // Normalisasi tipe fasilitas dari database.
+      const typeKey = normalizeTypeKey(facility.type)
+      const type = TYPE_LABELS[typeKey] ?? "Lainnya"
+      const capacityUnit = CAPACITY_UNITS[type] ?? "Pengguna"
+
       const code = `FAC-${String(facility.id).padStart(3, "0")}`
 
+      // Fasilitas yang sedang diperbaiki tidak tersedia untuk digunakan.
       if (facility.status === "dalam_perbaikan") {
         items.push({
           id: facility.id,
@@ -70,21 +114,25 @@ async function buildPublicFacilities(): Promise<FacilityItem[]> {
           description: facility.description ?? "",
           operationalInfo: "Sedang dalam perbaikan oleh petugas",
         })
+
         continue
       }
 
       let status: FacilityItem["status"] = "available"
-      let operationalInfo = "Tersedia slot hari ini (07.00 - 20.00 WIB)"
+      let operationalInfo =
+        "Tersedia slot hari ini (07.00 - 20.00 WIB)"
 
       const slots = await getFacilitySlotAvailability(
         facility.id,
         wib.dateStr,
-        now
+        now,
       )
+
+      // Periksa apakah waktu sekarang termasuk slot yang terpakai.
       const currentSlot = slots.find(
         (slot) =>
           minutesOf(slot.startTime) <= wib.totalMinutes &&
-          wib.totalMinutes < minutesOf(slot.endTime)
+          wib.totalMinutes < minutesOf(slot.endTime),
       )
 
       if (currentSlot?.isBooked) {
@@ -107,7 +155,8 @@ async function buildPublicFacilities(): Promise<FacilityItem[]> {
     }
 
     return items.length > 0 ? items : FALLBACK_FACILITIES
-  } catch {
+  } catch (error) {
+    console.error("Gagal memuat katalog fasilitas publik:", error)
     return FALLBACK_FACILITIES
   }
 }
@@ -118,7 +167,7 @@ export default async function Home() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background selection:bg-primary/20 selection:text-foreground">
-      {/* Top Navigation */}
+      {/* Navigasi atas */}
       <Navbar
         user={
           user
@@ -127,7 +176,7 @@ export default async function Home() {
         }
       />
 
-      {/* Main Content Sections */}
+      {/* Konten landing page */}
       <main className="flex-1">
         <Hero />
         <FacilityShowcase facilities={facilities} />

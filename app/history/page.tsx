@@ -6,7 +6,14 @@ import { CalendarDays, Clock3, MapPin, Plus, Eye } from 'lucide-react'
 
 import { AppLayout } from '@/components/layout/app-layout'
 import { createClient } from '@/lib/supabase/client'
-import { sweepExpiredPendingReservationsAction } from '@/lib/actions/reservations'
+
+type ReservationStatus =
+  | 'Menunggu'
+  | 'Disetujui'
+  | 'Ditolak'
+  | 'Dibatalkan'
+
+type StatusFilter = 'Semua' | ReservationStatus
 
 type ReservationHistoryItem = {
   id: number
@@ -14,18 +21,91 @@ type ReservationHistoryItem = {
   location: string
   date: string
   time: string
-  status: 'Pending' | 'Approved' | 'Rejected' | 'Cancelled'
+  status: ReservationStatus
+}
+
+const statusFilters: { label: string; value: StatusFilter }[] = [
+  { label: 'Semua', value: 'Semua' },
+  { label: 'Menunggu', value: 'Menunggu' },
+  { label: 'Disetujui', value: 'Disetujui' },
+  { label: 'Ditolak', value: 'Ditolak' },
+  { label: 'Dibatalkan', value: 'Dibatalkan' },
+]
+
+function normalizeStatus(status: string | null): ReservationStatus {
+  const value = (status || 'menunggu').toLowerCase().trim()
+
+  if (
+    [
+      'menunggu',
+      'menunggu persetujuan',
+      'menunggu_persetujuan',
+      'pending',
+      'pending_approval',
+    ].includes(value)
+  ) {
+    return 'Menunggu'
+  }
+
+  if (['disetujui', 'approved'].includes(value)) {
+    return 'Disetujui'
+  }
+
+  if (['ditolak', 'rejected'].includes(value)) {
+    return 'Ditolak'
+  }
+
+  if (['dibatalkan', 'cancelled', 'canceled'].includes(value)) {
+    return 'Dibatalkan'
+  }
+
+  return 'Menunggu'
+}
+
+function formatDate(dateString: string) {
+  if (!dateString) return '-'
+
+  const [year, month, day] = dateString.split('-')
+
+  if (!year || !month || !day) return dateString
+
+  return `${day}-${month}-${year}`
+}
+
+function formatTime(timeString: string | null) {
+  if (!timeString) return '00:00'
+
+  return timeString.slice(0, 5)
+}
+
+function getStatusStyle(status: ReservationStatus) {
+  switch (status) {
+    case 'Disetujui':
+      return 'bg-emerald-100 text-emerald-700'
+    case 'Ditolak':
+      return 'bg-red-100 text-red-700'
+    case 'Dibatalkan':
+      return 'bg-slate-200 text-slate-700'
+    default:
+      return 'bg-amber-100 text-amber-700'
+  }
 }
 
 export default function ReservationHistoryPage() {
   const router = useRouter()
-  const supabase = createClient()
-  const [reservations, setReservations] = useState<ReservationHistoryItem[]>([])
+
+  const [reservations, setReservations] = useState<
+    ReservationHistoryItem[]
+  >([])
   const [loading, setLoading] = useState(true)
   const [userName, setUserName] = useState('Pengguna')
+  const [selectedStatus, setSelectedStatus] =
+    useState<StatusFilter>('Semua')
 
   useEffect(() => {
     const fetchHistory = async () => {
+      const supabase = createClient()
+
       try {
         setLoading(true)
 
@@ -52,46 +132,41 @@ export default function ReservationHistoryPage() {
 
         setUserName(profile.name || 'Pengguna')
 
-        // Sweep kedaluwarsa di server agar status riwayat akurat tanpa
-        // menunggu petugas menyentuh antrean.
-        await sweepExpiredPendingReservationsAction().catch(() => null)
-
         const { data, error } = await supabase
           .from('reservations')
-          .select('id, reservation_date, start_time, end_time, status, facilities:facility_id(name, location)')
+          .select(
+            'id, reservation_date, start_time, end_time, status, facilities:facility_id(name, location)',
+          )
           .eq('user_id', profile.id)
           .order('reservation_date', { ascending: false })
           .order('start_time', { ascending: false })
 
         if (error) {
+          console.error('Gagal mengambil riwayat reservasi:', error)
           setReservations([])
           return
         }
 
-        const mapped = (data ?? []).map((item) => {
-          const facility = Array.isArray(item.facilities)
-            ? item.facilities[0]
-            : item.facilities
+        const mapped: ReservationHistoryItem[] = (data ?? []).map(
+          (item) => {
+            const facility = Array.isArray(item.facilities)
+              ? item.facilities[0]
+              : item.facilities
 
-          const mapStatus = {
-            menunggu: 'Pending',
-            disetujui: 'Approved',
-            ditolak: 'Rejected',
-            dibatalkan: 'Cancelled',
-          } as const
-
-          return {
-            id: Number(item.id),
-            roomName: facility?.name || 'Fasilitas',
-            location: facility?.location || 'Lokasi belum diatur',
-            date: item.reservation_date || '',
-            time: `${item.start_time || '00:00'} - ${item.end_time || '00:00'}`,
-            status: mapStatus[(item.status as keyof typeof mapStatus) ?? 'menunggu'] || 'Pending',
-          }
-        })
+            return {
+              id: Number(item.id),
+              roomName: facility?.name || 'Fasilitas',
+              location: facility?.location || 'Lokasi belum diatur',
+              date: item.reservation_date || '',
+              time: `${formatTime(item.start_time)} - ${formatTime(item.end_time)}`,
+              status: normalizeStatus(item.status),
+            }
+          },
+        )
 
         setReservations(mapped)
-      } catch {
+      } catch (error) {
+        console.error('Terjadi kesalahan saat memuat riwayat:', error)
         setReservations([])
       } finally {
         setLoading(false)
@@ -99,7 +174,22 @@ export default function ReservationHistoryPage() {
     }
 
     fetchHistory()
-  }, [supabase])
+  }, [])
+
+  const filteredReservations =
+    selectedStatus === 'Semua'
+      ? reservations
+      : reservations.filter(
+          (item) => item.status === selectedStatus,
+        )
+
+  const getStatusCount = (status: StatusFilter) => {
+    if (status === 'Semua') return reservations.length
+
+    return reservations.filter(
+      (item) => item.status === status,
+    ).length
+  }
 
   return (
     <AppLayout userName={userName}>
@@ -109,7 +199,10 @@ export default function ReservationHistoryPage() {
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted-foreground)]">
               RIWAYAT RESERVASI
             </p>
-            <h1 className="mt-2 text-3xl font-bold tracking-tight text-[var(--foreground)]">Reservasi Saya</h1>
+
+            <h1 className="mt-2 text-3xl font-bold tracking-tight text-[var(--foreground)]">
+              Reservasi Saya
+            </h1>
           </div>
 
           <button
@@ -122,18 +215,64 @@ export default function ReservationHistoryPage() {
           </button>
         </div>
 
+        {/* Filter status */}
+        <div className="space-y-3">
+          <h2 className="text-sm font-semibold text-[var(--foreground)]">
+            Filter Status
+          </h2>
+
+          <div
+            className="flex flex-nowrap gap-2 overflow-x-auto pb-1"
+            aria-label="Filter status reservasi"
+          >
+            {statusFilters.map(({ label, value }) => {
+              const isSelected = selectedStatus === value
+
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setSelectedStatus(value)}
+                  aria-pressed={isSelected}
+                  className={`inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-xl border px-3 py-2 text-sm font-medium transition ${
+                    isSelected
+                      ? 'border-[var(--primary)] bg-[var(--primary)] text-[var(--primary-foreground)]'
+                      : 'border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] hover:bg-[var(--muted)]'
+                  }`}
+                >
+                  {label}
+
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs ${
+                      isSelected ? 'bg-white/20' : 'bg-[var(--muted)]'
+                    }`}
+                  >
+                    {getStatusCount(value)}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
         {loading ? (
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-10 text-center text-sm text-[var(--muted-foreground)]">
             Memuat riwayat reservasi...
           </div>
         ) : reservations.length === 0 ? (
-          <div className="flex min-h-[55vh] items-center justify-center">
+          <div className="flex min-h-[40vh] items-center justify-center">
             <div className="w-full max-w-md rounded-2xl border border-dashed border-[var(--border)] bg-[var(--card)] p-9 text-center shadow-sm">
               <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--accent)] text-[var(--foreground)]">
                 <CalendarDays className="h-7 w-7" />
               </div>
 
-              <h2 className="text-xl font-bold text-[var(--foreground)]">Anda belum pernah reservasi ruang</h2>
+              <h2 className="text-xl font-bold text-[var(--foreground)]">
+                Anda belum pernah reservasi ruang
+              </h2>
+
+              <p className="mt-2 text-sm text-[var(--muted-foreground)]">
+                Riwayat reservasi Anda akan muncul di sini.
+              </p>
 
               <button
                 type="button"
@@ -144,63 +283,97 @@ export default function ReservationHistoryPage() {
               </button>
             </div>
           </div>
+        ) : filteredReservations.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--card)] p-10 text-center">
+            <h2 className="font-semibold text-[var(--foreground)]">
+              Tidak ada reservasi dengan status ini
+            </h2>
+
+            <p className="mt-2 text-sm text-[var(--muted-foreground)]">
+              Coba pilih filter status yang lain.
+            </p>
+
+            <button
+              type="button"
+              onClick={() => setSelectedStatus('Semua')}
+              className="mt-4 rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-semibold text-[var(--foreground)] hover:bg-[var(--muted)]"
+            >
+              Tampilkan Semua
+            </button>
+          </div>
         ) : (
           <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
             <div className="overflow-x-auto">
               <table className="min-w-full text-left text-sm text-[var(--foreground)]">
                 <thead className="bg-[var(--muted)] text-xs uppercase tracking-[0.12em] text-[var(--muted-foreground)]">
                   <tr>
-                    <th className="px-5 py-4 font-semibold">Ruangan</th>
-                    <th className="px-5 py-4 font-semibold">Lokasi</th>
-                    <th className="px-5 py-4 font-semibold">Tanggal</th>
-                    <th className="px-5 py-4 font-semibold">Waktu</th>
-                    <th className="px-5 py-4 font-semibold">Status</th>
-                    <th className="px-5 py-4 font-semibold">Aksi</th>
+                    <th className="px-5 py-4 font-semibold">
+                      Ruangan
+                    </th>
+                    <th className="px-5 py-4 font-semibold">
+                      Lokasi
+                    </th>
+                    <th className="px-5 py-4 font-semibold">
+                      Tanggal
+                    </th>
+                    <th className="px-5 py-4 font-semibold">
+                      Waktu
+                    </th>
+                    <th className="px-5 py-4 font-semibold">
+                      Status
+                    </th>
+                    <th className="px-5 py-4 font-semibold">
+                      Aksi
+                    </th>
                   </tr>
                 </thead>
 
                 <tbody>
-                  {reservations.map((item) => (
-                    <tr key={item.id} className="border-t border-[var(--border)]">
-                      <td className="px-5 py-4 font-medium text-[var(--foreground)]">{item.roomName}</td>
+                  {filteredReservations.map((item) => (
+                    <tr
+                      key={item.id}
+                      className="border-t border-[var(--border)]"
+                    >
+                      <td className="px-5 py-4 font-medium text-[var(--foreground)]">
+                        {item.roomName}
+                      </td>
+
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-2 text-[var(--muted-foreground)]">
-                          <MapPin className="h-4 w-4 text-[var(--primary)]" />
+                          <MapPin className="h-4 w-4 shrink-0 text-[var(--primary)]" />
                           {item.location}
                         </div>
                       </td>
-                      <td className="px-5 py-4">
-                        <div className="flex items-center gap-2 text-[var(--muted-foreground)]">
-                          <CalendarDays className="h-4 w-4 text-[var(--primary)]" />
-                          {item.date}
+
+                      <td className="whitespace-nowrap px-5 py-4">
+                        <div className="flex items-center gap-2 whitespace-nowrap text-[var(--muted-foreground)]">
+                          <CalendarDays className="h-4 w-4 shrink-0 text-[var(--primary)]" />
+                          {formatDate(item.date)}
                         </div>
                       </td>
+
                       <td className="px-5 py-4">
-                        <div className="flex items-center gap-2 text-[var(--muted-foreground)]">
-                          <Clock3 className="h-4 w-4 text-[var(--primary)]" />
+                        <div className="flex items-center gap-2 whitespace-nowrap text-[var(--muted-foreground)]">
+                          <Clock3 className="h-4 w-4 shrink-0 text-[var(--primary)]" />
                           {item.time}
                         </div>
                       </td>
+
                       <td className="px-5 py-4">
                         <span
-                          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
-                            item.status === 'Approved'
-                              ? 'bg-emerald-100 text-emerald-700'
-                              : item.status === 'Rejected'
-                                ? 'bg-red-100 text-red-700'
-                                : item.status === 'Cancelled'
-                                  ? 'bg-slate-200 text-slate-700'
-                                  : 'bg-amber-100 text-amber-700'
-                          }`}
+                          className={`inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold ${getStatusStyle(item.status)}`}
                         >
                           {item.status}
                         </span>
                       </td>
+
                       <td className="px-5 py-4">
                         <button
                           type="button"
-                          onClick={() => router.push(`/reservations/${item.id}`)}
-                          className="inline-flex items-center gap-2 rounded-lg border border-[var(--border)] px-3 py-2 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
+                          onClick={() =>
+                            router.push(`/reservations/${item.id}`)
+                          }
+                          className="inline-flex items-center gap-2 whitespace-nowrap rounded-lg border border-[var(--border)] px-3 py-2 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
                         >
                           <Eye className="h-4 w-4" />
                           Lihat Detail

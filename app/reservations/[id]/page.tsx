@@ -85,11 +85,9 @@ export default async function ReservationDetailPage({
   const isOwner =
     String(user.id) === String(reservation.user_id)
 
-  const isStaffOrAdmin =
-    user.role === 'petugas' ||
-    user.role === 'admin'
+  const isStaff = user.role === 'petugas'
 
-  if (!isOwner && !isStaffOrAdmin) {
+  if (!isOwner && !isStaff) {
     return (
       <div className="flex min-h-screen flex-col bg-[#F7F9FC]">
         <Navbar />
