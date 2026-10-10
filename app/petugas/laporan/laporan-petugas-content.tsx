@@ -1,6 +1,5 @@
 'use client'
 
-import FivoraLogo from '@/components/branding/fivora-logo'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useTransition } from 'react'
@@ -103,24 +102,20 @@ export default function LaporanPetugasContent({
   return (
     <main className={styles.page}>
       <div className={styles.container}>
-        <header className={styles.navigation}>
-          <Link href="/" className={styles.brand}>
-            <FivoraLogo />
-          </Link>
+        <div className={styles.headingTop}>
+          <p className={styles.eyebrow}>PELAPORAN & PERBAIKAN</p>
 
           <Link href="/petugas" className={styles.backLink}>
             <ArrowLeft size={16} aria-hidden="true" />
-            Dashboard petugas
+            Beranda Petugas
           </Link>
-        </header>
+        </div>
 
         <section
           className={styles.heading}
           aria-labelledby="queue-title"
         >
           <div>
-            <p className={styles.eyebrow}>PELAPORAN & PERBAIKAN</p>
-
             <h1 id="queue-title">
               Antrean <span>laporan.</span>
             </h1>

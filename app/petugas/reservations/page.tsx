@@ -1,7 +1,6 @@
 import Link from 'next/link'
-import { Navbar } from '@/components/landing/navbar'
 import { Footer } from '@/components/landing/footer'
-import { getCurrentUser } from '@/lib/auth'
+import { requireReportRole } from '@/lib/report-access'
 import {
   getPendingReservationsQueue,
   getApprovedReservationsQueue,
@@ -15,7 +14,6 @@ import {
   MapPin,
   User,
   ArrowRight,
-  ShieldAlert,
   CheckCircle,
 } from 'lucide-react'
 
@@ -71,41 +69,7 @@ function getScheduleState(
 }
 
 export default async function StaffReservationsDashboardPage() {
-  const user = await getCurrentUser()
-
-  // Proteksi Akses Petugas (Chapter 9: Hanya role 'petugas' atau 'admin')
-  if (!user || (user.role !== 'petugas' && user.role !== 'admin')) {
-    return (
-      <div className="flex min-h-screen flex-col bg-background">
-        <Navbar />
-
-        <main className="flex-1 container mx-auto max-w-md px-4 py-16 text-center">
-          <div className="rounded-2xl border border-[#22396F]/30 bg-[#FCF1D0] p-8 shadow-sm">
-            <ShieldAlert className="mx-auto mb-3 h-12 w-12 text-[#22396F]" />
-
-            <h1 className="text-xl font-bold text-[#010736]">
-              Akses Dibatasi (403)
-            </h1>
-
-            <p className="mt-2 text-sm text-[#22396F]">
-              Halaman antrean pemrosesan ini khusus untuk staf Petugas dan
-              Administrator FIVORA.
-            </p>
-
-            <div className="mt-6">
-              <Link href="/login">
-                <Button className="bg-[#010736] text-white hover:bg-[#0D1C42]">
-                  Masuk sebagai Petugas
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </main>
-
-        <Footer />
-      </div>
-    )
-  }
+  await requireReportRole('petugas')
 
   // Sweep pengajuan 'menunggu' yang waktu mulainya sudah lewat sebelum membaca
   // antrean, agar petugas tidak melihat antrean yang sudah tidak bisa diproses.
@@ -117,8 +81,6 @@ export default async function StaffReservationsDashboardPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background selection:bg-[#FCF1D0] selection:text-[#010736]">
-      <Navbar />
-
       <main className="flex-1 container mx-auto max-w-6xl px-4 py-8 sm:py-12">
         <div className="mb-8">
           <span className="mb-2 inline-flex items-center rounded-full bg-[#FCF1D0] px-3 py-1 text-xs font-semibold uppercase tracking-wider text-[#010736]">

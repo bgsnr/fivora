@@ -1,22 +1,18 @@
 import type { ReactNode } from 'react'
 import { AppNavbar } from '@/components/layout/app-navbar'
-import { getCurrentUser } from '@/lib/auth'
+import { requireReportRole } from '@/lib/report-access'
 
 export default async function PetugasLayout({
   children,
 }: {
   children: ReactNode
 }) {
-  const user = await getCurrentUser()
+  const user = await requireReportRole('petugas')
 
   return (
     <>
       <AppNavbar
-        user={
-          user
-            ? { name: user.name, email: user.email, role: user.role }
-            : null
-        }
+        user={{ name: user.name, email: user.email, role: user.role }}
       />
       {children}
     </>

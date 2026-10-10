@@ -1,8 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { Navbar } from '@/components/landing/navbar'
 import { Footer } from '@/components/landing/footer'
-import { getCurrentUser } from '@/lib/auth'
+import { requireReportRole } from '@/lib/report-access'
 import { getReservationById } from '@/lib/actions/reservations'
 import {
   getDisplayStatusLabel,
@@ -11,14 +10,11 @@ import {
 } from '@/lib/validations/reservation-time'
 import { checkFacilityConflict } from '@/lib/conflict-engine'
 import { StaffActionPanel } from '@/components/reservations/staff-action-panel'
-import { Button } from '@/components/ui/button'
 import {
   Calendar,
   Clock,
-  MapPin,
   User,
   ArrowLeft,
-  ShieldAlert,
   AlertTriangle,
   Info,
 } from 'lucide-react'
@@ -37,39 +33,7 @@ export default async function StaffReservationDetailPage({
   params,
 }: StaffReservationDetailPageProps) {
   const { id } = await params
-  const user = await getCurrentUser()
-  if (!user || user.status !== 'aktif' || user.role !== 'petugas') {
-    return (
-      <div className="flex min-h-screen flex-col bg-background">
-        <Navbar />
-
-        <main className="flex-1 container mx-auto max-w-md px-4 py-16 text-center">
-          <div className="rounded-2xl border border-[#22396F]/30 bg-[#FCF1D0] p-8 shadow-sm">
-            <ShieldAlert className="mx-auto mb-3 h-12 w-12 text-[#22396F]" />
-
-            <h1 className="text-xl font-bold text-[#010736]">
-              Akses Dibatasi (403)
-            </h1>
-
-            <p className="mt-2 text-sm text-[#22396F]">
-              Hanya staf Petugas atau Admin yang memiliki akses memproses
-              reservasi ini.
-            </p>
-
-            <div className="mt-6">
-              <Link href="/login">
-                <Button className="bg-[#010736] text-white hover:bg-[#0D1C42]">
-                  Masuk sebagai Petugas
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </main>
-
-        <Footer />
-      </div>
-    )
-  }
+  await requireReportRole('petugas')
 
   const reservation = await getReservationById(id)
 
@@ -120,8 +84,6 @@ export default async function StaffReservationDetailPage({
 
   return (
     <div className="flex min-h-screen flex-col bg-background selection:bg-[#FCF1D0] selection:text-[#010736]">
-      <Navbar />
-
       <main className="flex-1 container mx-auto max-w-3xl px-4 py-8 sm:py-12">
         <div className="mb-6">
           <Link
