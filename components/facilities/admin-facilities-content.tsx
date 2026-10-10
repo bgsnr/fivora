@@ -1,6 +1,5 @@
 'use client'
 
-import FacilityBrandHeader from '@/components/branding/facility-brand-header'
 import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { getAllFacilitiesAdmin, getUpcomingReservationsForFacility, setFacilityStatusAction } from '@/lib/actions/admin-facilities'
@@ -140,7 +139,6 @@ export default function AdminFacilitiesContent({ initialFacilities, initialError
 
   return (
     <main className={styles.container}>
-      <FacilityBrandHeader />
       <header className={styles.header}>
         <div><p className={styles.eyebrow}>MANAJEMEN DATA MASTER</p><h1 className={styles.title}>Kelola Fasilitas Kampus</h1>
           <p className={styles.subtitle}>Tambah, ubah, atau nonaktifkan fasilitas. Pengaturan fasilitas memengaruhi akses pemesanan.</p></div>
