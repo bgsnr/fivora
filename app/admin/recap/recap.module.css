@@ -309,3 +309,470 @@
     border: 1px solid #000;
   }
 }
+
+
+/* Tombol ekspor CSV, Excel, dan PDF */
+.exportActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.exportActions .exportButton {
+  flex: 0 0 auto;
+  min-height: 40px;
+  padding: 10px 14px;
+}
+
+.exportActions .exportButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Dropdown pencarian */
+.searchableDropdown {
+  position: relative;
+  width: 100%;
+}
+
+.searchableControl {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.searchableInput {
+  width: 100%;
+  min-width: 0;
+  padding-right: 42px;
+  text-overflow: ellipsis;
+}
+
+.searchableToggle {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #52627d;
+  font-size: 17px;
+  cursor: pointer;
+}
+
+.searchableToggle:hover:not(:disabled) {
+  background: #fcf1d0;
+  color: #010736;
+}
+
+.searchableToggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.searchableOptions {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 50;
+  max-height: 260px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 5px;
+  border: 1px solid #d8dfea;
+  border-radius: 11px;
+  background: #ffffff;
+  box-shadow: 0 12px 30px rgba(1, 7, 54, 0.12);
+}
+
+.searchOption {
+  width: 100%;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 11px;
+  border: 0;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #52627d;
+  font: inherit;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.searchOption:hover {
+  background: #f4f6fa;
+  color: #010736;
+}
+
+.searchOptionSelected {
+  background: #fcf1d0;
+  color: #010736;
+  font-weight: 700;
+}
+
+.searchOptionSelected:hover {
+  background: #f5e5b5;
+}
+
+.searchNoResults {
+  margin: 0;
+  padding: 13px 11px;
+  color: #718097;
+  font-size: 11px;
+  text-align: center;
+}
+
+/* Tampilan tablet dan HP */
+@media (max-width: 768px) {
+  .exportActions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .exportActions .exportButton {
+    width: 100%;
+    min-width: 0;
+    padding: 10px 6px;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+}
+
+
+/* Tiga tombol ekspor dalam satu baris */
+.exportActions {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  width: auto;
+  min-width: 0;
+}
+
+.exportActions .exportButton {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  min-width: 0;
+  min-height: 40px;
+  padding: 10px 14px;
+  white-space: nowrap;
+}
+
+/* Tampilan layar kecil */
+@media (max-width: 768px) {
+  .exportActions {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    gap: 6px;
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .exportActions .exportButton {
+    flex: 1 0 auto;
+    width: auto;
+    min-width: 0;
+    padding: 10px 12px;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+}
+
+.searchableToggle svg {
+  display: block;
+  flex-shrink: 0;
+}
+
+/* ==============================
+   DATE PICKER CUSTOM FIVORA
+============================== */
+
+.datePicker {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  font-family: inherit;
+}
+
+.datePickerTrigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  color: #010736;
+  font-family: inherit;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.datePickerTriggerLabel {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex: 1;
+  min-width: 0;
+}
+
+.datePickerTriggerLabel svg {
+  flex-shrink: 0;
+  color: #22396f;
+}
+
+.datePickerTriggerLabel span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.datePickerTrigger > svg {
+  flex-shrink: 0;
+  color: #22396f;
+}
+
+.datePickerTrigger:hover {
+  border-color: #22396f;
+}
+
+.datePickerTrigger:focus-visible {
+  outline: 2px solid #22396f;
+  outline-offset: 2px;
+}
+
+/* Panel kalender */
+.datePickerPopover {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 80;
+  width: 320px;
+  max-width: calc(100vw - 32px);
+  padding: 16px;
+  color: #010736;
+  background: #ffffff;
+  border: 1px solid #e3e8f2;
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgba(1, 7, 54, 0.14);
+  font-family: inherit;
+}
+
+/* Header kalender dan navigasi bulan */
+.datePickerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.datePickerMonthLabel {
+  flex: 1;
+  color: #010736;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+  text-transform: capitalize;
+}
+
+.datePickerNavButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  color: #22396f;
+  background: #f3f5fa;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.datePickerNavButton:hover:not(:disabled) {
+  color: #ffffff;
+  background: #010736;
+}
+
+.datePickerNavButton:disabled {
+  color: #c4cada;
+  background: #f8f9fc;
+  cursor: not-allowed;
+}
+
+/* Nama hari */
+.datePickerWeekdays,
+.datePickerGrid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.datePickerWeekdays {
+  margin-bottom: 6px;
+}
+
+.datePickerWeekday {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  color: #7a839d;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* Tombol tanggal */
+.datePickerDay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  aspect-ratio: 1;
+  padding: 0;
+  color: #0d1c42;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.datePickerDay:hover:not(:disabled) {
+  color: #010736;
+  background: #edf1fa;
+}
+
+.datePickerDay:focus-visible {
+  outline: 2px solid #22396f;
+  outline-offset: 1px;
+}
+
+/* Tanggal bulan lain */
+.datePickerDayOutside {
+  color: #a7afc2;
+}
+
+/* Penanda hari ini */
+.datePickerDayToday {
+  border-color: #22396f;
+  font-weight: 700;
+}
+
+/* Tanggal yang sedang dipilih */
+.datePickerDaySelected {
+  color: #ffffff;
+  background: #010736;
+  border-color: #010736;
+  font-weight: 700;
+}
+
+.datePickerDaySelected:hover:not(:disabled) {
+  color: #ffffff;
+  background: #22396f;
+  border-color: #22396f;
+}
+
+/* Tanggal di luar batas pemilihan */
+.datePickerDay:disabled {
+  color: #cbd0dc;
+  background: transparent;
+  border-color: transparent;
+  cursor: not-allowed;
+}
+
+/* Bagian bawah kalender */
+.datePickerFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #edf0f6;
+}
+
+.datePickerFooter > span {
+  flex: 1;
+  min-width: 0;
+  color: #7a839d;
+  font-family: inherit;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.datePickerTodayButton {
+  flex-shrink: 0;
+  padding: 6px 9px;
+  color: #22396f;
+  background: #f0f3fa;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.datePickerTodayButton:hover:not(:disabled) {
+  color: #ffffff;
+  background: #010736;
+}
+
+.datePickerTodayButton:disabled {
+  color: #c4cada;
+  background: #f8f9fc;
+  cursor: not-allowed;
+}
+
+/* Penyesuaian layar kecil */
+@media (max-width: 480px) {
+  .datePickerPopover {
+    width: 310px;
+    padding: 13px;
+  }
+
+  .datePickerDay {
+    font-size: 11px;
+  }
+}

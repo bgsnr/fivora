@@ -1,3 +1,4 @@
+
 .page {
   min-height: 100vh;
   display: flex;
@@ -21,9 +22,7 @@
   border-right: 1px solid #d8dfea;
   background: #ffffff;
   overflow: hidden;
-  transition:
-    width 0.25s ease,
-    padding 0.25s ease;
+  transition: width 0.25s ease, padding 0.25s ease;
 }
 
 .brand {
@@ -49,7 +48,7 @@
   background: #010736;
 }
 
-/* Tombol buka atau tutup sidebar */
+/* Tombol sidebar */
 
 .sidebarToggle {
   position: absolute;
@@ -65,9 +64,7 @@
   background: #fcf1d0;
   color: #010736;
   cursor: pointer;
-  transition:
-    background 0.2s ease,
-    color 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 .sidebarToggle:hover {
@@ -124,9 +121,7 @@
   text-align: left;
   text-decoration: none;
   cursor: pointer;
-  transition:
-    background 0.2s ease,
-    color 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 .navItem:hover {
@@ -224,9 +219,7 @@
   font: inherit;
   font-size: 11px;
   cursor: pointer;
-  transition:
-    border-color 0.2s ease,
-    background 0.2s ease,
+  transition: border-color 0.2s ease, background 0.2s ease,
     color 0.2s ease;
 }
 
@@ -244,12 +237,8 @@
   margin-left: 250px;
   box-sizing: border-box;
   padding: 36px 42px 60px;
-  transition:
-    width 0.25s ease,
-    margin-left 0.25s ease;
+  transition: width 0.25s ease, margin-left 0.25s ease;
 }
-
-/* Konten saat sidebar ditutup */
 
 .contentExpanded {
   width: calc(100% - 78px);
@@ -388,11 +377,11 @@
   font-weight: 700;
 }
 
-/* Statistik */
+/* Statistik akun dan operasional */
 
 .statsGrid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
   gap: 15px;
   margin-top: 31px;
 }
@@ -400,6 +389,7 @@
 .statCard,
 .statCardMuted {
   position: relative;
+  min-width: 0;
   min-height: 117px;
   display: flex;
   align-items: center;
@@ -475,6 +465,7 @@
   font-size: 27px;
   line-height: 1;
   letter-spacing: -0.04em;
+  overflow-wrap: anywhere;
 }
 
 .statCardWarning strong {
@@ -510,6 +501,7 @@
 }
 
 .sectionCount {
+  flex: 0 0 auto;
   padding: 7px 10px;
   border-radius: 999px;
   background: #fcf1d0;
@@ -518,7 +510,7 @@
   font-weight: 700;
 }
 
-/* Quick action */
+/* Akses cepat manajemen akun */
 
 .actionGrid {
   display: grid;
@@ -529,6 +521,7 @@
 .actionCard,
 .actionCardDisabled {
   position: relative;
+  min-width: 0;
   min-height: 104px;
   display: flex;
   align-items: center;
@@ -540,11 +533,8 @@
   background: #ffffff;
   color: inherit;
   text-align: left;
-  transition:
-    border-color 0.2s ease,
-    background 0.2s ease,
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+  transition: border-color 0.2s ease, background 0.2s ease,
+    transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .actionCard {
@@ -612,17 +602,6 @@
   font-weight: 700;
 }
 
-.comingSoon {
-  margin-left: auto;
-  flex: 0 0 auto;
-  padding: 5px 7px;
-  border-radius: 999px;
-  background: #e9edf4;
-  color: #7b879b;
-  font-size: 8px;
-  font-weight: 700;
-}
-
 /* Card verifikasi dan daftar akun */
 
 .verificationCard {
@@ -663,6 +642,8 @@
   color: #7b879b;
   font-size: 12px;
 }
+
+/* Tambahan bila diperlukan oleh komponen daftar akun */
 
 .registrationList {
   display: flex;
@@ -798,7 +779,92 @@
   opacity: 0.55;
 }
 
-/* Fitur */
+/* Reservasi terbaru */
+
+.viewAllButton {
+  flex: 0 0 auto;
+  padding: 9px 13px;
+  border: 1px solid #d8dfea;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #010736;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.viewAllButton:hover {
+  background: #f7f9fc;
+  border-color: #22396f;
+}
+
+.reservationList {
+  display: flex;
+  flex-direction: column;
+}
+
+.reservationRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 17px 20px;
+  border-bottom: 1px solid #e7ebf1;
+}
+
+.reservationRow:last-child {
+  border-bottom: 0;
+}
+
+.reservationRow:hover {
+  background: #f8fafc;
+}
+
+.reservationInfo {
+  min-width: 0;
+}
+
+.reservationName {
+  color: #010736;
+  font-size: 13px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.reservationMeta {
+  margin-top: 5px;
+  color: #718097;
+  font-size: 11px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.reservationStatus {
+  flex: 0 0 auto;
+  padding: 6px 9px;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.reservationStatusPending {
+  background: #fff5d6;
+  color: #8b6517;
+}
+
+.reservationStatusApproved {
+  background: #effbf5;
+  color: #167d52;
+}
+
+.reservationStatusClosed {
+  background: #eef2f7;
+  color: #627087;
+}
+
+/* Fitur pendukung, jika masih dipakai komponen lain */
 
 .featureGrid {
   display: grid;
@@ -853,7 +919,18 @@
   line-height: 1.45;
 }
 
-/* Modal */
+.comingSoon {
+  margin-left: auto;
+  flex: 0 0 auto;
+  padding: 5px 7px;
+  border-radius: 999px;
+  background: #e9edf4;
+  color: #7b879b;
+  font-size: 8px;
+  font-weight: 700;
+}
+
+/* Modal tambah akun */
 
 .modalBackdrop {
   position: fixed;
@@ -902,6 +979,7 @@
 .closeButton {
   width: 33px;
   height: 33px;
+  flex: 0 0 33px;
   border: 0;
   border-radius: 9px;
   background: #eef2f7;
@@ -941,9 +1019,7 @@
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
-  transition:
-    background 0.2s ease,
-    color 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 .accountTypeButton {
@@ -1015,6 +1091,11 @@
   box-shadow: 0 0 0 3px rgba(34, 57, 111, 0.1);
 }
 
+.operatorForm input:disabled {
+  background: #f4f6fa;
+  cursor: not-allowed;
+}
+
 .operatorForm small {
   color: #7b879b;
   font-size: 9px;
@@ -1027,6 +1108,7 @@
 
 .passwordBox input {
   flex: 1;
+  min-width: 0;
 }
 
 .passwordBox button {
@@ -1042,14 +1124,17 @@
   background: #eef2f7;
   color: #52627d;
   cursor: pointer;
-  transition:
-    background 0.2s ease,
-    color 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 .passwordBox button:hover {
   background: #fcf1d0;
   color: #010736;
+}
+
+.passwordBox button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .passwordToggle {
@@ -1098,11 +1183,12 @@
   opacity: 0.55;
 }
 
-/* Responsive */
+/* Responsive: tablet */
 
 @media (max-width: 1100px) {
-  .statsGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .content {
+    padding-right: 26px;
+    padding-left: 26px;
   }
 
   .actionGrid {
@@ -1113,6 +1199,8 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Responsive: mobile */
 
 @media (max-width: 800px) {
   .sidebar {
@@ -1141,9 +1229,12 @@
 
   .nav {
     margin-top: 25px;
+    padding-right: 0;
+    align-items: center;
   }
 
   .navItem {
+    width: 54px;
     justify-content: center;
     padding: 0;
   }
@@ -1163,23 +1254,52 @@
     display: none;
   }
 
-  .content {
-    width: calc(100% - 72px);
-    margin-left: 72px;
-    padding: 27px 18px 50px;
-  }
-
+  .content,
   .contentExpanded {
     width: calc(100% - 72px);
     margin-left: 72px;
+    padding: 27px 18px 50px;
   }
 
   .topbarRight {
     display: none;
   }
 
+  .topbar h1 {
+    font-size: 29px;
+  }
+
   .statsGrid {
     grid-template-columns: 1fr;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  .statCard,
+  .statCardMuted {
+    min-height: 96px;
+  }
+
+  .section {
+    margin-top: 32px;
+  }
+
+  .sectionHeader {
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .sectionHeader h2 {
+    font-size: 19px;
+  }
+
+  .sectionHeader > :last-child {
+    max-width: 45%;
+  }
+
+  .actionGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
 
   .registrationItem {
@@ -1196,7 +1316,58 @@
     flex: 1;
   }
 
-  .accountTypeSelector {
-    margin-top: 18px;
+  .reservationRow {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .reservationMeta {
+    line-height: 1.7;
+  }
+
+  .viewAllButton {
+    padding: 8px 10px;
+  }
+
+  .modal {
+    padding: 21px;
+  }
+}
+
+@media (max-width: 420px) {
+  .content,
+  .contentExpanded {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .actionCard {
+    gap: 10px;
+    padding: 15px;
+  }
+
+  .actionIcon {
+    width: 39px;
+    height: 39px;
+    flex-basis: 39px;
+  }
+
+  .actionBadge {
+    top: 7px;
+    right: 7px;
+    font-size: 7px;
+  }
+
+  .sectionHeader {
+    flex-wrap: wrap;
+  }
+
+  .sectionHeader > :last-child {
+    max-width: 100%;
+  }
+
+  .modalBackdrop {
+    padding: 10px;
   }
 }
