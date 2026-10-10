@@ -1,0 +1,7 @@
+project_id = "fivora"
+
+[functions.cleanup-retention]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/cleanup-retention/index.ts"
+# Akses tetap diperiksa melalui FIVORA_RETENTION_TOKEN di handler.
