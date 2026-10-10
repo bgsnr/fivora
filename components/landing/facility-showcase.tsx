@@ -16,22 +16,90 @@ import {
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
+type FacilityCategory =
+  | "Ruang Kelas"
+  | "Laboratorium"
+  | "Aula"
+  | "Lapangan"
+  | "Peralatan"
+  | "Lainnya"
+
+type CategoryFilter = "Semua" | FacilityCategory
+
 export interface FacilityItem {
   id: number
   code: string
   name: string
-  type:
-    | "Ruang Kelas"
-    | "Laboratorium"
-    | "Aula"
-    | "Lapangan"
-    | "Peralatan"
+  type: string
   location: string
   capacity: number
   capacityUnit: string
   status: "available" | "in_use" | "maintenance"
   description: string
   operationalInfo: string
+}
+
+const MAX_DISPLAYED_FACILITIES = 6
+
+const CATEGORIES: CategoryFilter[] = [
+  "Semua",
+  "Ruang Kelas",
+  "Laboratorium",
+  "Aula",
+  "Lapangan",
+  "Peralatan",
+  "Lainnya",
+]
+
+/**
+ * Menyamakan variasi penulisan kategori fasilitas.
+ * Contoh: ruang_kelas, Ruang Kelas, dan classroom.
+ */
+function normalizeFacilityCategory(
+  type: string | null | undefined,
+): FacilityCategory {
+  const key = (type ?? "")
+    .toLowerCase()
+    .trim()
+    .replace(/[_/-]+/g, " ")
+    .replace(/\s+/g, " ")
+
+  const categoryMap: Record<string, FacilityCategory> = {
+    ruang: "Ruang Kelas",
+    ruangan: "Ruang Kelas",
+    kelas: "Ruang Kelas",
+    "ruang kelas": "Ruang Kelas",
+    "ruang kuliah": "Ruang Kelas",
+    "ruangan kuliah": "Ruang Kelas",
+    classroom: "Ruang Kelas",
+    class: "Ruang Kelas",
+
+    lab: "Laboratorium",
+    laboratorium: "Laboratorium",
+    laboratory: "Laboratorium",
+
+    aula: "Aula",
+    auditorium: "Aula",
+
+    lapangan: "Lapangan",
+    "lapangan olahraga": "Lapangan",
+    "lapangan futsal": "Lapangan",
+    "lapangan basket": "Lapangan",
+    "lapangan voli": "Lapangan",
+    "lapangan badminton": "Lapangan",
+    field: "Lapangan",
+
+    alat: "Peralatan",
+    "alat lab": "Peralatan",
+    peralatan: "Peralatan",
+    "peralatan lab": "Peralatan",
+    perlengkapan: "Peralatan",
+    equipment: "Peralatan",
+
+    lainnya: "Lainnya",
+  }
+
+  return categoryMap[key] ?? "Lainnya"
 }
 
 export const FALLBACK_FACILITIES: FacilityItem[] = [
@@ -46,8 +114,7 @@ export const FALLBACK_FACILITIES: FacilityItem[] = [
     status: "available",
     description:
       "45 unit PC Core i7 dengan GPU RTX, sistem proyektor ganda, dan switch LAN gigabit berkecepatan tinggi.",
-    operationalInfo:
-      "Tersedia slot hari ini (07.00 - 20.00 WIB)",
+    operationalInfo: "Tersedia slot hari ini (07.00 - 20.00 WIB)",
   },
   {
     id: 2,
@@ -60,8 +127,7 @@ export const FALLBACK_FACILITIES: FacilityItem[] = [
     status: "in_use",
     description:
       "Panggung auditorium ber-AC, tata suara line array 10.000W, videotron LED 6x3 meter, dan ruang transit VIP.",
-    operationalInfo:
-      "Sedang digunakan kuliah umum s.d 15.30 WIB",
+    operationalInfo: "Sedang digunakan kuliah umum s.d 15.30 WIB",
   },
   {
     id: 3,
@@ -74,8 +140,7 @@ export const FALLBACK_FACILITIES: FacilityItem[] = [
     status: "available",
     description:
       "Papan tulis interaktif 85 inch, kamera tracking dosen otomatis, mic nirkabel, dan formasi kursi diskusi.",
-    operationalInfo:
-      "Tersedia slot hari ini (07.00 - 20.00 WIB)",
+    operationalInfo: "Tersedia slot hari ini (07.00 - 20.00 WIB)",
   },
   {
     id: 4,
@@ -88,23 +153,20 @@ export const FALLBACK_FACILITIES: FacilityItem[] = [
     status: "available",
     description:
       "Lantai interlock standar kompetisi, pencahayaan LED sorot malam, ruang ganti, dan tribun barat.",
-    operationalInfo:
-      "Tersedia slot sore (15.00 - 20.00 WIB)",
+    operationalInfo: "Tersedia slot sore (15.00 - 20.00 WIB)",
   },
   {
     id: 5,
     code: "EQUIP-SND",
     name: "Paket Mobile Sound System Portable",
     type: "Peralatan",
-    location:
-      "Unit Layanan Sarana Prasarana (UPT)",
+    location: "Unit Layanan Sarana Prasarana (UPT)",
     capacity: 2,
     capacityUnit: "Speaker Aktif",
     status: "available",
     description:
       "2 unit active speaker 15 inch dengan stand, mixer 8 channel audio, dan 4 mikrofon nirkabel UHF.",
-    operationalInfo:
-      "Siap dipinjam untuk kegiatan resmi fakultas",
+    operationalInfo: "Siap dipinjam untuk kegiatan resmi fakultas",
   },
   {
     id: 6,
@@ -117,19 +179,9 @@ export const FALLBACK_FACILITIES: FacilityItem[] = [
     status: "maintenance",
     description:
       "Dalam proses perawatan berkala kabel optik jaringan dan penggantian modul catu daya cadangan.",
-    operationalInfo:
-      "Perbaikan teknis berlangsung s.d esok hari",
+    operationalInfo: "Perbaikan teknis berlangsung s.d esok hari",
   },
 ]
-
-const CATEGORIES = [
-  "Semua",
-  "Ruang Kelas",
-  "Laboratorium",
-  "Aula",
-  "Lapangan",
-  "Peralatan",
-] as const
 
 export function FacilityShowcase({
   facilities = FALLBACK_FACILITIES,
@@ -138,13 +190,13 @@ export function FacilityShowcase({
 }) {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] =
-    useState<string>("Semua")
-  const [selectedStatus, setSelectedStatus] =
-    useState<string>("all")
+    useState<CategoryFilter>("Semua")
+  const [selectedStatus, setSelectedStatus] = useState("all")
 
+  // Pencarian dan filter tetap diterapkan sebelum jumlah kartu dibatasi.
   const filteredFacilities = useMemo(() => {
     return facilities.filter((facility) => {
-      const query = searchTerm.toLowerCase()
+      const query = searchTerm.toLowerCase().trim()
 
       const matchesSearch =
         facility.name.toLowerCase().includes(query) ||
@@ -152,19 +204,19 @@ export function FacilityShowcase({
         facility.code.toLowerCase().includes(query) ||
         facility.description.toLowerCase().includes(query)
 
+      const normalizedCategory = normalizeFacilityCategory(
+        facility.type,
+      )
+
       const matchesCategory =
         selectedCategory === "Semua" ||
-        facility.type === selectedCategory
+        normalizedCategory === selectedCategory
 
       const matchesStatus =
         selectedStatus === "all" ||
         facility.status === selectedStatus
 
-      return (
-        matchesSearch &&
-        matchesCategory &&
-        matchesStatus
-      )
+      return matchesSearch && matchesCategory && matchesStatus
     })
   }, [
     facilities,
@@ -173,13 +225,19 @@ export function FacilityShowcase({
     selectedStatus,
   ])
 
+  // Landing page hanya menampilkan maksimal 6 fasilitas.
+  const displayedFacilities = filteredFacilities.slice(
+    0,
+    MAX_DISPLAYED_FACILITIES,
+  )
+
   return (
     <section
       id="katalog"
       className="scroll-mt-16 border-b border-[#D8DFEA] bg-white py-16 lg:py-24"
     >
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
+        {/* Judul katalog */}
         <div className="mb-10 flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
           <div>
             <div className="mb-2 font-mono text-xs font-semibold uppercase tracking-wider text-[#22396F]">
@@ -191,10 +249,9 @@ export function FacilityShowcase({
             </h2>
 
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#52627D]">
-              Daftar fasilitas dapat dipantau langsung oleh
-              pengunjung umum tanpa login. Setiap pemakaian
-              divalidasi dalam kelipatan 30 menit oleh petugas
-              sarana prasarana.
+              Jelajahi pilihan fasilitas kampus dan lihat
+              informasi ketersediaannya. Katalog publik dapat
+              diakses tanpa login.
             </p>
           </div>
 
@@ -205,16 +262,16 @@ export function FacilityShowcase({
             </div>
 
             <span className="leading-relaxed">
-              Status ketersediaan ditampilkan secara langsung
-              tanpa memuat data pribadi peminjam.
+              Informasi fasilitas dapat dilihat tanpa
+              menampilkan data pribadi peminjam.
             </span>
           </div>
         </div>
 
-        {/* Filter & Search */}
+        {/* Pencarian dan filter */}
         <div className="mb-8 rounded-2xl border border-[#D8DFEA] bg-[#F7F9FC] p-4 shadow-sm">
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-            {/* Search */}
+            {/* Pencarian */}
             <div className="relative max-w-md flex-1">
               <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#22396F]" />
 
@@ -222,22 +279,19 @@ export function FacilityShowcase({
                 type="text"
                 placeholder="Cari nama ruang, kode fasilitas, atau gedung..."
                 value={searchTerm}
-                onChange={(e) =>
-                  setSearchTerm(e.target.value)
-                }
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="h-10 rounded-full border-[#D0D8E5] bg-white pl-9 text-xs text-[#010736] shadow-none placeholder:text-[#7A879D] focus-visible:ring-2 focus-visible:ring-[#22396F]/30"
               />
             </div>
 
-            {/* Category Filter */}
+            {/* Filter kategori */}
             <div className="flex flex-wrap items-center gap-1.5">
               {CATEGORIES.map((category) => (
                 <button
                   key={category}
                   type="button"
-                  onClick={() =>
-                    setSelectedCategory(category)
-                  }
+                  onClick={() => setSelectedCategory(category)}
+                  aria-pressed={selectedCategory === category}
                   className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
                     selectedCategory === category
                       ? "bg-[#010736] text-white shadow-sm"
@@ -249,13 +303,11 @@ export function FacilityShowcase({
               ))}
             </div>
 
-            {/* Status Filter */}
-            <div className="flex items-center gap-1 border-t border-[#22396F]/10 pt-2 md:border-l md:border-t-0 md:pl-4 md:pt-0">
+            {/* Filter ketersediaan */}
+            <div className="flex flex-wrap items-center gap-1 border-t border-[#22396F]/10 pt-2 md:border-l md:border-t-0 md:pl-4 md:pt-0">
               <button
                 type="button"
-                onClick={() =>
-                  setSelectedStatus("all")
-                }
+                onClick={() => setSelectedStatus("all")}
                 className={`rounded-full px-2.5 py-1 text-xs transition-colors ${
                   selectedStatus === "all"
                     ? "bg-[#010736] font-bold text-white"
@@ -267,9 +319,7 @@ export function FacilityShowcase({
 
               <button
                 type="button"
-                onClick={() =>
-                  setSelectedStatus("available")
-                }
+                onClick={() => setSelectedStatus("available")}
                 className={`rounded-full px-2.5 py-1 text-xs transition-colors ${
                   selectedStatus === "available"
                     ? "border border-green-200 bg-green-50 font-bold text-green-800"
@@ -281,9 +331,7 @@ export function FacilityShowcase({
 
               <button
                 type="button"
-                onClick={() =>
-                  setSelectedStatus("in_use")
-                }
+                onClick={() => setSelectedStatus("in_use")}
                 className={`rounded-full px-2.5 py-1 text-xs transition-colors ${
                   selectedStatus === "in_use"
                     ? "border border-red-200 bg-red-50 font-bold text-red-800"
@@ -295,9 +343,7 @@ export function FacilityShowcase({
 
               <button
                 type="button"
-                onClick={() =>
-                  setSelectedStatus("maintenance")
-                }
+                onClick={() => setSelectedStatus("maintenance")}
                 className={`rounded-full px-2.5 py-1 text-xs transition-colors ${
                   selectedStatus === "maintenance"
                     ? "border border-yellow-200 bg-yellow-50 font-bold text-yellow-800"
@@ -310,7 +356,7 @@ export function FacilityShowcase({
           </div>
         </div>
 
-        {/* Facility Display */}
+        {/* Daftar fasilitas: maksimal 6 kartu */}
         {filteredFacilities.length === 0 ? (
           <div className="rounded-2xl border border-[#D8DFEA] bg-white p-12 text-center shadow-sm">
             <div className="mx-auto mb-3 flex size-12 items-center justify-center rounded-full bg-[#FCF1D0] text-[#22396F]">
@@ -322,8 +368,7 @@ export function FacilityShowcase({
             </h3>
 
             <p className="mx-auto mt-1 max-w-md text-xs leading-relaxed text-[#52627D]">
-              Periksa kembali kata kunci pencarian Anda atau
-              kembalikan filter kategori ke pengaturan awal.
+              Periksa kata kunci atau kategori yang dipilih.
             </p>
 
             <Button
@@ -340,31 +385,25 @@ export function FacilityShowcase({
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredFacilities.map((facility) => {
-              const isAvailable =
-                facility.status === "available"
+          <>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {displayedFacilities.map((facility) => {
+                const isAvailable = facility.status === "available"
+                const isInUse = facility.status === "in_use"
+                const isMaintenance =
+                  facility.status === "maintenance"
 
-              const isInUse =
-                facility.status === "in_use"
-
-              const isMaintenance =
-                facility.status === "maintenance"
-
-              return (
-                <div
-                  key={facility.id}
-                  className="group flex flex-col justify-between rounded-2xl border border-[#D8DFEA] bg-white p-5 transition-all hover:-translate-y-0.5 hover:border-[#22396F]/40 hover:shadow-lg hover:shadow-[#010736]/5"
-                >
-                  <div>
-                    {/* Header */}
+                return (
+                  <div
+                    key={facility.id}
+                    className="flex flex-col rounded-2xl border border-[#D8DFEA] bg-white p-5 transition-all hover:-translate-y-0.5 hover:border-[#22396F]/40 hover:shadow-lg hover:shadow-[#010736]/5"
+                  >
+                    {/* Kode dan status fasilitas */}
                     <div className="mb-4 flex items-center justify-between gap-2">
-                      {/* Facility Code */}
                       <span className="rounded-full bg-[#FCF1D0] px-2.5 py-1 font-mono text-[11px] font-bold tracking-tight text-[#010736]">
                         {facility.code}
                       </span>
 
-                      {/* Tersedia */}
                       {isAvailable && (
                         <span className="inline-flex items-center gap-1.5 rounded-full border border-green-200 bg-green-50 px-2.5 py-1 text-[11px] font-semibold text-green-700">
                           <CheckCircle2 className="size-3 text-green-600" />
@@ -372,7 +411,6 @@ export function FacilityShowcase({
                         </span>
                       )}
 
-                      {/* Tidak Tersedia */}
                       {isInUse && (
                         <span className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-[11px] font-semibold text-red-700">
                           <Clock className="size-3 text-red-600" />
@@ -380,7 +418,6 @@ export function FacilityShowcase({
                         </span>
                       )}
 
-                      {/* Dalam Perbaikan */}
                       {isMaintenance && (
                         <span className="inline-flex items-center gap-1.5 rounded-full border border-yellow-200 bg-yellow-50 px-2.5 py-1 text-[11px] font-semibold text-yellow-700">
                           <AlertTriangle className="size-3 text-yellow-600" />
@@ -389,17 +426,15 @@ export function FacilityShowcase({
                       )}
                     </div>
 
-                    {/* Title */}
-                    <h3 className="font-heading line-clamp-1 text-base font-bold text-[#010736]">
+                    {/* Informasi fasilitas */}
+                    <h3 className="font-heading line-clamp-2 text-base font-bold text-[#010736]">
                       {facility.name}
                     </h3>
 
-                    {/* Description */}
                     <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-[#52627D]">
                       {facility.description}
                     </p>
 
-                    {/* Metadata */}
                     <div className="mt-4 space-y-2 border-t border-[#22396F]/10 pt-3 text-xs text-[#52627D]">
                       <div className="flex items-center gap-2">
                         <MapPin className="size-3.5 shrink-0 text-[#22396F]" />
@@ -421,64 +456,36 @@ export function FacilityShowcase({
                       <div className="flex items-center gap-2 rounded-xl bg-[#F8F6ED] p-2 font-mono text-[11px] text-[#010736]">
                         <Clock className="size-3 shrink-0 text-[#22396F]" />
 
-                        <span className="truncate">
+                        <span className="line-clamp-2">
                           {facility.operationalInfo}
                         </span>
                       </div>
                     </div>
                   </div>
+                )
+              })}
+            </div>
 
-                  {/* Action */}
-                  <div className="mt-5 border-t border-[#22396F]/10 pt-3">
-                    {/* Tersedia */}
-                    {isAvailable && (
-                      <Link
-                        href="/login?redirect=/reservations/new"
-                        className="block w-full"
-                      >
-                        <Button
-                          variant="accent"
-                          size="sm"
-                          className="h-9 w-full justify-center rounded-full bg-[#010736] text-xs font-semibold text-white shadow-sm hover:bg-[#0D1C42]"
-                        >
-                          Reservasi
-                        </Button>
-                      </Link>
-                    )}
-
-                    {/* Tidak Tersedia */}
-                    {isInUse && (
-                      <Link
-                        href="/login?redirect=/reservations"
-                        className="block w-full"
-                      >
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-9 w-full justify-center rounded-full border-red-200 bg-red-50/50 text-xs font-semibold text-red-700 hover:bg-red-50"
-                        >
-                          Periksa Jadwal
-                        </Button>
-                      </Link>
-                    )}
-
-                    {/* Dalam Perbaikan */}
-                    {isMaintenance && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled
-                        className="h-9 w-full justify-center rounded-full border-yellow-200 bg-yellow-50 text-xs font-semibold text-yellow-700 opacity-100"
-                      >
-                        Dalam Pemeliharaan
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
+            {/* Jumlah fasilitas yang ditampilkan */}
+            <p className="mt-6 text-center text-sm text-[#52627D]">
+              Menampilkan {displayedFacilities.length} dari{" "}
+              {filteredFacilities.length} fasilitas yang cocok.
+            </p>
+          </>
         )}
+
+        {/* Tombol menuju katalog lengkap */}
+        <div className="mt-8 flex justify-center">
+          <Link href="/fasilitas" className="w-full sm:w-auto">
+            <Button
+              variant="accent"
+              size="sm"
+              className="h-11 w-full rounded-full bg-[#010736] px-8 text-sm font-semibold text-white shadow-sm hover:bg-[#0D1C42]"
+            >
+              Lihat Semua Fasilitas
+            </Button>
+          </Link>
+        </div>
       </div>
     </section>
   )

@@ -1,7 +1,7 @@
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { getWIBDateTime } from '@/lib/validations/reservation-time'
 import { emergencyCancelByStaff } from '@/lib/reservation-service'
-import { updateReservationStatus } from '@/lib/actions/reservations'
+import { updateReservationStatus } from '@/lib/reservation-repository'
 import type { Reservation } from '@/types/reservation'
 
 /**

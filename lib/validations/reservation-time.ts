@@ -86,6 +86,43 @@ export function formatMinutesToTime(minutes: number): string {
   return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`
 }
 
+function addDaysToDateString(
+  dateString: string,
+  days: number
+): string {
+  const [year, month, day] = dateString.split('-').map(Number)
+
+  return new Date(
+    Date.UTC(year, month - 1, day + days)
+  )
+    .toISOString()
+    .slice(0, 10)
+}
+
+function addMonthsToDateString(
+  dateString: string,
+  months: number
+): string {
+  const [year, month, day] = dateString.split('-').map(Number)
+
+  const targetMonthIndex = month - 1 + months
+  const targetYear =
+    year + Math.floor(targetMonthIndex / 12)
+  const targetMonth = targetMonthIndex % 12
+
+  const lastDay = new Date(
+    Date.UTC(targetYear, targetMonth + 1, 0)
+  ).getUTCDate()
+
+  const targetDay = Math.min(day, lastDay)
+
+  return [
+    String(targetYear).padStart(4, '0'),
+    String(targetMonth + 1).padStart(2, '0'),
+    String(targetDay).padStart(2, '0'),
+  ].join('-')
+}
+
 /**
  * Validasi 1-8: Memeriksa aturan waktu dan slot reservasi
  */
@@ -95,72 +132,171 @@ export function validateReservationTimeRules(
   endTime: string,
   submittedAt: Date = new Date()
 ): ValidationResult {
-  // Format tanggal harus YYYY-MM-DD
+  // 1. Validasi format dan keberadaan tanggal.
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-    return { valid: false, error: 'Format tanggal reservasi tidak valid (gunakan YYYY-MM-DD)' }
+    return {
+      valid: false,
+      error: 'Format tanggal reservasi tidak valid (gunakan YYYY-MM-DD)',
+    }
   }
 
-  // Aturan 8 & 7: Waktu referensi pengajuan dalam WIB
+  const [year, month, day] = date.split('-').map(Number)
+
+  const parsedDate = new Date(
+    Date.UTC(year, month - 1, day)
+  )
+
+  if (
+    parsedDate.getUTCFullYear() !== year ||
+    parsedDate.getUTCMonth() !== month - 1 ||
+    parsedDate.getUTCDate() !== day
+  ) {
+    return {
+      valid: false,
+      error: 'Tanggal reservasi tidak valid',
+    }
+  }
+
+  // 2. Semua perhitungan tanggal mengacu pada WIB.
   const wibNow = getWIBDateTime(submittedAt)
 
-  // Tanggal reservasi tidak boleh di masa lalu
-  if (date < wibNow.dateStr) {
-    return { valid: false, error: 'Tanggal reservasi tidak boleh di masa lalu' }
+  const minDate = addDaysToDateString(wibNow.dateStr, 1)
+  const maxDate = addMonthsToDateString(wibNow.dateStr, 2)
+
+  if (date < minDate) {
+    return {
+      valid: false,
+      error:
+        'Tanggal reservasi minimal besok karena pemesanan harus dilakukan sekurang-kurangnya 24 jam sebelumnya.',
+    }
   }
 
-  let startMinutes: number
-  let endMinutes: number
-  try {
-    startMinutes = parseTimeToMinutes(startTime)
-    endMinutes = parseTimeToMinutes(endTime)
-  } catch {
-    return { valid: false, error: 'Format jam mulai atau selesai tidak valid (gunakan HH:mm)' }
+  if (date > maxDate) {
+    return {
+      valid: false,
+      error:
+        `Tanggal reservasi maksimal sampai ${maxDate}.`,
+    }
   }
 
-  // Aturan 2: Kelipatan 30 menit
+  // 3. Format jam harus valid.
+  const timeRegex =
+    /^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/
+
+  if (
+    !timeRegex.test(startTime) ||
+    !timeRegex.test(endTime)
+  ) {
+    return {
+      valid: false,
+      error:
+        'Format jam mulai atau selesai tidak valid (gunakan HH:mm)',
+    }
+  }
+
+  const startParts = startTime.split(':').map(Number)
+  const endParts = endTime.split(':').map(Number)
+
+  // Slot hanya boleh tepat pada interval 30 menit.
+  // Detik selain nol tidak diperbolehkan.
+  if (
+    (startParts.length === 3 && startParts[2] !== 0) ||
+    (endParts.length === 3 && endParts[2] !== 0)
+  ) {
+    return {
+      valid: false,
+      error: 'Waktu harus menggunakan slot 30 menit yang tepat.',
+    }
+  }
+
+  const startMinutes = parseTimeToMinutes(startTime)
+  const endMinutes = parseTimeToMinutes(endTime)
+
+  // 4. Jam mulai dan selesai harus kelipatan 30 menit.
   if (startMinutes % 30 !== 0) {
-    return { valid: false, error: 'Waktu mulai harus kelipatan 30 menit (contoh: 08:00, 08:30)' }
+    return {
+      valid: false,
+      error:
+        'Waktu mulai harus kelipatan 30 menit (contoh: 08:00, 08:30)',
+    }
   }
+
   if (endMinutes % 30 !== 0) {
-    return { valid: false, error: 'Waktu selesai harus kelipatan 30 menit (contoh: 08:30, 09:00)' }
-  }
-
-  // Aturan 1: Jam operasional 07:00–20:00 (420 menit s/d 1200 menit)
-  const OPERATIONAL_START = 7 * 60 // 07:00
-  const OPERATIONAL_END = 20 * 60 // 20:00
-
-  if (startMinutes < OPERATIONAL_START || startMinutes >= OPERATIONAL_END) {
     return {
       valid: false,
-      error: 'Waktu mulai harus berada dalam jam operasional (07:00–20:00 WIB)',
+      error:
+        'Waktu selesai harus kelipatan 30 menit (contoh: 08:30, 09:00)',
     }
   }
 
-  if (endMinutes <= OPERATIONAL_START || endMinutes > OPERATIONAL_END) {
+  // 5. Jam operasional: 07.00–20.00 WIB.
+  const OPERATIONAL_START = 7 * 60
+  const OPERATIONAL_END = 20 * 60
+
+  if (
+    startMinutes < OPERATIONAL_START ||
+    startMinutes >= OPERATIONAL_END
+  ) {
     return {
       valid: false,
-      error: 'Waktu selesai harus berada dalam jam operasional (07:00–20:00 WIB)',
+      error:
+        'Waktu mulai harus berada dalam jam operasional (07:00–19:30 WIB)',
     }
   }
 
-  // Aturan 3: Durasi minimal 30 menit
+  if (
+    endMinutes <= OPERATIONAL_START ||
+    endMinutes > OPERATIONAL_END
+  ) {
+    return {
+      valid: false,
+      error:
+        'Waktu selesai harus berada dalam jam operasional (07:30–20:00 WIB)',
+    }
+  }
+
+  // 6. Jam selesai harus setelah jam mulai.
   if (endMinutes <= startMinutes) {
-    return { valid: false, error: 'Waktu selesai harus lebih besar dari waktu mulai' }
+    return {
+      valid: false,
+      error:
+        'Waktu selesai harus lebih besar dari waktu mulai',
+    }
   }
+
+  // Durasi minimal 30 menit.
   if (endMinutes - startMinutes < 30) {
-    return { valid: false, error: 'Durasi reservasi minimal adalah 30 menit' }
+    return {
+      valid: false,
+      error:
+        'Durasi reservasi minimal adalah 30 menit',
+    }
   }
 
-  // Aturan 6: Pengajuan untuk hari yang sama
-  if (date === wibNow.dateStr) {
-    const minAllowedSlotMinutes = getNextAvailableSlotMinutes(wibNow.timeStr)
+  // 7. Validasi jeda minimal 24 jam secara tepat.
+  // Waktu reservasi diinterpretasikan sebagai waktu WIB (UTC+7).
+  const normalizedStartTime =
+    startTime.length === 5
+      ? `${startTime}:00`
+      : startTime
 
-    if (startMinutes < minAllowedSlotMinutes) {
-      const minTimeString = formatMinutesToTime(minAllowedSlotMinutes)
-      return {
-        valid: false,
-        error: `Untuk reservasi hari ini, waktu mulai paling awal yang dapat dipilih adalah ${minTimeString} WIB`,
-      }
+  const reservationStartTimestamp = new Date(
+    `${date}T${normalizedStartTime}+07:00`
+  ).getTime()
+
+  const minimumAdvanceMilliseconds =
+    24 * 60 * 60 * 1000
+
+  const earliestAllowedTimestamp =
+    submittedAt.getTime() + minimumAdvanceMilliseconds
+
+  if (
+    reservationStartTimestamp < earliestAllowedTimestamp
+  ) {
+    return {
+      valid: false,
+      error:
+        'Reservasi harus diajukan minimal 24 jam sebelum waktu mulai. Silakan pilih tanggal atau jam lain.',
     }
   }
 

@@ -38,7 +38,7 @@ export default async function StaffReservationDetailPage({
 }: StaffReservationDetailPageProps) {
   const { id } = await params
   const user = await getCurrentUser()
-  if (!user || (user.role !== 'petugas' && user.role !== 'admin')) {
+  if (!user || user.status !== 'aktif' || user.role !== 'petugas') {
     return (
       <div className="flex min-h-screen flex-col bg-background">
         <Navbar />
