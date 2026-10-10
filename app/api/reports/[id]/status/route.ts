@@ -199,6 +199,8 @@ export async function PATCH(request: Request, { params }: Context) {
       revalidatePath(`/petugas/laporan/${id}`)
       revalidatePath('/laporan')
       revalidatePath(`/laporan/${id}`)
+      revalidatePath('/admin/laporan')
+      revalidatePath('/admin/laporan/[id]', 'page')
     } catch (error) {
       console.error('Gagal menyegarkan halaman laporan:', error)
     }

@@ -73,6 +73,10 @@ export async function GET(
       return fail('Laporan tidak ditemukan.', 404)
     }
 
+    if (!report.photo_path) {
+      return fail('Laporan ini tidak memiliki foto.', 404)
+    }
+
     const { data: photo, error: photoError } = await supabaseAdmin
       .storage
       .from('report-photos')

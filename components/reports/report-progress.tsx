@@ -17,8 +17,14 @@ function formatDate(value: string) {
 }
 
 export default function ReportProgress({
-  reportId, editable = false,
-}: { reportId: string; editable?: boolean }) {
+  reportId,
+  editable = false,
+  hideTopDivider = false,
+}: {
+  reportId: string
+  editable?: boolean
+  hideTopDivider?: boolean
+}) {
   const [entries, setEntries] = useState<ProgressEntry[]>([])
   const [hasMore, setHasMore] = useState(false)
   const [canAdd, setCanAdd] = useState(false)
@@ -123,7 +129,8 @@ export default function ReportProgress({
   }
 
   return (
-    <section className={`${styles.progress} ${editable ? '' : styles.reader}`} aria-label="Perkembangan laporan">
+    <section className={`${styles.progress} ${editable ? '' : styles.reader} ${hideTopDivider ? styles.noTopDivider : ''}`}
+       aria-label="Perkembangan laporan">
       <div className={styles.heading}>
         <h3>Perkembangan laporan</h3>
         <button type="button" className={styles.reload} disabled={reading || saving} onClick={reload}>
