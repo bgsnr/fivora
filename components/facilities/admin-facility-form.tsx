@@ -7,14 +7,11 @@ import { useId, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { createFacilityAdminAction, updateFacilityAdminAction } from '@/lib/actions/admin-facilities'
 import { facilityTypes, validateFacilityMaster } from '@/lib/validations/facilities'
+import { normalizeFacilityType, isEquipmentFacility } from '@/lib/facility-categories'
 import type { Facility } from '@/types/facility'
 import styles from './admin-management.module.css'
 
 type Props = { facility?: Facility }
-const typeLabels: Record<string, string> = {
-  ruang_kelas: 'Ruang Kelas', aula: 'Aula', laboratorium: 'Laboratorium',
-  alat: 'Peralatan', peralatan: 'Peralatan', lapangan: 'Lapangan',
-}
 const statusLabels: Record<string, string> = {
   aktif: 'Aktif', nonaktif: 'Nonaktif', dalam_perbaikan: 'Dalam perbaikan',
   active: 'Aktif', inactive: 'Nonaktif', under_maintenance: 'Dalam perbaikan',
@@ -25,7 +22,7 @@ export default function AdminFacilityForm({ facility }: Props) {
   const fieldId = useId()
   const submittingRef = useRef(false)
   const [name, setName] = useState(facility?.name ?? '')
-  const [type, setType] = useState(facility ? facility.type ?? '' : 'Ruang Kelas')
+  const [type, setType] = useState(facility ? normalizeFacilityType(facility.type) ?? '' : 'Ruang Kelas')
   const [location, setLocation] = useState(facility?.location ?? '')
   const [capacity, setCapacity] = useState(facility?.capacity == null ? '' : String(facility.capacity))
   const [description, setDescription] = useState(facility?.description ?? '')
@@ -90,7 +87,6 @@ export default function AdminFacilityForm({ facility }: Props) {
               <label htmlFor={`${fieldId}-type`}>Tipe fasilitas <span aria-hidden="true">*</span></label>
               <select id={`${fieldId}-type`} required value={type} onChange={(event) => setType(event.target.value)}>
                 <option value="">Pilih tipe fasilitas</option>
-                {type && !facilityTypes.some((value) => value === type) && <option value={type}>{typeLabels[type] ?? `${type} (data lama)`}</option>}
                 {facilityTypes.map((value) => <option key={value} value={value}>{value}</option>)}
               </select>
             </div>
@@ -99,7 +95,9 @@ export default function AdminFacilityForm({ facility }: Props) {
               <input id={`${fieldId}-location`} maxLength={255} value={location} onChange={(event) => setLocation(event.target.value)} placeholder="Contoh: Gedung B Lantai 2" />
             </div>
             <div className={styles.field}>
-              <label htmlFor={`${fieldId}-capacity`}>Kapasitas (orang)</label>
+              <label htmlFor={`${fieldId}-capacity`}>
+                {isEquipmentFacility(type, name) ? 'Jumlah unit' : 'Kapasitas (orang)'}
+              </label>
               <input id={`${fieldId}-capacity`} type="number" min={0} max={2147483647} step={1} value={capacity} onChange={(event) => setCapacity(event.target.value)} placeholder="Contoh: 40" />
               <small>Boleh dikosongkan jika tidak berlaku untuk fasilitas ini.</small>
             </div>

@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { getAllFacilitiesAdmin, getUpcomingReservationsForFacility, setFacilityStatusAction } from '@/lib/actions/admin-facilities'
 import type { PendingReservationInfo } from '@/lib/actions/admin-facilities'
 import type { Facility } from '@/types/facility'
+import { getFacilityCategory, formatFacilityCapacity } from '@/lib/facility-categories'
 import styles from '@/app/admin/fasilitas/adminFasilitas.module.css'
 import extra from './admin-management.module.css'
 
@@ -155,8 +156,8 @@ export default function AdminFacilitiesContent({ initialFacilities, initialError
               const inactive = ['nonaktif', 'inactive'].includes(facility.status)
               const knownStatus = ['aktif', 'active', 'nonaktif', 'inactive', 'dalam_perbaikan', 'under_maintenance'].includes(facility.status)
               return <tr key={facility.id}>
-                <td>#{facility.id}</td><td className={styles.facilityName}>{facility.name}</td><td>{facility.type || '-'}</td><td>{facility.location || '-'}</td>
-                <td>{facility.capacity == null ? '-' : `${facility.capacity} Orang`}</td><td>{badge(facility)}</td>
+                <td>#{facility.id}</td><td className={styles.facilityName}>{facility.name}</td><td>{getFacilityCategory(facility.type)}</td><td>{facility.location || '-'}</td>
+                <td>{formatFacilityCapacity(facility)}</td><td>{badge(facility)}</td>
                 <td><div className={styles.actions}>
                   <Link href={`/admin/fasilitas/${facility.id}/edit`} className={styles.editButton}>Edit</Link>
                   <button type="button" disabled={busy || !!readError || !!selectedFacility || !knownStatus} className={inactive ? styles.activateButton : styles.toggleButton}

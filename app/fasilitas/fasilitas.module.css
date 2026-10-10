@@ -37,6 +37,15 @@
   line-height: 1.5;
 }
 
+.dataNote {
+  margin: 12px 0 0;
+  padding-left: 10px;
+  border-left: 2px solid #d8c58e;
+  color: #59677d;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
 /* Filter Card */
 
 .filterCard {

@@ -8,8 +8,16 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
 import { createClient } from '@/lib/supabase/client';
+import FilterDropdown from '@/components/facilities/filter-dropdown';
+import { matchesFacilityLocation } from '@/lib/facility-search';
 
 import { Facility, FacilityStatus } from '@/types/facility';
+import {
+  FACILITY_CATEGORIES,
+  FACILITY_CAPACITY_NOTE,
+  getFacilityCategory,
+  formatFacilityCapacity,
+} from '@/lib/facility-categories';
 
 import styles from './fasilitas.module.css';
 
@@ -23,7 +31,8 @@ export default function CatalogFacilitiesPage() {
   // State untuk filter & pencarian (US 2)
   const [search, setSearch] = useState('');
   const [selectedType, setSelectedType] = useState('all');
-  const [selectedLocation, setSelectedLocation] = useState('all');
+  const [locationSearch, setLocationSearch] = useState('');
+  const [exactLocation, setExactLocation] = useState('');
   const [minCapacity, setMinCapacity] = useState<number | ''>('');
 
   // Fetch data fasilitas dari Supabase
@@ -56,19 +65,16 @@ export default function CatalogFacilitiesPage() {
 
   // Opsi unik untuk dropdown Tipe dan Lokasi
   const uniqueTypes = useMemo(() => {
-    const types = facilities
-      .map((f) => f.type)
-      .filter((t): t is string => Boolean(t));
-
-    return Array.from(new Set(types));
+    const types = new Set(facilities.map((f) => getFacilityCategory(f.type)));
+    return FACILITY_CATEGORIES.filter((type) => types.has(type));
   }, [facilities]);
 
   const uniqueLocations = useMemo(() => {
     const locations = facilities
-      .map((f) => f.location)
+      .map((f) => f.location?.trim())
       .filter((l): l is string => Boolean(l));
 
-    return Array.from(new Set(locations));
+    return Array.from(new Set(locations)).sort((a, b) => a.localeCompare(b, 'id'));
   }, [facilities]);
 
   // Filter fasilitas di client side
@@ -80,10 +86,11 @@ export default function CatalogFacilitiesPage() {
           f.description.toLowerCase().includes(search.toLowerCase()));
 
       const matchesType =
-        selectedType === 'all' || f.type === selectedType;
+        selectedType === 'all' || getFacilityCategory(f.type) === selectedType;
 
-      const matchesLocation =
-        selectedLocation === 'all' || f.location === selectedLocation;
+      const matchesLocation = exactLocation
+        ? f.location?.trim() === exactLocation
+        : matchesFacilityLocation(f.location, locationSearch);
 
       const matchesCapacity =
         minCapacity === '' ||
@@ -96,7 +103,7 @@ export default function CatalogFacilitiesPage() {
         matchesCapacity
       );
     });
-  }, [facilities, search, selectedType, selectedLocation, minCapacity]);
+  }, [facilities, search, selectedType, locationSearch, exactLocation, minCapacity]);
 
   // Helper Badge Status
   const renderStatusBadge = (status: FacilityStatus) => {
@@ -138,6 +145,7 @@ export default function CatalogFacilitiesPage() {
           Cari dan cek ketersediaan ruang kelas, laboratorium, aula, alat,
           dan lapangan kampus.
         </p>
+        <p className={styles.dataNote}>{FACILITY_CAPACITY_NOTE}</p>
       </div>
 
       {/* Card Filter & Pencarian */}
@@ -160,52 +168,29 @@ export default function CatalogFacilitiesPage() {
           </div>
 
           {/* Filter Tipe */}
-          <div className={styles.filterGroup}>
-            <label htmlFor="type">
-              Tipe Fasilitas
-            </label>
+          <FilterDropdown
+            id="type"
+            label="Tipe Fasilitas"
+            value={selectedType}
+            options={[
+              { value: 'all', label: 'Semua Tipe' },
+              ...uniqueTypes.map((type) => ({ value: type, label: type })),
+            ]}
+            onChange={setSelectedType}
+          />
 
-            <select
-              id="type"
-              value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value)}
-              className={styles.filterSelect}
-            >
-              <option value="all">
-                Semua Tipe
-              </option>
-
-              {uniqueTypes.map((type) => (
-                <option key={type} value={type}>
-                  {type}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Filter Lokasi */}
-          <div className={styles.filterGroup}>
-            <label htmlFor="location">
-              Lokasi
-            </label>
-
-            <select
-              id="location"
-              value={selectedLocation}
-              onChange={(e) => setSelectedLocation(e.target.value)}
-              className={styles.filterSelect}
-            >
-              <option value="all">
-                Semua Lokasi
-              </option>
-
-              {uniqueLocations.map((loc) => (
-                <option key={loc} value={loc}>
-                  {loc}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Pencarian lokasi dengan saran dari data fasilitas */}
+          <FilterDropdown
+            id="location"
+            label="Lokasi"
+            value={locationSearch}
+            options={[
+              { value: '', label: 'Semua Lokasi' },
+              ...uniqueLocations.map((loc) => ({ value: loc, label: loc })),
+            ]}
+            onChange={(value) => { setLocationSearch(value); setExactLocation(value); }}
+            onSearch={(value) => { setLocationSearch(value); setExactLocation(''); }}
+          />
 
           {/* Filter Kapasitas */}
           <div className={styles.filterGroup}>
@@ -234,14 +219,15 @@ export default function CatalogFacilitiesPage() {
         {/* Reset Filter Button */}
         {(search ||
           selectedType !== 'all' ||
-          selectedLocation !== 'all' ||
+          locationSearch ||
           minCapacity !== '') && (
           <div className={styles.filterAction}>
             <button
               onClick={() => {
                 setSearch('');
                 setSelectedType('all');
-                setSelectedLocation('all');
+                setLocationSearch('');
+                setExactLocation('');
                 setMinCapacity('');
               }}
               className={styles.resetButton}
@@ -304,7 +290,7 @@ export default function CatalogFacilitiesPage() {
                     <p>
                       Tipe:{' '}
                       <strong>
-                        {facility.type || '-'}
+                        {getFacilityCategory(facility.type)}
                       </strong>
                     </p>
 
@@ -318,9 +304,7 @@ export default function CatalogFacilitiesPage() {
                     <p>
                       Kapasitas:{' '}
                       <strong>
-                        {facility.capacity
-                          ? `${facility.capacity} Orang`
-                          : '-'}
+                        {formatFacilityCapacity(facility)}
                       </strong>
                     </p>
                   </div>
