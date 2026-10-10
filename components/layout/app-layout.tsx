@@ -6,10 +6,9 @@ import { usePathname, useRouter } from 'next/navigation'
 import {
   CalendarRange,
   History,
+  House,
   LogOut,
-  MoonStar,
   Settings,
-  SunMedium,
   UserCircle2,
 } from 'lucide-react'
 
@@ -18,33 +17,27 @@ interface AppLayoutProps {
   userName?: string
 }
 
-type ThemeMode = 'light' | 'dark' | 'system'
-
 const navItems = [
   { label: 'Katalog Ruang', href: '/catalog', icon: CalendarRange },
   { label: 'Riwayat Reservasi', href: '/history', icon: History },
   { label: 'Pengaturan', href: '/settings', icon: Settings },
+  { label: 'Kembali ke Halaman Utama', href: '/', icon: House },
 ]
 
 export function AppLayout({ children, userName = 'Pengguna' }: AppLayoutProps) {
   const pathname = usePathname()
   const router = useRouter()
-  const [theme, setTheme] = useState<ThemeMode>('system')
   const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   useEffect(() => {
-    const savedTheme = (window.localStorage.getItem('fivora-theme') as ThemeMode) || 'system'
-    setTheme(savedTheme)
-  }, [])
-
-  useEffect(() => {
+    const theme = window.localStorage.getItem('fivora-theme') || 'system'
     const root = document.documentElement
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
     const activeDark = theme === 'dark' || (theme === 'system' && prefersDark)
 
     root.classList.toggle('dark', activeDark)
     window.localStorage.setItem('fivora-theme', theme)
-  }, [theme])
+  }, [])
 
   const handleLogout = async () => {
     setIsLoggingOut(true)
@@ -122,42 +115,6 @@ export function AppLayout({ children, userName = 'Pengguna' }: AppLayoutProps) {
           <div className="mx-auto max-w-6xl">{children}</div>
         </main>
       </div>
-    </div>
-  )
-}
-
-export function ThemePreview({ theme, onChange }: { theme: ThemeMode; onChange: (value: ThemeMode) => void }) {
-  const options = [
-    { value: 'light', label: 'Light Mode', icon: SunMedium },
-    { value: 'dark', label: 'Dark Mode', icon: MoonStar },
-    { value: 'system', label: 'System Default', icon: Settings },
-  ] as const
-
-  return (
-    <div className="space-y-3">
-      {options.map((option) => {
-        const Icon = option.icon
-        const isSelected = theme === option.value
-
-        return (
-          <button
-            key={option.value}
-            type="button"
-            onClick={() => onChange(option.value)}
-            className={`flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left text-sm font-medium transition-colors ${
-              isSelected
-                ? 'border-[var(--primary)] bg-[var(--accent)] text-[var(--foreground)]'
-                : 'border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] hover:bg-[var(--muted)]'
-            }`}
-          >
-            <span className="flex items-center gap-2">
-              <Icon className="h-4 w-4" />
-              {option.label}
-            </span>
-            <span className={`h-2.5 w-2.5 rounded-full ${isSelected ? 'bg-[var(--primary)]' : 'bg-[var(--border)]'}`} />
-          </button>
-        )
-      })}
     </div>
   )
 }

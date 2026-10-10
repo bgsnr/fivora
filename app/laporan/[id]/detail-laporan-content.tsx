@@ -1,6 +1,5 @@
 'use client'
 
-import FivoraLogo from '@/components/branding/fivora-logo'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
@@ -77,40 +76,36 @@ export default function DetailLaporanContent({
   return (
     <main className={styles.page}>
       <div className={styles.container}>
-        <header className={styles.navigation}>
-          <Link href="/" className={styles.brand}>
-            <FivoraLogo />
-          </Link>
-
-          <Link href={backHref} className={styles.historyButton}>
-            <FileText
-              size={18}
-              strokeWidth={1.5}
-              aria-hidden="true"
-            />
-            <span>Riwayat laporan</span>
-            <ArrowUpRight size={17} aria-hidden="true" />
-          </Link>
-        </header>
-
         <section
           className={styles.heading}
           aria-labelledby="report-title"
         >
-          <div className={styles.headingText}>
+          <div className={styles.headingTop}>
             <p className={styles.eyebrow}>
               DETAIL LAPORAN / #{report.id}
             </p>
 
-            <h1 id="report-title">{report.facility}</h1>
+            <Link href={backHref} className={styles.historyButton}>
+              <FileText
+                size={18}
+                strokeWidth={1.5}
+                aria-hidden="true"
+              />
+              <span>Riwayat laporan</span>
+              <ArrowUpRight size={17} aria-hidden="true" />
+            </Link>
           </div>
 
-          <span
-            className={`${styles.status} ${statusClasses[report.status]}`}
-          >
-            <span className={styles.statusDot} aria-hidden="true" />
-            {statusLabels[report.status]}
-          </span>
+          <div className={styles.titleRow}>
+            <h1 id="report-title">{report.facility}</h1>
+
+            <span
+              className={`${styles.status} ${statusClasses[report.status]}`}
+            >
+              <span className={styles.statusDot} aria-hidden="true" />
+              {statusLabels[report.status]}
+            </span>
+          </div>
         </section>
 
         <dl className={styles.information}>

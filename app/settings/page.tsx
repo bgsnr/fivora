@@ -1,21 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { AppLayout, ThemePreview } from '@/components/layout/app-layout'
+import { AppLayout } from '@/components/layout/app-layout'
 import { createClient } from '@/lib/supabase/client'
-
-type ThemeMode = 'light' | 'dark' | 'system'
-
-type UserProfile = {
-  name: string | null
-  email: string | null
-}
 
 export default function SettingsPage() {
   const supabase = createClient()
   const [userName, setUserName] = useState('Pengguna')
   const [email, setEmail] = useState('')
-  const [theme, setTheme] = useState<ThemeMode>('system')
   const [profileName, setProfileName] = useState('')
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
@@ -25,9 +17,6 @@ export default function SettingsPage() {
   const [passwordFeedback, setPasswordFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   useEffect(() => {
-    const savedTheme = (window.localStorage.getItem('fivora-theme') as ThemeMode) || 'system'
-    setTheme(savedTheme)
-
     const loadUserProfile = async () => {
       const {
         data: { user },
@@ -64,15 +53,6 @@ export default function SettingsPage() {
 
     loadUserProfile()
   }, [supabase])
-
-  useEffect(() => {
-    const root = document.documentElement
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    const activeDark = theme === 'dark' || (theme === 'system' && prefersDark)
-
-    root.classList.toggle('dark', activeDark)
-    window.localStorage.setItem('fivora-theme', theme)
-  }, [theme])
 
   const handleSaveProfile = async () => {
     const trimmed = profileName.trim()
@@ -169,7 +149,7 @@ export default function SettingsPage() {
           <h1 className="mt-2 text-3xl font-bold tracking-tight text-[var(--foreground)]">Pengaturan Akun</h1>
         </div>
 
-        <div className="grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
+        <div className="grid gap-6">
           <section className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm sm:p-6">
             <div className="mb-5">
               <h2 className="text-xl font-bold text-[var(--foreground)]">Akun</h2>
@@ -216,15 +196,6 @@ export default function SettingsPage() {
                 Simpan Profil
               </button>
             </div>
-          </section>
-
-          <section className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm sm:p-6">
-            <div className="mb-5">
-              <h2 className="text-xl font-bold text-[var(--foreground)]">Preferensi Aplikasi</h2>
-              <p className="mt-1 text-sm text-[var(--muted-foreground)]">Sesuaikan tampilan antarmuka favorit Anda.</p>
-            </div>
-
-            <ThemePreview theme={theme} onChange={setTheme} />
           </section>
         </div>
 

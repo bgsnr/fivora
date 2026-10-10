@@ -11,41 +11,6 @@
   margin: 0 auto;
 }
 
-.navigation {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  min-height: 88px;
-  border-bottom: 1px solid #d8dfea;
-}
-
-.brand {
-  color: #010736;
-  font-family: inherit;
-  font-size: 29px;
-  font-weight: 700;
-  letter-spacing: -1px;
-  text-decoration: none;
-}
-
-.brandDot {
-  color: #667b9f;
-}
-
-.backLink {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  color: #52627d;
-  font-size: 14px;
-  text-decoration: none;
-}
-
-.backLink:hover {
-  color: #010736;
-}
-
 .workspace {
   display: grid;
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
@@ -56,6 +21,39 @@
 
 .introduction {
   padding-top: 14px;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  margin-bottom: 22px;
+  color: #52627d;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+
+.backLink:hover {
+  color: #010736;
+}
+
+.backLink:focus-visible {
+  outline: 2px solid #22396f;
+  outline-offset: 4px;
+}
+
+.backLink svg {
+  flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+  .backLink {
+    gap: 7px;
+  }
 }
 
 .eyebrow {
@@ -94,10 +92,17 @@
 
 .introText {
   max-width: 380px;
-  margin: 24px 0 32px;
+  margin: 24px 0 0;
   color: #52627d;
   font-size: 15px;
   line-height: 1.8;
+}
+
+.introActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 20px 0 32px;
 }
 
 .campus {
@@ -537,8 +542,6 @@
 }
 
 .submitButton:focus-visible,
-.backLink:focus-visible,
-.brand:focus-visible,
 .success a:focus-visible {
   outline: 2px solid #22396f;
   outline-offset: 4px;
@@ -627,6 +630,10 @@
     margin-bottom: 0;
   }
 
+  .introActions {
+    margin-bottom: 0;
+  }
+
   .campus,
   .introFootnote {
     display: none;
@@ -636,20 +643,6 @@
 @media (max-width: 540px) {
   .page {
     padding: 0 16px 32px;
-  }
-
-  .navigation {
-    min-height: 72px;
-    gap: 12px;
-  }
-
-  .brand {
-    font-size: 25px;
-  }
-
-  .backLink {
-    gap: 6px;
-    font-size: 12px;
   }
 
   .eyebrow {
@@ -708,12 +701,6 @@
 /* Tipografi halaman laporan */
 .page {
   font-family: inherit;
-}
-
-.brand {
-  font-family: inherit;
-  font-weight: 700;
-  letter-spacing: -0.8px;
 }
 
 .introduction h1 {
@@ -809,11 +796,6 @@
   line-height: 1.6;
 }
 
-.backLink {
-  font-size: 14px;
-  font-weight: 400;
-}
-
 .submitButton {
   font-family: inherit;
   font-size: 15px;
@@ -841,9 +823,6 @@
     font-size: 25px;
   }
 
-  .backLink {
-    font-size: 12px;
-  }
 }
 
 .introduction h1 {

@@ -44,6 +44,8 @@
   min-height: auto;
   display: grid;
   grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto 1fr;
+  row-gap: 24px;
   overflow: hidden;
   border-radius: 24px;
   background: #ffffff;
@@ -55,7 +57,11 @@
 
 .side {
   position: relative;
-  padding: 36px 48px;
+  display: grid;
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  grid-template-rows: subgrid;
+  padding: 28px 48px;
   background: linear-gradient(
     160deg,
     #010736 0%,
@@ -65,26 +71,11 @@
   color: #ffffff;
 }
 
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 28px;
-  font-weight: 700;
-}
-
-.brandDot {
-  width: 12px;
-  height: 12px;
-  display: inline-block;
-  border-radius: 4px;
-  background: #fcf1d0;
-  transform: rotate(45deg);
-}
-
 .sideContent {
+  grid-row: 2;
+  align-self: start;
   max-width: 500px;
-  margin-top: 16px;
+  margin: 0;
 }
 
 .sideContent h1 {
@@ -108,6 +99,10 @@
 ========================= */
 
 .panel {
+  display: grid;
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  grid-template-rows: subgrid;
   padding: 28px 50px;
   background: #ffffff;
 }
@@ -133,9 +128,11 @@
 }
 
 .formWrap {
+  grid-row: 2;
+  align-self: start;
   width: 100%;
   max-width: 440px;
-  margin: 24px auto 0;
+  margin: 0 auto;
 }
 
 /* =========================
@@ -144,14 +141,6 @@
 
 .heading {
   margin-bottom: 16px;
-}
-
-.eyebrow {
-  margin: 0 0 8px;
-  color: #22396f;
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
 }
 
 .heading h2 {
@@ -323,14 +312,24 @@
 
   .shell {
     grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    row-gap: 0;
+  }
+
+  .side,
+  .panel {
+    display: block;
+    grid-column: auto;
+    grid-row: auto;
+    grid-template-rows: none;
   }
 
   .side {
     padding: 38px 34px;
   }
 
-  .sideContent {
-    margin-top: 45px;
+  .formWrap {
+    margin-top: 24px;
   }
 
   .sideContent h1 {
@@ -358,14 +357,6 @@
 
   .side {
     padding: 32px 24px;
-  }
-
-  .brand {
-    font-size: 27px;
-  }
-
-  .sideContent {
-    margin-top: 35px;
   }
 
   .sideContent h1 {

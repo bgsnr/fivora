@@ -1,10 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { Suspense, FormEvent, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { Suspense, FormEvent, useRef, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 
-import { createClient } from '@/lib/supabase/client'
+import { loginAction } from '@/lib/actions/login'
 
 import styles from './login.module.css'
 
@@ -23,128 +23,53 @@ export default function LoginPage() {
 }
 
 function LoginForm() {
-  const router = useRouter()
   const searchParams = useSearchParams()
-  const redirectParam = searchParams.get('redirect')
-  const supabase = createClient()
+  const redirectParam = searchParams.get('redirect') ?? searchParams.get('redirectTo')
+  const submitting = useRef(false)
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
 
   const [loading, setLoading] = useState(false)
-  const [errorMessage, setErrorMessage] = useState('')
+  const [errorMessage, setErrorMessage] = useState(
+    searchParams.get('error') === 'account_not_active'
+      ? 'Akun belum aktif atau data akun belum dapat diperiksa. Silakan login kembali.'
+      : ''
+  )
 
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>
   ) {
     event.preventDefault()
 
+    if (submitting.current) return
     setErrorMessage('')
 
     const cleanEmail = email.trim().toLowerCase()
-
     if (!cleanEmail || !password) {
       setErrorMessage('Email dan password wajib diisi.')
       return
     }
 
+    submitting.current = true
     setLoading(true)
 
-    // Login menggunakan Supabase Auth
-    const { data, error } =
-      await supabase.auth.signInWithPassword({
-        email: cleanEmail,
-        password,
-      })
+    try {
+      const result = await loginAction(cleanEmail, password, redirectParam)
+      if (!result.success) {
+        setErrorMessage(result.error)
+        return
+      }
 
-    if (error) {
+      // Permintaan halaman baru membaca cookie sesi hasil login.
+      window.location.assign(result.target)
+    } catch {
+      setErrorMessage('Login belum berhasil terhubung. Silakan coba lagi.')
+    } finally {
+      submitting.current = false
       setLoading(false)
-      setErrorMessage('Email atau password salah.')
-      return
     }
-
-    if (!data.user) {
-      setLoading(false)
-      setErrorMessage('Login gagal. Silakan coba lagi.')
-      return
-    }
-
-    // Ambil data user dari public.users
-    const {
-      data: userData,
-      error: userError,
-    } = await supabase
-      .from('users')
-      .select(
-        'id, auth_user_id, name, email, nim_nip, jenis_pengguna, role, status'
-      )
-      .eq('auth_user_id', data.user.id)
-      .single()
-
-    if (userError || !userData) {
-      await supabase.auth.signOut()
-
-      setLoading(false)
-      setErrorMessage(
-        'Data pengguna tidak ditemukan. Silakan hubungi administrator.'
-      )
-      return
-    }
-
-    // Akun masih menunggu verifikasi admin
-    if (userData.status === 'menunggu') {
-      await supabase.auth.signOut()
-
-      setLoading(false)
-      setErrorMessage(
-        'Akun kamu masih menunggu persetujuan administrator.'
-      )
-      return
-    }
-
-    // Akun ditolak admin
-    if (userData.status === 'ditolak') {
-      await supabase.auth.signOut()
-
-      setLoading(false)
-      setErrorMessage(
-        'Pendaftaran akun kamu ditolak oleh administrator.'
-      )
-      return
-    }
-
-    // Status selain aktif tidak boleh login
-    if (userData.status !== 'aktif') {
-      await supabase.auth.signOut()
-
-      setLoading(false)
-      setErrorMessage(
-        'Akun tidak dapat digunakan. Silakan hubungi administrator.'
-      )
-      return
-    }
-
-    // Login berhasil
-    setLoading(false)
-
-    // Pengalihan: gunakan ?redirect= bila valid (path internal), selain itu sesuai role
-    const defaultTarget =
-  userData.role === 'admin'
-    ? '/admin'
-    : userData.role === 'petugas'
-      ? '/petugas'
-      : '/catalog'
-
-    const redirectTarget =
-  redirectParam &&
-  redirectParam.startsWith('/') &&
-  !redirectParam.startsWith('//') &&
-  !redirectParam.includes('\\')
-    ? redirectParam
-    : defaultTarget
-
-    router.push(redirectTarget)
   }
 
   return (
@@ -152,19 +77,14 @@ function LoginForm() {
       <section className={styles.shell}>
         {/* Panel kiri */}
         <aside className={styles.side}>
-          <div className={styles.brand}>
-            <span className={styles.brandDot} />
-            Fivora
-          </div>
-
           <div className={styles.sideContent}>
             <h1>
-              Kelola fasilitas kampus dengan lebih mudah.
+              Reservasi Fasilitas dan Lapor Kerusakan.
             </h1>
 
             <p>
-              Masuk ke akun Fivora untuk mengakses reservasi
-              fasilitas, pelaporan kerusakan, dan layanan kampus.
+              Masuk ke akun Fivora untuk mengakses reservasi dan
+              laporan kerusakan fasilitas kampus.
             </p>
           </div>
         </aside>
@@ -181,10 +101,6 @@ function LoginForm() {
 
           <div className={styles.formWrap}>
             <div className={styles.heading}>
-              <p className={styles.eyebrow}>
-                FIVORA
-              </p>
-
               <h2>
                 Login
               </h2>

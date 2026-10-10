@@ -16,10 +16,13 @@ import {
   X,
 } from 'lucide-react'
 
+import { getFacilityCategory, isEquipmentFacility } from '@/lib/facility-categories'
+
 import { AppLayout } from '@/components/layout/app-layout'
 import { createClient } from '@/lib/supabase/client'
 import { useCurrentUserName } from '@/lib/use-current-user-name'
 import { createReservationAction } from '@/lib/actions/reservations'
+import { getReservationCreationAccessAction } from '@/lib/actions/reservation-access'
 
 type Room = {
   id: number
@@ -49,7 +52,7 @@ const CATEGORIES = [
   'Laboratorium',
   'Aula',
   'Lapangan',
-  'Peralatan',
+  'Lainnya',
 ] as const
 
 function getJakartaDateInput(date: Date) {
@@ -164,34 +167,6 @@ function parseDateInput(value: string) {
   ].join('-')
 }
 
-function getCategoryLabel(type: string) {
-  const normalized = type
-    .trim()
-    .toLowerCase()
-    .replace(/[\s-]+/g, '_')
-
-  if (normalized.includes('kelas')) return 'Ruang Kelas'
-
-  if (
-    normalized.includes('laboratorium') ||
-    normalized.includes('lab')
-  ) {
-    return 'Laboratorium'
-  }
-
-  if (normalized.includes('aula')) return 'Aula'
-  if (normalized.includes('lapangan')) return 'Lapangan'
-
-  if (
-    normalized.includes('peralatan') ||
-    normalized === 'alat'
-  ) {
-    return 'Peralatan'
-  }
-
-  return type
-}
-
 function roundUpToNextSlot(minutes: number) {
   return Math.ceil(minutes / 30) * 30
 }
@@ -222,8 +197,8 @@ export default function CatalogPage() {
 
   const [reservationDate, setReservationDate] = useState('')
   const [dateInputText, setDateInputText] = useState('')
-  const [startTime, setStartTime] = useState('09:00')
-  const [endTime, setEndTime] = useState('10:00')
+  const [requestedStartTime, setStartTime] = useState('09:00')
+  const [requestedEndTime, setEndTime] = useState('10:00')
   const [purpose, setPurpose] = useState('')
 
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -265,39 +240,19 @@ export default function CatalogPage() {
     return START_TIME_SLOTS
   }, [reservationDate, tomorrow, earliestTomorrowTime])
 
+  // Pilihan jam mengikuti slot yang tersedia tanpa memperbarui state dari effect.
+  const startTime =
+    availableStartTimes.length === 0 || availableStartTimes.includes(requestedStartTime)
+      ? requestedStartTime
+      : availableStartTimes[0]
+
   const availableEndTimes = useMemo(() => {
     return TIME_SLOTS.filter((time) => time > startTime)
   }, [startTime])
 
-  // Sesuaikan jam mulai jika tanggal atau waktu berubah.
-  useEffect(() => {
-    if (
-      availableStartTimes.length > 0 &&
-      !availableStartTimes.includes(startTime)
-    ) {
-      const nextStart = availableStartTimes[0]
-
-      setStartTime(nextStart)
-
-      const nextEnd = TIME_SLOTS.find(
-        (time) => time > nextStart
-      )
-
-      if (nextEnd) {
-        setEndTime(nextEnd)
-      }
-    }
-  }, [availableStartTimes, startTime])
-
-  // Pastikan jam selesai selalu sesudah jam mulai.
-  useEffect(() => {
-    if (
-      !availableEndTimes.includes(endTime) &&
-      availableEndTimes.length > 0
-    ) {
-      setEndTime(availableEndTimes[0])
-    }
-  }, [availableEndTimes, endTime])
+  const endTime = availableEndTimes.includes(requestedEndTime)
+    ? requestedEndTime
+    : availableEndTimes[0] ?? requestedEndTime
 
   useEffect(() => {
     let cancelled = false
@@ -368,13 +323,24 @@ export default function CatalogPage() {
 
       const matchesCategory =
         selectedCategory === 'Semua' ||
-        getCategoryLabel(room.type) === selectedCategory
+        getFacilityCategory(room.type) === selectedCategory
 
       return matchesSearch && matchesCategory
     })
   }, [rooms, search, selectedCategory])
 
-  function openReservationModal(room: Room) {
+  async function openReservationModal(room: Room) {
+    try {
+      const access = await getReservationCreationAccessAction()
+      if (!access.allowed) {
+        router.push(access.redirectTo ?? '/login')
+        return
+      }
+    } catch {
+      setFetchError('Akses reservasi gagal diperiksa. Coba lagi.')
+      return
+    }
+
     const currentNow = new Date()
     const currentDate = getJakartaDateInput(currentNow)
     const earliestDate = addDaysToDateString(currentDate, 1)
@@ -622,7 +588,7 @@ export default function CatalogPage() {
                 <div className="space-y-4">
                   <div>
                     <span className="inline-flex rounded-full bg-[var(--muted)] px-3 py-1 text-xs font-semibold text-[var(--foreground)]">
-                      {getCategoryLabel(room.type)}
+                      {getFacilityCategory(room.type)}
                     </span>
 
                     <h2 className="mt-3 text-xl font-bold text-[var(--foreground)]">
@@ -644,7 +610,7 @@ export default function CatalogPage() {
 
                     <div className="flex items-center gap-2">
                       <Users className="h-4 w-4 shrink-0 text-[var(--primary)]" />
-                      <span>Kapasitas {room.capacity} orang</span>
+                      <span>Kapasitas {room.capacity} {isEquipmentFacility(room.type) ? 'unit' : 'orang'}</span>
                     </div>
                   </div>
 

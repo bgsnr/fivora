@@ -1,0 +1,26 @@
+.root { position: relative; flex-shrink: 0; }
+.avatar {
+  display: grid; place-items: center; width: 48px; height: 48px;
+  padding: 5px; border: 1px solid #d8dfea; border-radius: 50%;
+  background: #f9fafc; color: white; cursor: pointer;
+  box-shadow: 0 2px 5px rgb(1 7 54 / 5%);
+}
+.avatar span {
+  display: grid; place-items: center; width: 36px; height: 36px;
+  border-radius: 50%; background: #010736;
+  font-size: 12px; font-weight: 600;
+}
+.avatar:hover { border-color: #667b9f; }
+.avatar:focus-visible { outline: 2px solid #22396f; outline-offset: 3px; }
+.panel {
+  position: absolute; top: 100%; right: -80px; z-index: 60;
+  width: min(290px, calc(100vw - 32px)); padding-top: 12px;
+}
+.panel[hidden] { display: none; }
+.content {
+  padding: 20px; border: 1px solid #d8dfea; border-radius: 16px;
+  background: white; box-shadow: 0 14px 36px rgb(1 7 54 / 12%);
+}
+.label { margin: 0 0 10px; color: #52627d; font-size: 12px; }
+.name { margin: 0; color: #010736; font-size: 16px; font-weight: 600; overflow-wrap: anywhere; }
+.email { margin: 6px 0 0; color: #52627d; font-size: 14px; line-height: 1.6; overflow-wrap: anywhere; }

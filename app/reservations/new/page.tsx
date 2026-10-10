@@ -1,3 +1,5 @@
+import { redirect } from 'next/navigation'
+import { reservationAccessRedirect } from '@/lib/reservation-access'
 import { Navbar } from '@/components/landing/navbar'
 import { Footer } from '@/components/landing/footer'
 import { ReservationForm } from '@/components/reservations/reservation-form'
@@ -17,9 +19,15 @@ interface NewReservationPageProps {
 export default async function NewReservationPage({
   searchParams,
 }: NewReservationPageProps) {
-  const facilities = await getActiveFacilities()
   const user = await getCurrentUser()
   const params = await searchParams
+
+  const returnTo = params.facility_id
+    ? `/reservations/new?${new URLSearchParams({ facility_id: params.facility_id })}`
+    : '/reservations/new'
+  const accessRedirect = reservationAccessRedirect(user, returnTo)
+  if (accessRedirect) redirect(accessRedirect)
+  const facilities = await getActiveFacilities()
 
   const defaultFacilityId = params.facility_id
     ? Number(params.facility_id)
@@ -30,7 +38,7 @@ export default async function NewReservationPage({
       <Navbar
         user={
           user
-            ? { name: user.name, role: user.role }
+            ? { name: user.name, email: user.email, role: user.role }
             : null
         }
       />
@@ -39,7 +47,7 @@ export default async function NewReservationPage({
         <ReservationForm
           facilities={facilities}
           defaultFacilityId={
-            defaultFacilityId && !Number.isNaN(defaultFacilityId)
+            defaultFacilityId && Number.isSafeInteger(defaultFacilityId) && defaultFacilityId > 0
               ? defaultFacilityId
               : undefined
           }

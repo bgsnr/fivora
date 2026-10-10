@@ -1,12 +1,12 @@
 'use client'
 
-import FivoraLogo from '@/components/branding/fivora-logo'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import {
   FileText,
+  ArrowLeft,
   ArrowUpRight,
   Building2,
   Check,
@@ -196,20 +196,13 @@ export default function BuatLaporanContent({
   return (
     <main className={styles.page}>
       <div className={styles.container}>
-        <header className={styles.navigation}>
-          <Link href="/" className={styles.brand}>
-            <FivoraLogo />
-          </Link>
-
-          <Link href="/laporan" className={styles.historyButton}>
-  <FileText size={18} strokeWidth={1.5} aria-hidden="true" />
-            <span>Riwayat laporan</span>
-            <ArrowUpRight size={17} aria-hidden="true" />
-          </Link>
-        </header>
-
         <div className={styles.workspace}>
           <section className={styles.introduction}>
+            <Link href="/" className={styles.backLink}>
+              <ArrowLeft size={16} aria-hidden="true" />
+              Kembali ke Halaman Utama
+            </Link>
+
             <p className={styles.eyebrow}>
               LAYANAN FASILITAS KAMPUS
             </p>
@@ -224,6 +217,14 @@ export default function BuatLaporanContent({
               Beri tahu kami kondisi fasilitas yang kamu temukan.
               Laporanmu membantu petugas menentukan penanganannya.
             </p>
+
+            <div className={styles.introActions}>
+              <Link href="/laporan" className={styles.historyButton}>
+                <FileText size={18} strokeWidth={1.5} aria-hidden="true" />
+                <span>Riwayat Laporan</span>
+                <ArrowUpRight size={17} aria-hidden="true" />
+              </Link>
+            </div>
 
             <div className={styles.campus}>
               <Image

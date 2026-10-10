@@ -14,7 +14,7 @@ export default async function PetugasLayout({
       <AppNavbar
         user={
           user
-            ? { name: user.name, role: user.role }
+            ? { name: user.name, email: user.email, role: user.role }
             : null
         }
       />

@@ -324,3 +324,10 @@
     grid-template-columns: 1fr;
   }
 }
+.backLink {
+  display: inline-flex; align-items: center; gap: 9px;
+  min-height: 44px; margin-bottom: 20px; padding: 5px 0;
+  color: #52627d; font-size: 14px; font-weight: 500; text-decoration: none;
+}
+.backLink:hover { color: #010736; }
+.backLink:focus-visible { outline: 2px solid #22396f; outline-offset: 5px; }

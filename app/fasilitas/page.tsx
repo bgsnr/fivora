@@ -5,6 +5,7 @@
 import { useState, useEffect, useMemo } from 'react';
 
 import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 
 import { createClient } from '@/lib/supabase/client';
 
@@ -119,6 +120,10 @@ export default function CatalogFacilitiesPage() {
 
   return (
     <div className={styles.container}>
+      <Link href="/" className={styles.backLink}>
+        <ArrowLeft size={17} aria-hidden="true" />
+        Kembali ke halaman utama
+      </Link>
       {/* Header */}
       <div className={styles.header}>
         <p className={styles.eyebrow}>
