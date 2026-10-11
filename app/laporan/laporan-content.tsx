@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import AutoRefresh from '@/components/layout/auto-refresh'
 import {
   ArrowLeft,
   ArrowRight,
@@ -63,6 +64,7 @@ export default function LaporanContent({
 
   return (
     <main className={styles.page}>
+      <AutoRefresh />
       <div className={styles.container}>
         <section
           className={styles.heading}

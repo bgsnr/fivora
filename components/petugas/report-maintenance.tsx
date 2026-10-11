@@ -17,6 +17,7 @@ import {
 import { reportDetailHref, type ReportListContext } from '@/lib/report-filters'
 import styles from '@/app/petugas/laporan/[id]/detail-laporan-petugas.module.css'
 import historyStyles from './maintenance-history.module.css'
+import { useAutoRefresh, canApplyRefresh } from '@/lib/use-auto-refresh'
 
 type Props = {
   reportId: string
@@ -69,9 +70,11 @@ export default function ReportMaintenance({
   const [reloadVersion, setReloadVersion] = useState(0)
 
   const submittingRef = useRef(false)
+  const readingRef = useRef(true)
 
   useEffect(() => {
     let cancelled = false
+    readingRef.current = true
 
     async function loadMaintenance() {
       try {
@@ -97,6 +100,8 @@ export default function ReportMaintenance({
           onRead?.({ reportId, checking: false, ownOpen: false,
             error: 'Data perbaikan gagal dimuat. Coba lagi.' })
         }
+      } finally {
+        if (!cancelled) readingRef.current = false
       }
     }
 
@@ -107,7 +112,23 @@ export default function ReportMaintenance({
     }
   }, [reportId, reportStatus, reloadVersion, onRead])
 
+  useAutoRefresh(async (signal, automatic) => {
+    if (loading || submittingRef.current || readingRef.current) return
+    try {
+      const result = await getReportMaintenance(reportId)
+      if (!canApplyRefresh(signal, automatic) || submittingRef.current) return
+      if (!result.success) { setReadError(result.error); return }
+      setData(result.data)
+      setReadError('')
+      onRead?.({ reportId, checking: false,
+        ownOpen: result.data.openMaintenance?.reportId === reportId, error: '' })
+    } catch {
+      if (canApplyRefresh(signal, automatic)) setReadError('Data perbaikan gagal diperbarui. Coba lagi.')
+    }
+  }, { resetKey: reportId })
+
   function reloadData() {
+    readingRef.current = true
     onRead?.({ reportId, checking: true, ownOpen: false, error: '' })
     setData(null)
     setReadError('')
@@ -302,7 +323,8 @@ export default function ReportMaintenance({
           )}
 
           {maintenance || canStart ? (
-            <form className={styles.form} onSubmit={handleSubmit}>
+            <form className={styles.form} onSubmit={handleSubmit}
+              data-auto-refresh-blocked={Boolean(note || confirmed || loading)}>
               <label className={styles.field}>
                 <span>
                   {maintenance
@@ -447,7 +469,8 @@ function FindingsForm({ maintenanceId, disabled, onSaved }: {
   }
 
   return (
-    <form className={`${styles.form} ${styles.findingsForm}`} onSubmit={handleSubmit}>
+    <form className={`${styles.form} ${styles.findingsForm}`} onSubmit={handleSubmit}
+      data-auto-refresh-blocked={Boolean(note || loading)}>
       <label className={styles.field}>
         <span>Tambah catatan pemeriksaan</span>
         <textarea value={note} rows={3} maxLength={5000}

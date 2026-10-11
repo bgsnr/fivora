@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import AutoRefresh from '@/components/layout/auto-refresh'
 import { useState } from 'react'
 import {
   ArrowUpRight,
@@ -75,6 +76,7 @@ export default function DetailLaporanContent({
 
   return (
     <main className={styles.page}>
+      <AutoRefresh />
       <div className={styles.container}>
         <section
           className={styles.heading}

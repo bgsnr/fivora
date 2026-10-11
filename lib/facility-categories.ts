@@ -4,9 +4,6 @@ export const FACILITY_CATEGORIES = [
 
 export type FacilityCategory = (typeof FACILITY_CATEGORIES)[number]
 
-export const FACILITY_CAPACITY_NOTE =
-  'Kapasitas memakai data contoh untuk demo Fivora, bukan kapasitas resmi kampus.'
-
 function typeKey(type: string | null | undefined): string {
   return (type ?? '').trim().toLowerCase().replace(/[\s_/-]+/g, '_')
 }

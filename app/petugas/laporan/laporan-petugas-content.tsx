@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import AutoRefresh from '@/components/layout/auto-refresh'
 import { useRouter } from 'next/navigation'
 import { useTransition } from 'react'
 import {
@@ -19,6 +20,7 @@ type StatusFilter = 'semua' | ReportStatus
 type Report = {
   id: string
   facility: string
+  reporterName: string
   category: string
   description: string
   status: ReportStatus
@@ -40,6 +42,7 @@ type Props = {
   page: number
   totalPages: number
   errorMessage: string
+  reporterErrorMessage?: string
 }
 
 const statusOptions: StatusFilter[] = [
@@ -81,6 +84,7 @@ export default function LaporanPetugasContent({
   page,
   totalPages,
   errorMessage,
+  reporterErrorMessage,
 }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -101,6 +105,7 @@ export default function LaporanPetugasContent({
 
   return (
     <main className={styles.page}>
+      <AutoRefresh />
       <div className={styles.container}>
         <div className={styles.headingTop}>
           <p className={styles.eyebrow}>PELAPORAN & PERBAIKAN</p>
@@ -187,6 +192,11 @@ export default function LaporanPetugasContent({
           </div>
 
           <div className={styles.reportList}>
+            {reporterErrorMessage && (
+              <p className={styles.error} role="alert">
+                {reporterErrorMessage}
+              </p>
+            )}
             {errorMessage ? (
               <div className={styles.error} role="alert">
                 <h3>Daftar belum dapat ditampilkan</h3>
@@ -225,6 +235,8 @@ export default function LaporanPetugasContent({
                         {report.facility}
                       </Link>
                     </h3>
+
+                    <p className={styles.reporter}>Pelapor: {report.reporterName}</p>
 
                     <p className={styles.description}>
                       {report.description}

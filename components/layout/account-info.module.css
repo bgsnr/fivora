@@ -1,4 +1,11 @@
 .root { position: relative; flex-shrink: 0; }
+.named { position: static; display: inline-flex; align-items: center; gap: 8px; }
+.visibleName {
+  max-width: 96px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  color: #22396f; font-size: 12px; font-weight: 600;
+}
+.named .panel { right: 16px; }
+@media (min-width: 640px) { .visibleName { max-width: 160px; } }
 .avatar {
   display: grid; place-items: center; width: 48px; height: 48px;
   padding: 5px; border: 1px solid #d8dfea; border-radius: 50%;

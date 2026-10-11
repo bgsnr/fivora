@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import AutoRefresh from '@/components/layout/auto-refresh'
 import { Footer } from '@/components/landing/footer'
 import { requireReportRole } from '@/lib/report-access'
 import {
@@ -81,6 +82,7 @@ export default async function StaffReservationsDashboardPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background selection:bg-[#FCF1D0] selection:text-[#010736]">
+      <AutoRefresh />
       <main className="flex-1 container mx-auto max-w-6xl px-4 py-8 sm:py-12">
         <div className="mb-8">
           <span className="mb-2 inline-flex items-center rounded-full bg-[#FCF1D0] px-3 py-1 text-xs font-semibold uppercase tracking-wider text-[#010736]">

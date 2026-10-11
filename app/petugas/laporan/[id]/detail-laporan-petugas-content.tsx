@@ -17,6 +17,8 @@ type ReportStatus = 'baru' | 'diproses' | 'selesai' | 'ditolak'
 type Report = {
   id: string
   facility: string
+  reporterName: string
+  reporterEmail: string
   location: string
   category: string
   description: string
@@ -46,10 +48,12 @@ export default function DetailLaporanPetugasContent({
   report,
   backHref,
   listContext,
+  reporterError,
 }: {
   report: Report
   backHref: string
   listContext: ReportListContext
+  reporterError?: string
 }) {
   const router = useRouter()
   const [refreshing, startTransition] = useTransition()
@@ -92,7 +96,20 @@ export default function DetailLaporanPetugasContent({
 
             <div className={styles.reportBody}>
               <div className={styles.reportInformation}>
+                {reporterError && (
+                  <p className={styles.error} role="alert">
+                    {reporterError}
+                  </p>
+                )}
                 <dl className={styles.info}>
+                  <div>
+                    <dt>Nama Pelapor</dt>
+                    <dd>{report.reporterName}</dd>
+                  </div>
+                  <div>
+                    <dt>Email Pelapor</dt>
+                    <dd>{report.reporterEmail || 'Email belum dicantumkan'}</dd>
+                  </div>
                   <div>
                     <dt>Kategori</dt>
                     <dd>{categoryLabels[report.category] ?? report.category}</dd>
@@ -322,7 +339,8 @@ function HandlingForm({
   }
 
   return (
-    <form className={styles.form} onSubmit={handleSubmit}>
+    <form className={styles.form} onSubmit={handleSubmit}
+      data-auto-refresh-blocked={Boolean(selectedStatus || laporanUtamaId || note !== report.officerNote || loading || refreshing)}>
       <label className={styles.field}>
         <span>Status Penanganan</span>
 

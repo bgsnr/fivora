@@ -128,7 +128,7 @@ export function StaffActionPanel({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-auto-refresh-blocked={isLoading || showRejectModal || showCancelModal}>
       {errorMessage && (
         <div className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 p-4 text-xs text-red-800">
           <AlertCircle className="h-4 w-4 shrink-0 text-red-600 mt-0.5" />

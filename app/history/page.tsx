@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { CalendarDays, Clock3, MapPin, Plus, Eye } from 'lucide-react'
 
 import { AppLayout } from '@/components/layout/app-layout'
-import { createClient } from '@/lib/supabase/client'
+import { getOwnReservationHistory } from '@/lib/actions/live-data'
+import { useAutoRefresh, canApplyRefresh } from '@/lib/use-auto-refresh'
 
 type ReservationStatus =
   | 'Menunggu'
@@ -98,83 +99,38 @@ export default function ReservationHistoryPage() {
     ReservationHistoryItem[]
   >([])
   const [loading, setLoading] = useState(true)
+  const [readError, setReadError] = useState('')
   const [userName, setUserName] = useState('Pengguna')
   const [selectedStatus, setSelectedStatus] =
     useState<StatusFilter>('Semua')
 
-  useEffect(() => {
-    const fetchHistory = async () => {
-      const supabase = createClient()
-
-      try {
-        setLoading(true)
-
-        const {
-          data: { user },
-          error: authError,
-        } = await supabase.auth.getUser()
-
-        if (authError || !user) {
+  useAutoRefresh(async (signal, automatic) => {
+    try {
+      const result = await getOwnReservationHistory()
+      if (!canApplyRefresh(signal, automatic)) return
+      if (!result.success) {
+        if (result.unauthorized) {
           setReservations([])
-          return
-        }
-
-        const { data: profile, error: profileError } = await supabase
-          .from('users')
-          .select('id, name')
-          .eq('auth_user_id', user.id)
-          .maybeSingle()
-
-        if (profileError || !profile) {
-          setReservations([])
-          return
-        }
-
-        setUserName(profile.name || 'Pengguna')
-
-        const { data, error } = await supabase
-          .from('reservations')
-          .select(
-            'id, reservation_date, start_time, end_time, status, facilities:facility_id(name, location)',
-          )
-          .eq('user_id', profile.id)
-          .order('reservation_date', { ascending: false })
-          .order('start_time', { ascending: false })
-
-        if (error) {
-          console.error('Gagal mengambil riwayat reservasi:', error)
-          setReservations([])
-          return
-        }
-
-        const mapped: ReservationHistoryItem[] = (data ?? []).map(
-          (item) => {
-            const facility = Array.isArray(item.facilities)
-              ? item.facilities[0]
-              : item.facilities
-
-            return {
-              id: Number(item.id),
-              roomName: facility?.name || 'Fasilitas',
-              location: facility?.location || 'Lokasi belum diatur',
-              date: item.reservation_date || '',
-              time: `${formatTime(item.start_time)} - ${formatTime(item.end_time)}`,
-              status: normalizeStatus(item.status),
-            }
-          },
-        )
-
-        setReservations(mapped)
-      } catch (error) {
-        console.error('Terjadi kesalahan saat memuat riwayat:', error)
-        setReservations([])
-      } finally {
-        setLoading(false)
+          router.replace('/login?redirect=%2Fhistory')
+        } else setReadError(result.error)
+        return
       }
+      setUserName(result.userName || 'Pengguna')
+      setReservations(result.reservations.map((item) => ({
+        id: Number(item.id),
+        roomName: item.facility?.name || 'Fasilitas',
+        location: item.facility?.location || 'Lokasi belum diatur',
+        date: item.reservation_date || '',
+        time: `${formatTime(item.start_time)} - ${formatTime(item.end_time)}`,
+        status: normalizeStatus(item.status),
+      })))
+      setReadError('')
+    } catch {
+      if (canApplyRefresh(signal, automatic)) setReadError('Riwayat reservasi gagal dimuat. Coba lagi.')
+    } finally {
+      if (!signal.aborted) setLoading(false)
     }
-
-    fetchHistory()
-  }, [])
+  }, { immediate: true })
 
   const filteredReservations =
     selectedStatus === 'Semua'
@@ -194,6 +150,7 @@ export default function ReservationHistoryPage() {
   return (
     <AppLayout userName={userName}>
       <div className="space-y-6">
+        {readError && <p role="alert" className="text-sm text-red-700">{readError}</p>}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted-foreground)]">

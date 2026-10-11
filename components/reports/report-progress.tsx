@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { addReportProgress, getReportProgress, type ProgressEntry } from '@/lib/actions/report-progress'
 import styles from './report-progress.module.css'
+import { useAutoRefresh, canApplyRefresh } from '@/lib/use-auto-refresh'
 
 function formatDate(value: string) {
   const date = new Date(value)
@@ -65,6 +66,26 @@ export default function ReportProgress({
     void read()
     return () => { cancelled = true }
   }, [reportId, version])
+
+  useAutoRefresh(async (signal, automatic) => {
+    if (reading || saving || busyRef.current) return
+    try {
+      const result = await getReportProgress(reportId)
+      if (!canApplyRefresh(signal, automatic) || busyRef.current) return
+      if (!result.success) { setReadError(result.error); return }
+      setEntries((current) => {
+        const latestIds = new Set(result.entries.map((entry) => entry.id))
+        return [...result.entries, ...current.filter((entry) => !latestIds.has(entry.id))]
+          .sort((a, b) => BigInt(a.id) > BigInt(b.id) ? -1 : BigInt(a.id) < BigInt(b.id) ? 1 : 0)
+      })
+      // Keep older pages that the reader has already opened.
+      if (entries.length <= result.entries.length) setHasMore(result.hasMore)
+      setCanAdd(result.canAdd)
+      setReadError('')
+    } catch {
+      if (canApplyRefresh(signal, automatic)) setReadError('Perkembangan laporan gagal diperbarui. Coba lagi.')
+    }
+  }, { resetKey: reportId })
 
   function reload() {
     if (busyRef.current || reading) return
@@ -138,7 +159,8 @@ export default function ReportProgress({
         </button>
       </div>
       {editable && canAdd && (
-        <form className={styles.form} onSubmit={handleSubmit}>
+        <form className={styles.form} onSubmit={handleSubmit}
+          data-auto-refresh-blocked={Boolean(note || saving)}>
           <label className={styles.field}>
             <span>Tambah perkembangan untuk pelapor</span>
             <textarea rows={4} value={note} maxLength={5000}

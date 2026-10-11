@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
-import { createClient } from '@/lib/supabase/client';
+import { getPublicFacilityCatalog } from '@/lib/actions/live-data';
+import { useAutoRefresh, canApplyRefresh } from '@/lib/use-auto-refresh';
 import FilterDropdown from '@/components/facilities/filter-dropdown';
 import { matchesFacilityLocation } from '@/lib/facility-search';
 
@@ -12,7 +13,6 @@ import type { Facility, FacilityStatus } from '@/types/facility';
 
 import {
   FACILITY_CATEGORIES,
-  FACILITY_CAPACITY_NOTE,
   getFacilityCategory,
   formatFacilityCapacity,
 } from '@/lib/facility-categories';
@@ -25,18 +25,6 @@ interface ApprovedReservation {
   end_time: string;
 }
 
-const supabase = createClient();
-
-// Mengambil tanggal lokal komputer.
-const getTodayLocal = (): string => {
-  const today = new Date();
-
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, '0');
-  const day = String(today.getDate()).padStart(2, '0');
-
-  return `${year}-${month}-${day}`;
-};
 
 // Mengubah jumlah menit menjadi format HH:mm.
 const formatTime = (minutes: number): string => {
@@ -107,57 +95,20 @@ export default function CatalogFacilitiesPage() {
   const [exactLocation, setExactLocation] = useState('');
   const [minCapacity, setMinCapacity] = useState<number | ''>('');
 
-  // Mengambil semua fasilitas, termasuk yang nonaktif.
-  useEffect(() => {
-    async function fetchFacilities() {
-      setLoading(true);
+  useAutoRefresh(async (signal, automatic) => {
+    try {
+      const result = await getPublicFacilityCatalog();
+      if (!canApplyRefresh(signal, automatic)) return;
+      if (!result.success) { setError(result.error); return; }
+      setFacilities(result.facilities);
+      setApprovedReservations(result.reservations);
       setError(null);
-
-      const today = getTodayLocal();
-
-      const [facilitiesResult, reservationsResult] =
-        await Promise.all([
-          supabase
-            .from('facilities')
-            .select('*')
-            .order('name', { ascending: true }),
-
-          supabase
-            .from('reservations')
-            .select('facility_id, start_time, end_time')
-            .eq('reservation_date', today)
-            .in('status', ['disetujui', 'approved']),
-        ]);
-
-      if (facilitiesResult.error) {
-        console.error(
-          'Error fetching facilities:',
-          facilitiesResult.error
-        );
-
-        setError('Gagal memuat data fasilitas. Silakan coba lagi.');
-        setFacilities([]);
-      } else {
-        // Fasilitas nonaktif tetap terlihat di katalog.
-        setFacilities(facilitiesResult.data || []);
-      }
-
-      if (reservationsResult.error) {
-        console.error(
-          'Error fetching approved reservations:',
-          reservationsResult.error
-        );
-
-        setApprovedReservations([]);
-      } else {
-        setApprovedReservations(reservationsResult.data || []);
-      }
-
-      setLoading(false);
+    } catch {
+      if (canApplyRefresh(signal, automatic)) setError('Daftar fasilitas gagal dimuat. Coba lagi.');
+    } finally {
+      if (!signal.aborted) setLoading(false);
     }
-
-    void fetchFacilities();
-  }, []);
+  }, { immediate: true });
 
   // Opsi kategori fasilitas.
   const uniqueTypes = useMemo(() => {
@@ -297,10 +248,6 @@ export default function CatalogFacilitiesPage() {
           Cari dan cek ketersediaan ruang kelas, laboratorium,
           aula, alat, dan lapangan kampus.
         </p>
-
-        <p className={styles.dataNote}>
-          {FACILITY_CAPACITY_NOTE}
-        </p>
       </div>
 
       {/* Filter dan pencarian */}
@@ -436,7 +383,6 @@ export default function CatalogFacilitiesPage() {
 
       {/* Kartu fasilitas */}
       {!loading &&
-        !error &&
         filteredFacilities.length > 0 && (
           <div className={styles.facilityGrid}>
             {filteredFacilities.map((facility) => {
