@@ -600,3 +600,10 @@
     width: 100%;
   }
 }
+.reporter {
+  margin: 10px 0 0;
+  color: #52627d;
+  font-size: 14px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}

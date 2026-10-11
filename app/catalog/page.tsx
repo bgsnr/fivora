@@ -16,10 +16,11 @@ import {
   X,
 } from 'lucide-react'
 
-import { FACILITY_CAPACITY_NOTE, getFacilityCategory, formatFacilityCapacity } from '@/lib/facility-categories'
+import { getFacilityCategory, formatFacilityCapacity } from '@/lib/facility-categories'
 
 import { AppLayout } from '@/components/layout/app-layout'
-import { createClient } from '@/lib/supabase/client'
+import { getCatalogFacilities } from '@/lib/actions/live-data'
+import { useAutoRefresh, canApplyRefresh } from '@/lib/use-auto-refresh'
 import { useCurrentUserName } from '@/lib/use-current-user-name'
 import { createReservationAction } from '@/lib/actions/reservations'
 import { getReservationCreationAccessAction } from '@/lib/actions/reservation-access'
@@ -32,6 +33,32 @@ type Room = {
   capacity: number | null
   status: string
   type: string
+}
+
+function getCatalogStatus(status: string) {
+  if (status === 'aktif' || status === 'active') {
+    return {
+      bookable: true,
+      label: 'Bisa dipesan',
+      className: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
+    }
+  }
+
+  if (status === 'dalam_perbaikan' || status === 'under_maintenance') {
+    return {
+      bookable: false,
+      label: 'Dalam Perbaikan',
+      className: 'bg-amber-50 text-amber-800 ring-amber-200',
+    }
+  }
+
+  return {
+    bookable: false,
+    label: status === 'nonaktif' || status === 'inactive'
+      ? 'Nonaktif'
+      : 'Tidak Tersedia',
+    className: 'bg-slate-100 text-slate-600 ring-slate-200',
+  }
 }
 
 const TIME_SLOTS = [
@@ -180,7 +207,6 @@ function minutesToTime(minutes: number) {
 
 export default function CatalogPage() {
   const router = useRouter()
-  const supabase = useMemo(() => createClient(), [])
   const userName = useCurrentUserName()
 
   const [now, setNow] = useState(() => new Date())
@@ -254,61 +280,31 @@ export default function CatalogPage() {
     ? requestedEndTime
     : availableEndTimes[0] ?? requestedEndTime
 
-  useEffect(() => {
-    let cancelled = false
-
-    async function fetchFacilities() {
-      try {
-        setLoading(true)
-        setFetchError(null)
-
-        const { data, error } = await supabase
-          .from('facilities')
-          .select(
-            'id, name, description, location, capacity, status, type'
-          )
-          .eq('status', 'aktif')
-          .order('name', { ascending: true })
-
-        if (error) {
-          throw error
-        }
-
-        if (cancelled) return
-
-        const mappedRooms: Room[] = (data ?? []).map((item) => ({
-          id: Number(item.id),
-          name: item.name || 'Fasilitas',
-          description:
-            item.description ||
-            'Fasilitas kampus untuk kegiatan akademik dan nonakademik.',
-          location: item.location || 'Lokasi belum diatur',
-          capacity: item.capacity == null ? null : Number(item.capacity),
-          status: item.status || '',
-          type: item.type || 'Lainnya',
-        }))
-
-        setRooms(mappedRooms)
-      } catch {
-        if (!cancelled) {
-          setRooms([])
-          setFetchError(
-            'Gagal memuat fasilitas. Periksa koneksi database lalu coba muat ulang halaman.'
-          )
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false)
-        }
+  useAutoRefresh(async (signal, automatic) => {
+    try {
+      const result = await getCatalogFacilities()
+      if (!canApplyRefresh(signal, automatic)) return
+      if (!result.success) {
+        setFetchError(result.error)
+        return
       }
+      const mappedRooms: Room[] = result.facilities.map((item) => ({
+        id: Number(item.id),
+        name: item.name || 'Fasilitas',
+        description: item.description || 'Fasilitas kampus untuk kegiatan akademik dan nonakademik.',
+        location: item.location || 'Lokasi belum diatur',
+        capacity: item.capacity == null ? null : Number(item.capacity),
+        status: item.status || '',
+        type: item.type || 'Lainnya',
+      }))
+      setRooms(mappedRooms)
+      setFetchError(null)
+    } catch {
+      if (canApplyRefresh(signal, automatic)) setFetchError('Daftar fasilitas gagal dimuat. Coba lagi.')
+    } finally {
+      if (!signal.aborted) setLoading(false)
     }
-
-    void fetchFacilities()
-
-    return () => {
-      cancelled = true
-    }
-  }, [supabase])
+  }, { immediate: true })
 
   const filteredRooms = useMemo(() => {
     const normalized = search.trim().toLowerCase()
@@ -330,6 +326,7 @@ export default function CatalogPage() {
   }, [rooms, search, selectedCategory])
 
   async function openReservationModal(room: Room) {
+    if (!getCatalogStatus(room.status).bookable) return
     try {
       const access = await getReservationCreationAccessAction()
       if (!access.allowed) {
@@ -523,9 +520,6 @@ export default function CatalogPage() {
             Pilih fasilitas yang kamu butuhkan, tentukan jadwalnya,
             dan ajukan peminjaman langsung dari katalog.
           </p>
-          <p className="mx-auto mt-2 max-w-xl text-xs leading-6 text-[var(--muted-foreground)]">
-            {FACILITY_CAPACITY_NOTE}
-          </p>
         </div>
 
         {fetchError && (
@@ -583,56 +577,69 @@ export default function CatalogPage() {
           </div>
         ) : filteredRooms.length > 0 ? (
           <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-            {filteredRooms.map((room) => (
-              <article
-                key={room.id}
-                className="flex flex-col justify-between rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
-              >
-                <div className="space-y-4">
-                  <div>
-                    <span className="inline-flex rounded-full bg-[var(--muted)] px-3 py-1 text-xs font-semibold text-[var(--foreground)]">
-                      {getFacilityCategory(room.type)}
-                    </span>
+            {filteredRooms.map((room) => {
+              const status = getCatalogStatus(room.status)
 
-                    <h2 className="mt-3 text-xl font-bold text-[var(--foreground)]">
-                      {room.name}
-                    </h2>
-
-                    <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">
-                      {room.description}
-                    </p>
-                  </div>
-
-                  <div className="border-t border-[var(--border)]" />
-
-                  <div className="space-y-2 text-sm text-[var(--muted-foreground)]">
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 shrink-0 text-[var(--primary)]" />
-                      <span>{room.location}</span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <Users className="h-4 w-4 shrink-0 text-[var(--primary)]" />
-                      <span>Kapasitas {formatFacilityCapacity(room)}</span>
-                    </div>
-                  </div>
-
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200">
-                    <CheckCircle2 className="h-3.5 w-3.5" />
-                    Bisa dipesan
-                  </span>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => openReservationModal(room)}
-                  className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-[var(--primary-foreground)] transition-opacity hover:opacity-90"
+              return (
+                <article
+                  key={room.id}
+                  className="flex flex-col justify-between rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                 >
-                  Reservasi
-                  <ChevronRight className="h-4 w-4" />
-                </button>
-              </article>
-            ))}
+                  <div className="space-y-4">
+                    <div>
+                      <span className="inline-flex rounded-full bg-[var(--muted)] px-3 py-1 text-xs font-semibold text-[var(--foreground)]">
+                        {getFacilityCategory(room.type)}
+                      </span>
+
+                      <h2 className="mt-3 text-xl font-bold text-[var(--foreground)]">
+                        {room.name}
+                      </h2>
+
+                      <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">
+                        {room.description}
+                      </p>
+                    </div>
+
+                    <div className="border-t border-[var(--border)]" />
+
+                    <div className="space-y-2 text-sm text-[var(--muted-foreground)]">
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4 shrink-0 text-[var(--primary)]" />
+                        <span>{room.location}</span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4 shrink-0 text-[var(--primary)]" />
+                        <span>Kapasitas {formatFacilityCapacity(room)}</span>
+                      </div>
+                    </div>
+
+                    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ring-1 ${status.className}`}>
+                      {status.bookable ? (
+                        <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
+                      ) : (
+                        <AlertCircle className="h-3.5 w-3.5" aria-hidden="true" />
+                      )}
+                      {status.label}
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => openReservationModal(room)}
+                    disabled={!status.bookable}
+                    className={`mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold ${
+                      status.bookable
+                        ? 'bg-[var(--primary)] text-[var(--primary-foreground)] transition-opacity hover:opacity-90'
+                        : 'cursor-not-allowed border border-[var(--border)] bg-[var(--muted)] text-[var(--muted-foreground)]'
+                    }`}
+                  >
+                    {status.bookable ? 'Reservasi' : 'Tidak Tersedia'}
+                    {status.bookable && <ChevronRight className="h-4 w-4" aria-hidden="true" />}
+                  </button>
+                </article>
+              )
+            })}
           </section>
         ) : (
           <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--card)] p-10 text-center">

@@ -59,7 +59,7 @@ export function CancelReservationButton({
   }
 
   return (
-    <>
+    <div data-auto-refresh-blocked={isOpen || isLoading}>
       {isBlocked && (
         <p
           className="max-w-xs text-xs text-amber-800"
@@ -160,6 +160,6 @@ export function CancelReservationButton({
           </div>
         </div>
       )}
-    </>
+    </div>
   )
 }

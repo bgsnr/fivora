@@ -1,12 +1,13 @@
 
 'use client';
 
-import { useState, useEffect, use, useMemo } from 'react';
+import { useState, use, useMemo } from 'react';
 import Link from 'next/link';
 
-import { createClient } from '@/lib/supabase/client';
+import { getFacilityAvailability } from '@/lib/actions/live-data';
+import { useAutoRefresh, canApplyRefresh } from '@/lib/use-auto-refresh';
 import { Facility, TimeSlot } from '@/types/facility';
-import { FACILITY_CAPACITY_NOTE, getFacilityCategory, formatFacilityCapacity } from '@/lib/facility-categories';
+import { getFacilityCategory, formatFacilityCapacity } from '@/lib/facility-categories';
 
 const styles = {
   container:
@@ -81,18 +82,11 @@ interface DetailPageProps {
   params: Promise<{ id: string }>;
 }
 
-const getTodayLocal = (): string => {
-  const today = new Date();
-
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, '0');
-  const day = String(today.getDate()).padStart(2, '0');
-
-  return `${year}-${month}-${day}`;
+const getTodayWib = (): string => {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).format(new Date());
 };
-
-// Supaya client Supabase dibuat sekali.
-const supabase = createClient();
 
 export default function FacilityDetailPage({
   params,
@@ -105,70 +99,39 @@ export default function FacilityDetailPage({
   const [error, setError] = useState<string | null>(null);
 
   const [selectedDate, setSelectedDate] =
-    useState<string>(getTodayLocal());
+    useState<string>(getTodayWib());
 
   const [approvedReservations, setApprovedReservations] = useState<
     { start_time: string; end_time: string }[]
   >([]);
 
-  const [loadingSlots, setLoadingSlots] = useState<boolean>(false);
+  const [scheduleKey, setScheduleKey] = useState('');
+  const loadingSlots = scheduleKey !== `${facilityId}:${selectedDate}`;
+  const [slotError, setSlotError] = useState('');
 
-  // 1. Mengambil detail fasilitas.
-  useEffect(() => {
-    async function fetchFacilityDetail() {
-      setLoading(true);
-      setError(null);
-
-      const { data, error } = await supabase
-        .from('facilities')
-        .select('*')
-        .eq('id', facilityId)
-        .single();
-
-      if (error || !data) {
-        console.error('Error fetching facility detail:', error);
-
-        setError(
-          'Fasilitas tidak ditemukan atau gagal memuat data.'
-        );
-      } else {
-        setFacility(data);
-      }
-
-      setLoading(false);
-    }
-
-    void fetchFacilityDetail();
-  }, [facilityId]);
-
-  // 2. Mengambil reservasi yang disetujui pada tanggal pilihan.
-  useEffect(() => {
-    async function fetchReservations() {
-      if (!facilityId) {
+  useAutoRefresh(async (signal, automatic) => {
+    try {
+      const result = await getFacilityAvailability(facilityId, selectedDate);
+      if (!canApplyRefresh(signal, automatic)) return;
+      if (!result.success) {
+        setSlotError(result.error);
+        if (!automatic) setError(result.error);
         return;
       }
-
-      setLoadingSlots(true);
-
-      const { data, error } = await supabase
-        .from('reservations')
-        .select('start_time, end_time')
-        .eq('facility_id', facilityId)
-        .eq('reservation_date', selectedDate)
-        .in('status', ['disetujui', 'approved']);
-
-      if (error) {
-        console.error('Error fetching slots:', error);
-        setApprovedReservations([]);
-      } else {
-        setApprovedReservations(data || []);
+      setFacility(result.facility);
+      setApprovedReservations(result.reservations);
+      setScheduleKey(`${facilityId}:${selectedDate}`);
+      setError(null);
+      setSlotError('');
+    } catch {
+      if (canApplyRefresh(signal, automatic)) {
+        setSlotError('Jadwal gagal diperbarui. Coba lagi.');
+        if (!automatic) setError('Data fasilitas gagal dimuat. Coba lagi.');
       }
-
-      setLoadingSlots(false);
+    } finally {
+      if (!signal.aborted) setLoading(false);
     }
-
-    void fetchReservations();
-  }, [facilityId, selectedDate]);
+  }, { immediate: true, resetKey: `${facilityId}:${selectedDate}` });
 
   // 3. Membuat slot 30 menit dari pukul 07.00 sampai 20.00.
   const timeSlots = useMemo<TimeSlot[]>(() => {
@@ -231,6 +194,9 @@ export default function FacilityDetailPage({
       } else if (isUnderMaintenance) {
         isAvailable = false;
         reason = 'Dalam Perbaikan';
+      } else if (slotError) {
+        isAvailable = false;
+        reason = 'Belum dapat diperiksa';
       } else if (isBooked) {
         isAvailable = false;
         reason = 'Tidak Tersedia';
@@ -247,7 +213,7 @@ export default function FacilityDetailPage({
     }
 
     return slots;
-  }, [facility, approvedReservations]);
+  }, [facility, approvedReservations, slotError]);
 
   // Loading detail fasilitas.
   if (loading) {
@@ -291,6 +257,7 @@ export default function FacilityDetailPage({
   const isFullyBooked =
     !isInactive &&
     !isMaintenance &&
+    !slotError &&
     !loadingSlots &&
     timeSlots.length > 0 &&
     timeSlots.every((slot) => !slot.isAvailable);
@@ -377,8 +344,6 @@ export default function FacilityDetailPage({
             </span>
           </div>
         </div>
-
-        <p className="mt-3 text-xs leading-6 text-[#59677d]">{FACILITY_CAPACITY_NOTE}</p>
 
         {facility.description && (
           <p className={styles.description}>
@@ -469,7 +434,8 @@ export default function FacilityDetailPage({
           </div>
         </div>
 
-        {/* Slot waktu */}
+        {/* Loading Slot */}
+        {slotError && <p className={styles.errorState} role="alert">{slotError}</p>}
         {loadingSlots ? (
           <div className={styles.loadingState}>
             Memeriksa ketersediaan slot waktu...

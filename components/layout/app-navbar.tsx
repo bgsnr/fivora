@@ -31,8 +31,8 @@ export function AppNavbar({ user }: { user: AppNavbarUser | null }) {
     <header className="sticky top-0 z-50 w-full border-b border-[#22396F]/15 bg-white">
       <div
         className={`container mx-auto flex max-w-7xl items-center justify-between gap-x-3 px-4 sm:px-6 lg:px-8 ${
-          user?.role === 'petugas'
-            ? 'min-h-16 flex-wrap py-2 md:h-16 md:flex-nowrap md:py-0'
+          user
+            ? 'min-h-16 flex-wrap py-2 lg:h-16 lg:flex-nowrap lg:py-0'
             : 'h-16'
         }`}
       >
@@ -47,7 +47,7 @@ export function AppNavbar({ user }: { user: AppNavbarUser | null }) {
           <nav
             className={
               user.role === 'petugas'
-                ? 'order-last flex w-full flex-wrap items-center justify-center gap-x-4 gap-y-2 border-t border-[#D8DFEA] pt-3 pb-1 text-xs font-semibold text-[#22396F] md:order-none md:w-auto md:border-0 md:p-0'
+                ? 'order-last flex w-full flex-wrap items-center justify-center gap-x-4 gap-y-2 border-t border-[#D8DFEA] pt-3 pb-1 text-xs font-semibold text-[#22396F] lg:order-none lg:w-auto lg:border-0 lg:p-0'
                 : 'hidden items-center gap-7 text-xs font-semibold text-[#22396F] md:flex'
             }
             aria-label="Navigasi utama"
@@ -64,10 +64,10 @@ export function AppNavbar({ user }: { user: AppNavbarUser | null }) {
           </nav>
         )}
 
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex min-w-0 items-center gap-2">
           {user ? (
             <>
-              <AccountInfo name={user.name} email={user.email} />
+              <AccountInfo name={user.name} email={user.email} showName />
 
               <LogoutButton />
             </>

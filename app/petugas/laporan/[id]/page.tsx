@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { requireReportRole } from '@/lib/report-access'
+import { getStaffReportReporters } from '@/lib/actions/report-reporters'
 import { createClient } from '@/lib/supabase/server'
 import {
   parseReportListContext,
@@ -18,6 +19,7 @@ type Props = {
 
 type ReportRow = {
   id: number
+  user_id: number | string
   category: string
   description: string
   status: 'baru' | 'diproses' | 'selesai' | 'ditolak'
@@ -75,6 +77,7 @@ export default async function DetailLaporanPetugasPage({
     .select(
       `
         id,
+        user_id,
         category,
         description,
         status,
@@ -114,13 +117,28 @@ export default async function DetailLaporanPetugasPage({
     notFound()
   }
 
+  let reporter: { name: string | null; email: string | null } | undefined
+  let reporterError = ''
+  try {
+    const reporters = await getStaffReportReporters([report.user_id])
+    reporter = reporters.get(String(report.user_id))
+  } catch (error) {
+    console.error('Gagal mengambil identitas pelapor:', error)
+    reporterError = 'Identitas pelapor gagal dimuat. Coba muat ulang halaman.'
+  }
+
   return (
     <DetailLaporanPetugasContent
+      reporterError={reporterError}
       backHref={backHref}
       listContext={listContext}
       report={{
         id,
         facility: report.facility?.name ?? 'Fasilitas tidak tersedia',
+        reporterName: reporterError
+          ? 'Identitas gagal dimuat'
+          : reporter?.name ?? 'Nama tidak tercatat',
+        reporterEmail: reporterError ? 'Identitas gagal dimuat' : reporter?.email ?? '',
         location: report.facility?.location ?? '',
         category: report.category,
         description: report.description,

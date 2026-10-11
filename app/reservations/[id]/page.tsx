@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import AutoRefresh from '@/components/layout/auto-refresh'
 import { notFound } from 'next/navigation'
 
 import { Navbar } from '@/components/landing/navbar'
@@ -184,6 +185,7 @@ export default async function ReservationDetailPage({
         }
       />
 
+      <AutoRefresh />
       <main className="container mx-auto max-w-3xl flex-1 px-4 py-8 sm:py-12">
         <div className="mb-6">
           <Link

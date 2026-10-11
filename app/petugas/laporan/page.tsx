@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 
 import { requireReportRole } from '@/lib/report-access'
+import { getStaffReportReporters } from '@/lib/actions/report-reporters'
 import { createClient } from '@/lib/supabase/server'
 import LaporanPetugasContent from './laporan-petugas-content'
 
@@ -16,6 +17,7 @@ type Props = {
 
 type ReportRow = {
   id: number
+  user_id: number | string
   category: string
   description: string
   status: ReportStatus
@@ -85,6 +87,7 @@ export default async function LaporanPetugasPage({
     .select(
       `
         id,
+        user_id,
         category,
         description,
         status,
@@ -156,9 +159,25 @@ export default async function LaporanPetugasPage({
     )
   }
 
+  let reporters = new Map<string, { name: string | null; email: string | null }>()
+  let reporterError = ''
+  if (!listResult.error) {
+    try {
+      reporters = await getStaffReportReporters(
+        (listResult.data ?? []).map((report) => report.user_id)
+      )
+    } catch (error) {
+      console.error('Gagal mengambil identitas pelapor:', error)
+      reporterError = 'Identitas pelapor gagal dimuat. Coba perbarui daftar.'
+    }
+  }
+
   const reports = (listResult.data ?? []).map((report) => ({
     id: String(report.id),
     facility: report.facility?.name ?? 'Fasilitas tidak tersedia',
+    reporterName: reporterError
+      ? 'Identitas gagal dimuat'
+      : reporters.get(String(report.user_id))?.name ?? 'Nama tidak tercatat',
     category: report.category,
     description: report.description,
     status: report.status,
@@ -177,6 +196,7 @@ export default async function LaporanPetugasPage({
           ? 'Daftar laporan gagal dimuat. Coba muat ulang halaman.'
           : ''
       }
+      reporterErrorMessage={reporterError}
     />
   )
 }

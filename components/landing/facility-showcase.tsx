@@ -13,6 +13,9 @@ import {
   Info,
 } from "lucide-react"
 
+import { getLandingFacilities } from '@/lib/actions/live-data'
+import { useAutoRefresh, canApplyRefresh } from '@/lib/use-auto-refresh'
+
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
@@ -26,9 +29,9 @@ export interface FacilityItem {
   name: string
   type: string
   location: string
-  capacity: number
+  capacity: number | null
   capacityUnit: string
-  status: "available" | "in_use" | "maintenance"
+  status: "available" | "in_use" | "maintenance" | "inactive" | "unavailable"
   description: string
   operationalInfo: string
 }
@@ -44,100 +47,36 @@ const CATEGORIES: CategoryFilter[] = [
   "Lainnya",
 ]
 
-export const FALLBACK_FACILITIES: FacilityItem[] = [
-  {
-    id: 1,
-    code: "LAB-MM-01",
-    name: "Laboratorium Multimedia dan Rekayasa AI",
-    type: "Laboratorium",
-    location: "Gedung C, Lantai 2",
-    capacity: 45,
-    capacityUnit: "Workstation PC",
-    status: "available",
-    description:
-      "45 unit PC Core i7 dengan GPU RTX, sistem proyektor ganda, dan switch LAN gigabit berkecepatan tinggi.",
-    operationalInfo: "Tersedia slot hari ini (07.00 - 20.00 WIB)",
-  },
-  {
-    id: 2,
-    code: "AULA-GU",
-    name: "Aula Graha Pertemuan Utama",
-    type: "Aula",
-    location: "Gedung Rektorat Sayap Barat",
-    capacity: 500,
-    capacityUnit: "Kursi Peserta",
-    status: "in_use",
-    description:
-      "Panggung auditorium ber-AC, tata suara line array 10.000W, videotron LED 6x3 meter, dan ruang transit VIP.",
-    operationalInfo: "Sedang digunakan kuliah umum s.d 15.30 WIB",
-  },
-  {
-    id: 3,
-    code: "RK-B301",
-    name: "Smart Classroom B.301",
-    type: "Ruang Kelas",
-    location: "Gedung Kuliah Bersama, Lantai 3",
-    capacity: 60,
-    capacityUnit: "Mahasiswa",
-    status: "available",
-    description:
-      "Papan tulis interaktif 85 inch, kamera tracking dosen otomatis, mic nirkabel, dan formasi kursi diskusi.",
-    operationalInfo: "Tersedia slot hari ini (07.00 - 20.00 WIB)",
-  },
-  {
-    id: 4,
-    code: "LAP-FUT",
-    name: "Gelanggang Olahraga Futsal Indoor",
-    type: "Lapangan",
-    location: "Kompleks Olahraga Mahasiswa",
-    capacity: 120,
-    capacityUnit: "Penonton",
-    status: "available",
-    description:
-      "Lantai interlock standar kompetisi, pencahayaan LED sorot malam, ruang ganti, dan tribun barat.",
-    operationalInfo: "Tersedia slot sore (15.00 - 20.00 WIB)",
-  },
-  {
-    id: 5,
-    code: "EQUIP-SND",
-    name: "Paket Mobile Sound System Portable",
-    type: "Lainnya",
-    location: "Unit Layanan Sarana Prasarana (UPT)",
-    capacity: 2,
-    capacityUnit: "Speaker Aktif",
-    status: "available",
-    description:
-      "2 unit active speaker 15 inch dengan stand, mixer 8 channel audio, dan 4 mikrofon nirkabel UHF.",
-    operationalInfo: "Siap dipinjam untuk kegiatan resmi fakultas",
-  },
-  {
-    id: 6,
-    code: "LAB-CLD-04",
-    name: "Laboratorium Komputasi Awan dan Jaringan",
-    type: "Laboratorium",
-    location: "Gedung D, Lantai 4",
-    capacity: 35,
-    capacityUnit: "PC Server",
-    status: "maintenance",
-    description:
-      "Dalam proses perawatan berkala kabel optik jaringan dan penggantian modul catu daya cadangan.",
-    operationalInfo: "Perbaikan teknis berlangsung s.d esok hari",
-  },
-]
-
 export function FacilityShowcase({
-  facilities = FALLBACK_FACILITIES,
+  facilities = [],
+  loadError = '',
 }: {
   facilities?: FacilityItem[]
+  loadError?: string
 }) {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] =
     useState<CategoryFilter>("Semua")
   const [selectedStatus, setSelectedStatus] = useState("all")
 
+  const [liveFacilities, setLiveFacilities] = useState(facilities)
+  const [readError, setReadError] = useState(loadError)
+
+  useAutoRefresh(async (signal, automatic) => {
+    try {
+      const result = await getLandingFacilities()
+      if (!canApplyRefresh(signal, automatic)) return
+      if (!result.success) { setReadError(result.error); return }
+      setLiveFacilities(result.facilities)
+      setReadError('')
+    } catch {
+      if (canApplyRefresh(signal, automatic)) setReadError('Daftar fasilitas gagal diperbarui. Coba lagi.')
+    }
+  })
+
   // Pencarian dan filter tetap diterapkan sebelum jumlah kartu dibatasi.
   const filteredFacilities = useMemo(() => {
-    return facilities.filter((facility) => {
+    return liveFacilities.filter((facility) => {
       const query = searchTerm.toLowerCase().trim()
 
       const matchesSearch =
@@ -156,12 +95,13 @@ export function FacilityShowcase({
 
       const matchesStatus =
         selectedStatus === "all" ||
-        facility.status === selectedStatus
+        facility.status === selectedStatus ||
+        (selectedStatus === "in_use" && ["inactive", "unavailable"].includes(facility.status))
 
       return matchesSearch && matchesCategory && matchesStatus
     })
   }, [
-    facilities,
+    liveFacilities,
     searchTerm,
     selectedCategory,
     selectedStatus,
@@ -298,6 +238,12 @@ export function FacilityShowcase({
           </div>
         </div>
 
+        {readError && (
+          <p role="alert" className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+            {readError}
+          </p>
+        )}
+
         {/* Daftar fasilitas: maksimal 6 kartu */}
         {filteredFacilities.length === 0 ? (
           <div className="rounded-2xl border border-[#D8DFEA] bg-white p-12 text-center shadow-sm">
@@ -331,7 +277,7 @@ export function FacilityShowcase({
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {displayedFacilities.map((facility) => {
                 const isAvailable = facility.status === "available"
-                const isInUse = facility.status === "in_use"
+                const isInUse = ["in_use", "inactive", "unavailable"].includes(facility.status)
                 const isMaintenance =
                   facility.status === "maintenance"
 
@@ -356,7 +302,7 @@ export function FacilityShowcase({
                       {isInUse && (
                         <span className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-[11px] font-semibold text-red-700">
                           <Clock className="size-3 text-red-600" />
-                          Tidak Tersedia
+                          {facility.status === "inactive" ? 'Nonaktif' : facility.status === "in_use" ? 'Sedang Digunakan' : 'Tidak Tersedia'}
                         </span>
                       )}
 
@@ -390,8 +336,9 @@ export function FacilityShowcase({
                         <Users className="size-3.5 shrink-0 text-[#22396F]" />
 
                         <span>
-                          Kapasitas: {facility.capacity}{" "}
-                          {facility.capacityUnit}
+                          {facility.capacity === null
+                            ? 'Kapasitas belum dicantumkan'
+                            : `Kapasitas: ${facility.capacity.toLocaleString('id-ID')} ${facility.capacityUnit}`}
                         </span>
                       </div>
 

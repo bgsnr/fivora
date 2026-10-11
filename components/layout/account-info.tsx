@@ -3,7 +3,9 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import styles from './account-info.module.css'
 
-export function AccountInfo({ name, email }: { name: string; email: string }) {
+export function AccountInfo({ name, email, showName = false }: {
+  name: string; email: string; showName?: boolean
+}) {
   const [open, setOpen] = useState(false)
   const [pinned, setPinned] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
@@ -39,7 +41,7 @@ export function AccountInfo({ name, email }: { name: string; email: string }) {
   return (
     <div
       ref={rootRef}
-      className={styles.root}
+      className={`${styles.root} ${showName ? styles.named : ''}`}
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => {
         if (!pinned && !rootRef.current?.contains(document.activeElement)) {
@@ -74,6 +76,8 @@ export function AccountInfo({ name, email }: { name: string; email: string }) {
       >
         <span aria-hidden="true">{initials}</span>
       </button>
+
+      {showName && <span className={styles.visibleName} title={name}>{name}</span>}
 
       <div id={panelId} role="tooltip" className={styles.panel} hidden={!open}>
         <div className={styles.content}>
