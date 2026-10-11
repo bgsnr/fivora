@@ -88,6 +88,7 @@ export async function PATCH(
         updated_at: new Date().toISOString(),
       })
       .eq('id', Number(id))
+      .eq('role', 'pengguna')
       .eq('status', 'menunggu')
       .select(
         'id, name, email, status'

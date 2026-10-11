@@ -110,6 +110,18 @@ export async function POST(request: Request) {
       )
     }
 
+    // Validasi nama pengguna
+    if (name.length < 3) {
+      return NextResponse.json(
+        {
+          error: 'Nama lengkap minimal 3 karakter.',
+        },
+        {
+          status: 400,
+        }
+      )
+    }
+
     // Validasi password
     if (password.length < 8) {
       return NextResponse.json(
